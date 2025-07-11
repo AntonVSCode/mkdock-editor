@@ -1,0 +1,40 @@
+site_name: Моя документация  
+docs_dir: docs               
+site_dir: site               
+
+theme:
+  name: material            
+  palette:
+    primary: cyan           # цветовая палитра
+    accent: indigo          # акцентный цвет
+  locale: en                # локализация
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+
+markdown_extensions:
+  # Подсветка кода
+  - codehilite:
+      use_pygments: true
+      guess_lang: true
+      linenums: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      preserve_tabs: true    # Сохранять табы в коде
+
+plugins:
+  - search:
+      lang: ["ru", "en"]   # поддержка языков
+  - tags
+
+extra:
+  images_dir: images       # Из рабочего конфига
+  # css:
+  # javascript:
+

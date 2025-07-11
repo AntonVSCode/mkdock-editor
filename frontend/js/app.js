@@ -1,0 +1,86 @@
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // Проверка поддержки API
+    if (!window.Promise || !window.fetch) {
+      throw new Error('Browser not supported');
+    }
+
+    // Проверка наличия необходимых компонентов перед инициализацией
+    if (typeof FileExplorer === 'undefined' || typeof Editor === 'undefined' || typeof Preview === 'undefined') {
+      throw new Error('Required components are not loaded');
+    }
+
+    // Инициализация модулей с проверкой их доступности
+    await Promise.all([
+      typeof Editor.init === 'function' ? Editor.init() : Promise.resolve(),
+      typeof FileExplorer.init === 'function' ? FileExplorer.init() : Promise.resolve(),
+      typeof Preview.init === 'function' ? Preview.init() : Promise.resolve(),
+      typeof MaterialShortcuts === 'object' && typeof MaterialShortcuts.init === 'function' ? 
+        MaterialShortcuts.init() : Promise.resolve(),
+      // typeof SideModals === 'object' && typeof SideModals.init === 'function' ?
+      //   SideModals.init() : Promise.resolve() // Добавлено здесь
+    ]);
+
+    // Обработчики для кнопок файлового менеджера
+    document.getElementById('new-folder')?.addEventListener('click', async (e) => {
+      console.log('New folder button clicked directly');
+      await FileExplorer.createNewDirectory();
+    });
+
+    // Инициализация просмотрщика изображений
+    if (window.imageViewer && typeof window.imageViewer.init === 'function') {
+      await window.imageViewer.init();
+    }
+
+    // Настройка обработчиков
+    document.getElementById('refresh-preview')?.addEventListener('click', () => {
+      if (typeof Editor.getContent === 'function' && typeof Preview.refresh === 'function') {
+        Preview.refresh(Editor.getContent());
+      }
+    });
+
+    // Первоначальная загрузка
+    if (typeof FileExplorer.loadFiles === 'function') {
+      await FileExplorer.loadFiles();
+    }
+    
+    if (typeof Preview.refresh === 'function') {
+      Preview.refresh('# Welcome to MkDocs Editor');
+    }
+
+  } catch (error) {
+    console.error('Initialization error:', error);
+    
+    // Fallback для превью
+    const previewContainer = document.getElementById('preview-content');
+    if (previewContainer) {
+      previewContainer.innerHTML = `
+        <div class="preview-error">
+          <i class="mdi mdi-alert-circle"></i>
+          <span>Initialization Error: ${error.message}</span>
+        </div>
+      `;
+    }
+  }
+});
+
+// Обработчик для кнопки превью
+document.getElementById('toggle-preview')?.addEventListener('click', function() {
+    const preview = document.getElementById('preview-container');
+    if (!preview) return;
+
+    preview.classList.toggle("hidden");
+
+    // Обновляем размеры редактора при переключении
+    if (typeof Editor !== 'undefined' && Editor.codemirror) {
+        Editor.codemirror.refresh();
+    }
+
+    // Обновляем содержимое превью если оно становится видимым
+    if (!preview.classList.contains("hidden")) {
+        if (typeof Preview.refresh === 'function' && typeof Editor.getContent === 'function') {
+            Preview.refresh(Editor.getContent());
+        }
+    }
+});
+

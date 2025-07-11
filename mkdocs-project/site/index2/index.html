@@ -1,0 +1,1695 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../create/">
+      
+      
+        <link rel="next" href="../newfile65/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps - Моя документация</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="cyan" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#monitoring-proxmox-with-influxdb-and-grafana-in-4-easy-steps" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Моя документация" class="md-header__button md-logo" aria-label="Моя документация" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Моя документация
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  # # Welcome to MkDocs
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../create/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  New File
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../newfile65/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Newfile65
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../test/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Test
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../dir/file35/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Dir
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../qweqew3/newfile2/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Qweqew3
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../qweqew4/newfile2/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Qweqew4
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../test2/newfile52/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Test2
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../%D0%B2%D1%88%D0%BA3/newfile2/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Вшк3
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../%D0%B2%D1%88%D0%BA%D0%BE%D0%B0%D0%BE/newfile52/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Вшкоао
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../%D0%B9%D1%86%D1%83%D0%BA/%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Йцук
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Моя документация" class="md-nav__button md-logo" aria-label="Моя документация" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Моя документация
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    # # Welcome to MkDocs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    New File
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Introduction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-monitoring-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating a Monitoring Database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#influxdb-configuration-for-proxmox" class="md-nav__link">
+    <span class="md-ellipsis">
+      InfluxDB configuration for Proxmox
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-grafana-for-monitoring-proxmox" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install Grafana for Monitoring Proxmox
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-grafana" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring Grafana
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-plugins-and-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing Plugins and Dashboard
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accessing-grafana" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accessing Grafana
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-data-source-for-monitoring-proxmox" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Data Source for Monitoring Proxmox
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importing-predefined-dashboards" class="md-nav__link">
+    <span class="md-ellipsis">
+      Importing Predefined Dashboards
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxmox-webui-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proxmox WebUI Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-grafana-dashboards" class="md-nav__link">
+    <span class="md-ellipsis">
+      Viewing Grafana Dashboards
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusion
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../newfile65/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Newfile65
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Dir
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Dir
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dir/file35/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    File35
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Qweqew3
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Qweqew3
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qweqew3/newfile2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    New File
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Qweqew4
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Qweqew4
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qweqew4/newfile2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    New File
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Test2
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Test2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test2/newfile52/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Newfile52
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Вшк3
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Вшк3
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../%D0%B2%D1%88%D0%BA3/newfile2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Newfile2
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../%D0%B2%D1%88%D0%BA3/newfile52/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    New File
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Вшкоао
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Вшкоао
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../%D0%B2%D1%88%D0%BA%D0%BE%D0%B0%D0%BE/newfile52/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    New File
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Йцук
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Йцук
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../%D0%B9%D1%86%D1%83%D0%BA/%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Создание
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../%D0%B9%D1%86%D1%83%D0%BA/%D1%86%D0%B9%D1%83%D1%86%D1%83%D0%B9%D1%86/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Цйуцуйц
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="edit/main/docs/index2.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="monitoring-proxmox-with-influxdb-and-grafana-in-4-easy-steps">Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps</h1>
+<p>Table of Contents</p>
+<h2 id="introduction">Introduction</h2>
+<pre><code class="language-python">def example():
+    pass
+</code></pre>
+<p>Monitoring Proxmox with Grafana will be a good idea to see the actual resource utilization on our Proxmox cluster. Already we have covered in our previous guide about “<a href="https://www.linuxsysadmins.com/prometheus-with-grafana-for-linux-server/">How to monitor Linux servers using Prometheus and Grafana</a>“. However, in this guide let’s focus on how to monitor the Proxmox virtualization platform with the help of Proxmox and influxDb.</p>
+<p>Proxmox supports Graphite and InfluxDB while comparing the advantage of using InfluxDB and graphite, InfluxDB owns the match. Let’s start to setup influx DB by following below guide.</p>
+<ul>
+<li><a href="https://www.linuxsysadmins.com/install-influxdb-on-linux-3-easy-steps/">How to Install InfluxDB on Linux</a></li>
+</ul>
+<p>Right after installing the InfluxDB, start to create the DB user, Database with required privileges.</p>
+<h3 id="creating-a-monitoring-database">Creating a Monitoring Database</h3>
+<p>Creating database for monitoring Proxmox, Replace the user and password value as per standard to your setup.</p>
+<pre><code class="language-sql">CREATE USER admin WITH PASSWORD 'Redhat@123' WITH ALL PRIVILEGES
+CREATE DATABASE mondb
+CREATE USER monuser WITH PASSWORD 'Redhat@123'
+GRANT ALL ON mondb TO monuser
+exit
+</code></pre>
+<p>Create, Verify and list the created database</p>
+<pre><code class="language-sql">sysadmin@monitor:~$ influx
+Connected to http://localhost:8086 version 1.8.3
+InfluxDB shell version: 1.8.3
+&gt; CREATE USER admin WITH PASSWORD 'Redhat@123' WITH ALL PRIVILEGES
+&gt; CREATE DATABASE mondb
+&gt; CREATE USER monuser WITH PASSWORD 'Redhat@123'
+&gt; GRANT ALL ON mondb TO monuser
+&gt; SHOW GRANTS FOR monuser
+database privilege
+-------- ---------
+mondb    ALL PRIVILEGES
+&gt; SHOW DATABASES
+name: databases
+name
+----
+_internal
+mondb
+&gt; 
+&gt; exit
+sysadmin@monitor:~$
+</code></pre>
+<h3 id="influxdb-configuration-for-proxmox">InfluxDB configuration for Proxmox</h3>
+<p>Few configurations are required for Proxmox. Edit the main configuration for Influxdb to add the require options</p>
+<pre><code class="language-bash">$ sudo vim /etc/influxdb/influxdb.conf
+</code></pre>
+<p>This port should match to Proxmox metric configuration.</p>
+<p>DataCenter –&gt; Metric Server –&gt; Add –&gt; InfluxDB</p>
+<pre><code>[[udp]]
+   enabled = true
+   bind-address = &quot;:8089&quot;
+   database = &quot;mondb&quot;
+   batch-size = 5000
+   batch-timeout = &quot;1s&quot;
+</code></pre>
+<p>Make sure to use the database we created in earlier steps.</p>
+<h3 id="install-grafana-for-monitoring-proxmox">Install Grafana for Monitoring Proxmox</h3>
+<p>First, let’s start to resolve the required dependencies for Grafana installation.</p>
+<pre><code>$ sudo apt-get install -y apt-transport-https
+$ sudo apt-get install -y software-properties-common wget
+</code></pre>
+<p>Import the apt key for grafana</p>
+<pre><code>$ wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+</code></pre>
+<p>Enable the repository, If you are running from unprivileged account it will prompt to enter the password for privilege escalation.</p>
+<pre><code>$ echo &quot;deb https://packages.grafana.com/oss/deb stable main&quot; | sudo tee -a /etc/apt/sources.list.d/grafana.list
+</code></pre>
+<p>Installing Grafana, update the apt cache and by following install the Grafana.</p>
+<pre><code>$ sudo apt-get update
+$ sudo apt-get install grafana
+</code></pre>
+<pre><code>Unpacking grafana (7.3.6) ...
+Setting up fonts-dejavu-core (2.37-1) ...
+Setting up fontconfig-config (2.13.1-2ubuntu3) ...
+Setting up libfontconfig1:amd64 (2.13.1-2ubuntu3) ...
+Setting up grafana (7.3.6) ...
+Adding system user `grafana' (UID 112) ...
+Adding new user `grafana' (UID 112) with group `grafana' ...
+Not creating home directory `/usr/share/grafana'.
+
+
+### NOT starting on installation, please execute the following statements to configure grafana to start automatically using systemd
+ sudo /bin/systemctl daemon-reload
+ sudo /bin/systemctl enable grafana-server
+
+
+### You can start grafana-server by executing
+ sudo /bin/systemctl start grafana-server
+Processing triggers for systemd (245.4-4ubuntu3) ...
+Processing triggers for man-db (2.9.1-1) ...
+Processing triggers for libc-bin (2.31-0ubuntu9) ...
+</code></pre>
+<h3 id="configuring-grafana">Configuring Grafana</h3>
+<p>Post to Grafana installation, we need to make few changes.</p>
+<pre><code>$ sudo vim /etc/grafana/grafana.ini
+</code></pre>
+<p>Few of interesting configurations for monitoring Proxmox are as follows. If you need to setup a default admin account and password we need to set here before starting the Grafana service.</p>
+<pre><code>[paths]
+logs = /var/log/grafana
+plugins = /var/lib/grafana/plugins
+
+[server]
+protocol = http
+http_port = 3000
+
+[security]
+admin_user = admin
+admin_password = admin
+</code></pre>
+<p>Make the Systemd configuration changes by running “<em>daemon-reload</em>” by following enable and start the service persistently.</p>
+<pre><code>$ sudo systemctl daemon-reload
+$ sudo systemctl enable grafana-server
+$ sudo systemctl start grafana-server
+$ sudo systemctl status grafana-server
+</code></pre>
+<h3 id="installing-plugins-and-dashboard">Installing Plugins and Dashboard</h3>
+<p>Few of cool <a href="https://grafana.com/grafana/dashboards">dashboards</a> are listed below. We will use anyone of below dashboard soon in upcoming steps.</p>
+<pre><code>https://grafana.com/grafana/dashboards/10048
+https://grafana.com/grafana/dashboards/13307
+https://grafana.com/grafana/dashboards/11418
+https://grafana.com/grafana/dashboards/11416
+</code></pre>
+<p>If any plugins are missing we could get the alerts in the dashboard. Install the missing plugins by running below command, replace the plugin name with your missing plugin name.</p>
+<pre><code>$ sudo grafana-cli plugins install grafana-clock-panel
+$ sudo grafana-cli plugins install blackmirror1-singlestat-math-panel
+</code></pre>
+<p>Search for the plugins at <code>https://grafana.com/grafana/plugins</code></p>
+<pre><code>sysadmin@monitor:~$ sudo grafana-cli plugins install grafana-clock-panel
+installing grafana-clock-panel @ 1.1.1
+from: https://grafana.com/api/plugins/grafana-clock-panel/versions/1.1.1/download
+into: /var/lib/grafana/plugins
+
+ Installed grafana-clock-panel successfully 
+
+Restart grafana after installing plugins . &lt;service grafana-server restart&gt;
+
+sysadmin@monitor:~$ 
+
+sysadmin@monitor:~$ sudo grafana-cli plugins install blackmirror1-singlestat-math-panel
+installing blackmirror1-singlestat-math-panel @ 1.1.7
+from: https://grafana.com/api/plugins/blackmirror1-singlestat-math-panel/versions/1.1.7/download
+into: /var/lib/grafana/plugins
+
+ Installed blackmirror1-singlestat-math-panel successfully 
+
+Restart grafana after installing plugins . &lt;service grafana-server restart&gt;
+
+sysadmin@monitor:~$
+</code></pre>
+<p>Now if you check the database, we could see some tables and columns.</p>
+<pre><code>sysadmin@monitor:~$ influx -database 'mondb' -username 'mondb' -password 'Redhat@123'
+Connected to http://localhost:8086 version 1.8.3
+InfluxDB shell version: 1.8.3
+&gt; show databases
+name: databases
+name
+----
+_internal
+mondb
+linuxsys_db
+&gt; 
+&gt; use mondb
+Using database mondb
+&gt; 
+&gt; show MEASUREMENTS
+name: measurements
+name
+----
+ballooninfo
+blockstat
+cpustat
+memory
+nics
+proxmox-support
+system
+&gt; 
+</code></pre>
+<h3 id="accessing-grafana">Accessing Grafana</h3>
+<p>Right after starting the Grafana service, access the URL from anyone of your favorite web browser. The default port of Grafana is 3000.</p>
+<pre><code>https://monitor.linuxsysadmins.local:3000
+</code></pre>
+<p>The default username and password are <code>admin</code> and <code>admin</code></p>
+<p>If you are accessing dashboard for the first time, it will prompt to change the password.</p>
+<p><img alt="Login to grafana" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Login-to-grafana-954x1024.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 1" /></p>
+<p>Login to grafana</p>
+<h3 id="adding-data-source-for-monitoring-proxmox">Adding Data Source for Monitoring Proxmox</h3>
+<p>As we have installed and configured to use the InfluxDB for Proxmox, now we need to add the data source with InfluxDB database information.</p>
+<p>Navigate to Settings <img alt="gear" src="https://www.linuxsysadmins.com/wp-content/uploads/2020/11/gear.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 2" /> gear icon <strong>–&gt;</strong> and select the Data Sources.</p>
+<p><img alt="Adding datasource in grafana" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Adding-datasource-in-grafana-1024x647.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 3" /></p>
+<p>Adding datasource in grafana</p>
+<p>Click the <em>Add data source</em></p>
+<p><img alt="Click to add source" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Click-to-add-source-1024x400.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 4" /></p>
+<p>Click to add source</p>
+<p>Select InfluxDB by clicking on it.</p>
+<p><img alt="Select influxdb as sources" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Select-influxdb-as-sources-1024x705.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 5" /></p>
+<p>Select influxdb as sources</p>
+<p>Feed the HTTP URL where the InfluxDB installed, In our case its on same server where we installed Grafana.</p>
+<p><img alt="adding influxdb server info" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/adding-influxdb-server-info-1024x864.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 6" /></p>
+<p>adding influxdb server info</p>
+<p>Provide the InfluxDB information and select either GET or POST for HTTP method.</p>
+<p>Click the <em>Save &amp; Test</em> to make the connection test and save the configuration.</p>
+<p><img alt="Influxdb database info" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Influxdb-database-info-1024x727.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 7" /></p>
+<p>Influxdb database info</p>
+<p>Data Source has been successfully added to start monitoring Proxmox. Now we could see the added Data source in the list.</p>
+<p><img alt="Added data source" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Added-data-source-1024x359.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 8" /></p>
+<p>Added data source</p>
+<h3 id="importing-predefined-dashboards">Importing Predefined Dashboards</h3>
+<p>There are only very few pre-defined dashboards are available for Proxmox. In our earlier step, We have shared few of dashboards URL. Get the dashboard ID from there</p>
+<p>Click the <strong>+</strong> Symbol from left side pane and select the <em>Import</em></p>
+<p><img alt="Importing preconfgured dashboard" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Importing-preconfgured-dashboard-1024x673.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 9" /></p>
+<p>Importing preconfigured dashboard</p>
+<p>Each predefined dashboard have a ID, copy paste the ID and click load.</p>
+<p>Here we are using ID 12966 for demonstration purpose.</p>
+<p><img alt="Import preconfigured dashboards" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Import-preconfigured-dashboards-1024x988.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 10" /></p>
+<p>Import preconfigured dashboards</p>
+<p>Select all the sources as InfluxDB</p>
+<p><img alt="select the data sources" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/select-the-data-sources-731x1024.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 11" /></p>
+<p>select the data sources</p>
+<h3 id="proxmox-webui-configuration">Proxmox WebUI Configuration</h3>
+<p>Switch back to Proxmox webUI and configure the InfluxDB from metrics.</p>
+<ul>
+<li>
+<p>Navigate to <strong>Server View</strong> from the drop-down list.</p>
+</li>
+<li>
+<p>Select the Datacenter from the list.</p>
+</li>
+<li>
+<p>Click on Metric from right side pane above the support option.</p>
+</li>
+<li>
+<p>Click Add and select the InfluxDB</p>
+</li>
+</ul>
+<p><img alt="Adding metric configuration to Proxmox" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Adding-metric-configuration-to-proxmox.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 12" /></p>
+<p>Adding metric configuration to Proxmox</p>
+<p>Now we could get the below window.</p>
+<ul>
+<li>
+<p>Enter a Name</p>
+</li>
+<li>
+<p>IP address or hostname of the monitoring server, In my case 192.168.0.50 resolving to monitor.linuxsysadmins.local</p>
+</li>
+<li>
+<p>Select the <em>Enabled</em> option.</p>
+</li>
+<li>
+<p>Enter the Port number where the data should be sent.</p>
+</li>
+<li>Click <em>create</em> to create the entry.</li>
+</ul>
+<p><img alt="Influxdb server info in proxmox" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Influxdb-server-info-in-proxmox.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 13" /></p>
+<p>Influxdb server info in proxmox</p>
+<p>To make sure the changes from Proxmox command line.</p>
+<pre><code>root@pve1:~# cat /etc/pve/status.cfg
+influxdb: monitor
+    port 8089
+    server 192.168.0.50
+
+root@pve1:~#
+</code></pre>
+<h3 id="viewing-grafana-dashboards">Viewing Grafana Dashboards</h3>
+<p>Back to Grafana GUI and check the Dashboards, now you could get some graphs.</p>
+<p><img alt="Dashboard with metric" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Dashboard-with-metric-1024x526.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 14" /></p>
+<p>Dashboard with metric</p>
+<p>More information.</p>
+<p><img alt="Metric info" src="https://www.linuxsysadmins.com/wp-content/uploads/2021/01/Metric-info-1024x564.png" title="Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps 15" /></p>
+<p>Metric info</p>
+<p>That’s it, we have successfully started to get visualize the Proxmox environment.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>To get the metric information of Proxmox Virtualization platform we can use the Grafana with InfluxDB. By installing the InfluxDB and start using Grafana in a few minutes to get a good visualization on your resource utilization in your Proxmox environment. Subscribe to our newsletter and stay close for more updates, your feedbacks are welcome through below comment section.</p>
+<hr />
+<p>Source: <a href="https://www.linuxsysadmins.com/monitoring-proxmox-with-grafana/">Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "navigation.sections", "navigation.expand", "navigation.instant", "navigation.tracking", "toc.integrate", "search.highlight", "search.suggest", "search.share", "content.tabs", "content.code.annotate", "content.code.copy", "content.code.select", "content.action.edit"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

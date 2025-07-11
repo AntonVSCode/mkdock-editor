@@ -1,0 +1,191 @@
+/* ==================== */
+/* БАЗОВЫЕ СТИЛИ КНОПОК */
+/* ==================== */
+
+/* Общие стили для всех кнопок */
+button, .btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  border: none;
+  outline: none;
+}
+
+/* Основные кнопки инструментов */
+.toolbar-btn, 
+.markdown-toolbar button {
+  background-color: white;
+  border: 1px solid var(--border-color);
+}
+
+.toolbar-btn:hover, 
+.markdown-toolbar button:hover {
+  background-color: #e9ecef;
+}
+
+/* Модальные кнопки */
+.btn-primary {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  margin-right: 10px;
+}
+
+/* Модальные кнопки */
+.modal-footer .btn-secondary {
+  order: 1;
+  margin-right: 0;
+}
+
+.modal-footer .btn-primary {
+  order: 2;
+}
+
+.btn-danger {
+  background-color: #ff4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #cc0000;
+}
+
+/* ==================== */
+/* Кнопки файлового менеджера */
+/* ==================== */
+.explorer-toolbar {
+  padding: 10px;
+  background-color: var(--darker-bg);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.explorer-toolbar button {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--white);
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.explorer-toolbar button:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.explorer-toolbar button i {
+  font-size: 18px;
+}
+
+/* Стили для всплывающих подсказок */
+.explorer-toolbar button::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--dark-bg);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.explorer-toolbar button:hover::after {
+  opacity: 1;
+}
+
+/* Стрелка для подсказки */
+.explorer-toolbar button::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--dark-bg) transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.explorer-toolbar button:hover::before {
+  opacity: 1;
+}
+
+/* Стили для кнопки удаления */
+.explorer-toolbar .danger-btn {
+  color: var(--delete-icon) !important;
+  /* margin-left: auto; */
+}
+
+.explorer-toolbar .danger-btn:hover:not(:disabled) {
+  background-color: rgba(255, 82, 82, 0.1) !important;
+}
+
+.explorer-toolbar .danger-btn:disabled {
+  color: rgba(255, 82, 82, 0.3) !important;
+  cursor: not-allowed;
+}
+
+.delete-file-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.file-item:hover .delete-file-btn {
+  opacity: 1;
+}
+
+.delete-file-btn:hover {
+  color: var(--delete-icon);
+}
+
+/* Кнопка переключения сайдбара */
+.toggle-sidebar-btn {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  background: #2c3e50;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.file-explorer.collapsed ~ .toggle-sidebar-btn {
+  display: block;
+}

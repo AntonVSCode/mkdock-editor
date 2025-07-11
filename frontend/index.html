@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MkDocs Editor</title>
+  <link rel="stylesheet" href="assets/editor.css">
+  <link rel="stylesheet" href="assets/button.css">
+  <link rel="stylesheet" href="assets/notification.css">
+  <link rel="stylesheet" href="assets/syntax-theme.css">
+  <link rel="stylesheet" href="assets/image-viewer.css">
+  <link rel="stylesheet" href="assets/modal.css">
+  <link rel="stylesheet" href="assets/vendor/codemirror/lib/codemirror.css">  <!-- Основной стиль CodeMirror -->
+  <link rel="stylesheet" href="assets/vendor/codemirror/material.css">        <!-- Тема Material для CodeMirror -->
+  <link rel="stylesheet" href="assets/vendor/codemirror/hint/show-hint.css">
+
+  <script src="assets/vendor/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material-darker.min.css"> -->
+  <!-- <link rel="stylesheet" href="assets/vendor/highlightjs-line-numbers.min.css"> -->
+  <script src="assets/vendor/highlight.min.js"></script>
+  <script src="assets/vendor/highlightjs-line-numbers.min.js"></script>
+  <script>
+    hljs.highlightAll();
+  </script>
+  <style>
+    /* Стили для нижнего меню */
+    .explorer-footer {
+      margin-top: auto;
+      padding: 10px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background-color: #1a252f;
+    }
+    
+    .explorer-footer a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+    
+    .explorer-footer a:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+    
+    .explorer-footer i {
+      margin-right: 8px;
+    }
+
+    /* Обновленные стили для редактора и превью */
+    .editor-preview-split {
+      display: flex;
+      height: calc(100vh - 150px); /* Подгоняем высоту */
+      width: 100%;
+    }
+    
+    .editor-container, .preview-container {
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      transition: all 0.3s ease;
+    }
+    
+    .preview-container {
+      border-left: 1px solid #ddd;
+      background: #fff;
+    }
+    
+    .preview-container.hidden {
+      display: none;
+    }
+    
+    .editor-container.full-width {
+      flex: 0 0 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Боковая панель -->
+    <div class="file-explorer" id="file-explorer">
+      <div class="explorer-toolbar">
+        <button id="new-folder" title="Новая папка">
+          <i class="mdi mdi-folder-plus"></i>
+        </button>
+        <button id="new-file" title="Новый файл">
+          <i class="mdi mdi-file-plus"></i>
+        </button>
+        <button id="refresh-files" title="Обновить">
+          <i class="mdi mdi-refresh"></i>
+        </button>
+        <button id="delete-folder" title="Удалить папку" class="danger-btn" disabled>
+          <i class="mdi mdi-folder-remove"></i>
+        </button>
+        <button id="toggle-sidebar" title="Свернуть/развернуть">
+          <i class="mdi mdi-menu"></i>
+        </button>
+      </div>
+      <!-- Поиск файлов  -->
+      <div class="search-container">
+        <input type="text" id="file-search" placeholder="Поиск файлов...">
+        <button id="clear-search" title="Очистить поиск">
+          <i class="mdi mdi-close"></i>
+        </button>
+      </div>
+
+      <!-- Список файлов -->
+      <div id="file-tree">
+        <div class="file-item">
+        </div>
+      </div>
+
+      <!-- Нижнее меню -->
+      <div class="explorer-footer">
+        <a href="#">
+          <i class="mdi mdi-cog"></i>
+          <span>Настройки</span>
+        </a>
+      </div>
+    </div>
+    
+    <!-- Кнопка для открытия свернутого меню -->
+    <button class="toggle-sidebar-btn" id="toggleBtn">
+      <i class="mdi mdi-menu"></i>
+    </button>
+    
+    <!-- Основная область -->
+        <div class="main-content">
+          <div class="file-info-header">
+            <div class="breadcrumbs">
+              <span class="crumb root-crumb" data-path="">
+                <i class="mdi mdi-folder"></i> mkdocs-editor
+              </span>
+              <!-- Здесь будут динамически добавляться элементы пути -->
+            </div>
+            <div class="current-file">
+              <i class="mdi mdi-file-document-outline"></i>
+              <span class="filename">no file selected</span>
+            </div>
+          </div>
+      <!-- Верхняя панель редактора -->
+      <div class="editor-toolbar">
+        <button id="note-btn" class="toolbar-btn">
+          <i class="mdi mdi-alert-circle-outline"></i> Note
+        </button>
+        <button id="foldable-btn" class="toolbar-btn">
+          <i class="mdi mdi-chevron-down-box-outline"></i> Foldable
+        </button>
+        <button id="image-upload-btn" class="toolbar-btn">
+          <i class="mdi mdi-image-plus"></i> Upload Image
+        </button>
+        <button id="image-gallery-btn" class="toolbar-btn">
+          <i class="mdi mdi-image-multiple"></i> Галерея
+        </button>
+        <button id="toggle-preview" class="toolbar-btn">
+          <i class="mdi mdi-eye"></i>
+          <span class="btn-text">Hide Preview</span>
+        </button>
+        <input type="file" id="image-upload" accept="image/*" style="display: none;">
+      </div>
+      
+      <!-- Панель форматирования -->
+      <div class="markdown-toolbar">
+        <button data-insert="# " title="Заголовок 1">H1</button>
+        <button data-insert="## " title="Заголовок 2">H2</button>
+        <button data-insert="**bold**" title="Жирный">B</button>
+        <button data-insert="*italic*" title="Курсив">I</button>
+        <button data-insert="[link](url)" title="Ссылка">Link</button>
+        <button data-insert="![alt](image.png)" title="Изображение">Img</button>
+        <button data-insert="!!! note\n\n    " title="Блок note">Note</button>
+        <button data-insert="??? note\n\n    " title="Сворачиваемый блок">Fold</button>
+        <button data-insert="---\n" title="Горизонтальная линия">Line</button>
+          <button data-insert="!!! note\n\n    " title="Admonition Note">
+          <i class="mdi mdi-alert-circle-outline"></i>
+        </button>
+        <button data-insert="??? note\n\n    " title="Foldable Block">
+          <i class="mdi mdi-chevron-down-box-outline"></i>
+        </button>
+        <button data-insert="=== \"Tab Title\"\n\n    " title="Tabs Block">
+          <i class="mdi mdi-tab"></i>
+        </button>
+      </div>
+      
+      <!-- Область редактора и предпросмотра -->
+      <div class="editor-wrapper">
+        <div class="editor-preview-split">
+          <!-- Левая часть - редактор -->
+          <div class="editor-container">
+            <div id="markdown-editor-container">
+              <textarea id="markdown-editor" style="display: none;"></textarea>
+            </div>
+          </div>
+          
+          <!-- Правая часть - превью -->
+          <div class="preview-container" id="preview-container">
+            <div class="preview-toolbar">
+              <!-- <button id="toggle-preview" class="toolbar-btn">
+                <i class="mdi mdi-eye"></i> Toggle Preview
+              </button> -->
+            </div>
+            <div id="preview-content" class="markdown-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- В конец body перед другими скриптами добавить -->
+  <script src="assets/vendor/codemirror/lib/codemirror.js"></script>
+  <script src="assets/vendor/codemirror/markdown.js"></script>              <!-- Режим Markdown -->
+  <script src="assets/vendor/codemirror/hint/show-hint.js"></script>  <!-- Подсказки -->
+  <script src="assets/vendor/codemirror/closebrackets.js"></script>         <!-- Автозакрытие скобок -->
+  <script src="assets/vendor/codemirror/closetag.js"></script>            <!-- Автозакрытие тегов -->
+  <script src="assets/vendor/codemirror/matchbrackets.js"></script>       <!-- Выделение скобок -->
+  <script src="assets/vendor/codemirror/xml-hint.js"></script>            <!-- Подсказки для XML -->
+  <script src="assets/vendor/codemirror/html-hint.js"></script>           <!-- Подсказки для HTML -->
+  <!-- Подключение скриптов -->
+  <script src="js/modal.js"></script>
+  <script src="js/preview.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/fileExplorer.js"></script>
+  <script src="js/fileSearch.js"></script>
+  <script src="js/materialShortcuts.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/imageViewer.js"></script>
+  
+  <script>
+    // Обработчики для управления меню
+    document.getElementById('toggle-sidebar').addEventListener('click', function() {
+      const fileExplorer = document.getElementById('file-explorer');
+      fileExplorer.classList.toggle('collapsed');
+      localStorage.setItem('sidebarCollapsed', fileExplorer.classList.contains('collapsed'));
+    });
+
+    document.getElementById('toggleBtn').addEventListener('click', function() {
+      const fileExplorer = document.getElementById('file-explorer');
+      fileExplorer.classList.toggle('collapsed');
+      localStorage.setItem('sidebarCollapsed', fileExplorer.classList.contains('collapsed'));
+    });
+
+    // Проверяем состояние меню при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+      const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+      if (isCollapsed) {
+        document.getElementById('file-explorer').classList.add('collapsed');
+      }
+    });
+
+    document.getElementById('toggle-preview').addEventListener('click', function() {
+      Preview.togglePreview();
+    });
+  </script>
+</body>
+</html>
