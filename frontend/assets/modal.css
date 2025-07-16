@@ -101,8 +101,11 @@
   color: #2c3e50;
 }
 
-/* Добавьте в конец файла modal.css */
-/* .side-modal-header h3 {
+.side-modal-content {
+  text-align: left;
+}
+
+.side-modal-header h3 {
   text-align: left;
   margin: 0;
   padding: 0;
@@ -110,13 +113,7 @@
   color: #333;
 }
 
-.side-modal-content {
-  text-align: left;
-}
-
-.settings-section h4, 
-.help-section h4, 
-.info-section h4 {
+.settings-section h4 {
   text-align: left;
   margin-bottom: 15px;
   color: #2c3e50;
@@ -129,40 +126,57 @@
   margin-bottom: 5px;
 }
 
-.btn-primary {
-  background-color: #4a6bdf;
-  color: white;
-  border: none;
-  padding: 8px 16px;
+/* Стили для кнопки переключения превью */
+.side-modal-button#toggle-preview {
+  position: relative;
+}
+
+/* Добавить в конец modal.css */
+.favicon-container {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.favicon-preview {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.backup-section {
+  margin: 25px 0;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.backup-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
   border-radius: 4px;
-  cursor: pointer;
-  margin-top: 15px;
+  padding: 10px;
+  margin: 10px 0;
 }
 
-.btn-primary:hover {
-  background-color: #3a5bd9;
-} */
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .side-modal {
-    width: 80%;
-  }
+.backup-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
 }
 
-@media (max-width: 480px) {
-  .side-modal {
-    width: 100%;
-  }
-  
-  .side-modal-buttons {
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    flex-direction: row;
-    justify-content: center;
-    transform: none;
-    border-radius: 5px 5px 0 0;
-  }
+.backup-item:last-child {
+  border-bottom: none;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.backup-actions button {
+  padding: 3px 8px;
+  font-size: 0.8rem;
 }

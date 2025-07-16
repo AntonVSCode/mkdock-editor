@@ -1,23 +1,72 @@
+.notification {
+  position: relative;
+  min-width: 250px;
+  max-width: 350px;
+  padding: 15px 20px;
+  border-radius: 4px;
+  color: white;
+  background: #333;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.notification.success {
+  background: #4CAF50;
+}
+
+.notification.error {
+  background: #F44336;
+}
+
+.notification.info {
+  background: #2196F3;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.notification-close {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-left: 10px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
 /* .notification {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  padding: 12px 20px;
+  padding: 12px 24px;
   border-radius: 4px;
   color: white;
   display: flex;
   align-items: center;
   gap: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transform: translateY(100px);
+  z-index: 10000;
+  animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
   opacity: 0;
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.notification.show {
-  transform: translateY(0);
-  opacity: 1;
+  transform: translateY(20px);
 }
 
 .notification.success {
@@ -36,52 +85,22 @@
   font-size: 20px;
 }
 
-.form-control.error {
-    border-color: #ff4444;
-    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
-    animation: shake 0.5s;
-} */
-
-.notification {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 12px 20px;
-  border-radius: 4px;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transform: translateY(100px);
-  opacity: 0;
-  transition: all 0.3s ease;
-  z-index: 1000;
+@keyframes fadeIn {
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.notification.show {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.notification.success {
-  background-color: #4CAF50;
-}
-
-.notification.error {
-  background-color: #F44336;
-}
-
-.notification.info {
-  background-color: #2196F3;
-}
-
-.notification i {
-  font-size: 20px;
+@keyframes fadeOut {
+  to { opacity: 0; }
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-5px); }
-    40%, 80% { transform: translateX(5px); }
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
 }
+
+.form-control.error {
+  border-color: #ff4444;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+  animation: shake 0.5s;
+} */

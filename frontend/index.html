@@ -4,25 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MkDocs Editor</title>
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="assets/editor.css">
   <link rel="stylesheet" href="assets/button.css">
   <link rel="stylesheet" href="assets/notification.css">
   <link rel="stylesheet" href="assets/syntax-theme.css">
+  <link rel="stylesheet" href="assets/settingsEditor.css">
   <link rel="stylesheet" href="assets/image-viewer.css">
   <link rel="stylesheet" href="assets/modal.css">
   <link rel="stylesheet" href="assets/vendor/codemirror/lib/codemirror.css">  <!-- Основной стиль CodeMirror -->
-  <link rel="stylesheet" href="assets/vendor/codemirror/material.css">        <!-- Тема Material для CodeMirror -->
   <link rel="stylesheet" href="assets/vendor/codemirror/hint/show-hint.css">
-
-  <script src="assets/vendor/marked.min.js"></script>
+  <link rel="stylesheet" href="assets/vendor/default.min.css"> <!-- Стиль по умолчанию для подсветки синтаксиса -->
+  <!-- Тема для подсказок CodeMirror -->
+  <link rel="stylesheet" href="assets/vendor/codemirror/theme/material.css">        <!-- Тема Material для CodeMirror -->
+  <link rel="stylesheet" href="assets/vendor/codemirror/theme/material-darker.min.css">
+  <link rel="stylesheet" href="assets/vendor/codemirror/theme/dracula.min.css">
+  <link rel="stylesheet" href="assets/vendor/codemirror/theme/eclipse.min.css">
+  <link rel="stylesheet" href="assets/vendor/codemirror/theme/monokai.min.css">
+  <link rel="stylesheet" href="assets/vendor/codemirror/theme/solarized.min.css">
+  <link rel="stylesheet" href="assets/vendor/codemirror/theme/ambiance.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
-  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material-darker.min.css"> -->
+ 
   <!-- <link rel="stylesheet" href="assets/vendor/highlightjs-line-numbers.min.css"> -->
-  <script src="assets/vendor/highlight.min.js"></script>
-  <script src="assets/vendor/highlightjs-line-numbers.min.js"></script>
-  <script>
-    hljs.highlightAll();
-  </script>
   <style>
     /* Стили для нижнего меню */
     .explorer-footer {
@@ -114,9 +118,9 @@
 
       <!-- Нижнее меню -->
       <div class="explorer-footer">
-        <a href="#">
+        <a href="#" id="open-mkdocs-settings">
           <i class="mdi mdi-cog"></i>
-          <span>Настройки</span>
+          <span>Настройки конфига</span>
         </a>
       </div>
     </div>
@@ -153,10 +157,6 @@
         </button>
         <button id="image-gallery-btn" class="toolbar-btn">
           <i class="mdi mdi-image-multiple"></i> Галерея
-        </button>
-        <button id="toggle-preview" class="toolbar-btn">
-          <i class="mdi mdi-eye"></i>
-          <span class="btn-text">Hide Preview</span>
         </button>
         <input type="file" id="image-upload" accept="image/*" style="display: none;">
       </div>
@@ -196,9 +196,6 @@
           <!-- Правая часть - превью -->
           <div class="preview-container" id="preview-container">
             <div class="preview-toolbar">
-              <!-- <button id="toggle-preview" class="toolbar-btn">
-                <i class="mdi mdi-eye"></i> Toggle Preview
-              </button> -->
             </div>
             <div id="preview-content" class="markdown-body"></div>
           </div>
@@ -206,25 +203,30 @@
       </div>
     </div>
   </div>
-  
+  <script src="assets/vendor/highlight.min.js"></script>
+  <script src="assets/vendor/highlightjs-line-numbers.min.js"></script>
+  <script src="assets/vendor/marked.min.js"></script>
   <!-- В конец body перед другими скриптами добавить -->
   <script src="assets/vendor/codemirror/lib/codemirror.js"></script>
-  <script src="assets/vendor/codemirror/markdown.js"></script>              <!-- Режим Markdown -->
-  <script src="assets/vendor/codemirror/hint/show-hint.js"></script>  <!-- Подсказки -->
-  <script src="assets/vendor/codemirror/closebrackets.js"></script>         <!-- Автозакрытие скобок -->
+  <script src="assets/vendor/codemirror/markdown.js"></script>            <!-- Режим Markdown -->
+  <script src="assets/vendor/codemirror/hint/show-hint.js"></script>      <!-- Подсказки -->
+  <script src="assets/vendor/codemirror/closebrackets.js"></script>       <!-- Автозакрытие скобок -->
   <script src="assets/vendor/codemirror/closetag.js"></script>            <!-- Автозакрытие тегов -->
   <script src="assets/vendor/codemirror/matchbrackets.js"></script>       <!-- Выделение скобок -->
   <script src="assets/vendor/codemirror/xml-hint.js"></script>            <!-- Подсказки для XML -->
   <script src="assets/vendor/codemirror/html-hint.js"></script>           <!-- Подсказки для HTML -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script> <!-- Для работы с YAML -->
   <!-- Подключение скриптов -->
+  <script src="js/settingsEditor.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/fileExplorer.js"></script>
+  <script src="js/editor.js"></script>
   <script src="js/modal.js"></script>
   <script src="js/preview.js"></script>
-  <script src="js/editor.js"></script>
-  <script src="js/fileExplorer.js"></script>
   <script src="js/fileSearch.js"></script>
   <script src="js/materialShortcuts.js"></script>
-  <script src="js/app.js"></script>
   <script src="js/imageViewer.js"></script>
+  <script src="js/app.js"></script>
   
   <script>
     // Обработчики для управления меню
@@ -248,8 +250,10 @@
       }
     });
 
-    document.getElementById('toggle-preview').addEventListener('click', function() {
-      Preview.togglePreview();
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof hljs !== 'undefined') {
+        hljs.highlightAll();
+      }
     });
   </script>
 </body>

@@ -1,5 +1,21 @@
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+
+    // Проверяем компоненты
+    if (typeof FileExplorer === 'undefined' || typeof Editor === 'undefined') {
+      throw new Error('Required components are not loaded');
+    }
+
+    // Инициализация модулей
+    await Promise.all([
+      Editor.init(),
+      FileExplorer.init(),
+      Preview.init(),
+      typeof MaterialShortcuts !== 'undefined' && MaterialShortcuts.init(),
+      // Инициализация редактора настроек
+      //typeof SettingsEditor !== 'undefined' && new SettingsEditor()
+      typeof SettingsEditor !== 'undefined' && document.querySelector('.explorer-footer a') && new SettingsEditor()
+    ]);
     // Проверка поддержки API
     if (!window.Promise || !window.fetch) {
       throw new Error('Browser not supported');
@@ -17,8 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       typeof Preview.init === 'function' ? Preview.init() : Promise.resolve(),
       typeof MaterialShortcuts === 'object' && typeof MaterialShortcuts.init === 'function' ? 
         MaterialShortcuts.init() : Promise.resolve(),
-      // typeof SideModals === 'object' && typeof SideModals.init === 'function' ?
-      //   SideModals.init() : Promise.resolve() // Добавлено здесь
     ]);
 
     // Обработчики для кнопок файлового менеджера
@@ -50,7 +64,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   } catch (error) {
     console.error('Initialization error:', error);
-    
     // Fallback для превью
     const previewContainer = document.getElementById('preview-content');
     if (previewContainer) {

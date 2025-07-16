@@ -47,7 +47,7 @@ class ImageViewer {
       
     } catch (error) {
       //console.error('Failed to load images:', error);
-      this.showErrorMessage('Не удалось загрузить галерею изображений');
+      showNotification('Не удалось загрузить галерею изображений', 'error');
       this.images = [];
     }
   }
@@ -337,7 +337,7 @@ hide() {
   insertImage() {
     const image = this.images[this.currentIndex];
     //const markdown = `![${image.displayName}](../images/${image.storedName})`;
-    const markdown = `![${image.displayName}](/images/${image.storedName})`;
+    const markdown = `![${image.displayName}](images/${image.storedName})`;
     
     if (typeof Editor !== 'undefined' && Editor.insertAtCursor) {
       Editor.insertAtCursor(markdown);

@@ -719,11 +719,11 @@ const FileExplorer = {
           if (!response.ok) throw new Error('Failed to create directory');
           
           await this.loadFiles();
-          this.showNotification(`Папка "${dirName}" создана`, 'success');
+          showNotification(`Папка "${dirName}" создана`, 'success');
           
       } catch (error) {
           console.error('Error:', error);
-          this.showNotification(`Ошибка: ${error.message}`, 'error');
+          showNotification(`Ошибка: ${error.message}`, 'error');
       } finally {
           this._isCreatingDirectory = false;
       }
@@ -822,7 +822,7 @@ const FileExplorer = {
 
     const fileName = getValue('#new-file-name');
     if (!fileName) {
-      this.showNotification('Пожалуйста, введите имя файла', 'error');
+      showNotification('Пожалуйста, введите имя файла', 'error');
       throw new Error('Пожалуйста, введите имя файла');
     }
 
@@ -832,7 +832,7 @@ const FileExplorer = {
     const fullPath = folderPath ? `${folderPath}/${validName}` : validName;
 
     if (/[<>:"|?*]/.test(fullPath)) {
-      this.showNotification('Недопустимые символы в пути файла', 'error');
+      showNotification('Недопустимые символы в пути файла', 'error');
       throw new Error('Invalid characters in file path');
     }
 
@@ -848,12 +848,12 @@ const FileExplorer = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        this.showNotification(`File already exists: ${fullPath}`, 'error');
+        showNotification(`File already exists: ${fullPath}`, 'error');
         throw new Error(JSON.stringify(errorData));
       }
 
       const result = await response.json();
-      this.showNotification(`File created successfully: ${fullPath}`, 'success');
+      showNotification(`File created successfully: ${fullPath}`, 'success');
       await this.loadFiles();
       await this.loadFile(fullPath);
     } catch (error) {
@@ -866,12 +866,30 @@ const FileExplorer = {
    * Генерация содержимого нового файла
    */
   generateFileContent: function(tags) {
-    let content = '---\n';
-    if (tags && tags.trim()) {
-      content += `tags: [${tags.split(',').map(t => t.trim()).join(', ')}]\n`;
-    }
-    content += '---\n\n# New File\n\nStart editing here...';
-    return content;
+      // Если теги не указаны или строка состоит только из пробелов
+      if (!tags || !tags.trim()) {
+          return `# New File\n\nStart editing here...`;
+      }
+
+      // Обрабатываем теги
+      const tagList = tags.split(',')
+          .map(t => t.trim())
+          .filter(t => t.length > 0); // Удаляем пустые теги
+
+      // Если после обработки не осталось валидных тегов
+      if (tagList.length === 0) {
+          return `# New File\n\nStart editing here...`;
+      }
+
+      // Формируем содержимое с тегами
+      let content = '---\n';
+      content += 'tags:\n';
+      tagList.forEach(tag => {
+          content += `  - ${tag}\n`;
+      });
+      content += '---\n\n# New File\n\nStart editing here...';
+
+      return content;
   },
 
   /**
@@ -945,7 +963,7 @@ const FileExplorer = {
   //     }
 
   //     await this.loadFiles();
-  //     this.showNotification(`Папка "${folderPath.split('/').pop()}" успешно удалена`);
+  //     showNotification(`Папка "${folderPath.split('/').pop()}" успешно удалена`);
       
   //   } catch (error) {
   //     console.error('Ошибка удаления папки:', error);
@@ -965,7 +983,7 @@ const FileExplorer = {
           this._isDeletingFolder = true;
           
           if (!this.currentFile) {
-              this.showNotification('Не выбрана папка для удаления', 'error');
+              showNotification('Не выбрана папка для удаления', 'error');
               return;
           }
 
@@ -1016,14 +1034,14 @@ const FileExplorer = {
               throw new Error(result.message || 'Не удалось удалить папку');
           }
 
-          this.showNotification(`Папка "${folderName}" удалена`, 'success');
+          showNotification(`Папка "${folderName}" удалена`, 'success');
           await this.loadFiles();
           this.currentFile = null;
           this.deleteBtn.disabled = true;
           
       } catch (error) {
           console.error('Ошибка удаления папки:', error);
-          this.showNotification(`Ошибка: ${error.message}`, 'error');
+          showNotification(`Ошибка: ${error.message}`, 'error');
       } finally {
           this._isDeletingFolder = false;
       }
@@ -1075,7 +1093,7 @@ const FileExplorer = {
       this.updateFileItems();
       
       // Показываем уведомление об успешном удалении
-      this.showNotification(`"${filePath.split('/').pop()}" успешно удален`);
+      showNotification(`"${filePath.split('/').pop()}" успешно удален`);
     } catch (error) {
       console.error('Ошибка удаления:', error);
       this.showError(`Не удалось удалить: ${error.message}`);
@@ -1120,7 +1138,7 @@ const FileExplorer = {
       }
       
       await this.loadFiles();
-      this.showNotification(`${isFolder ? 'Folder' : 'File'} deleted successfully`);
+      showNotification(`${isFolder ? 'Folder' : 'File'} deleted successfully`);
     } catch (error) {
       console.error('Error deleting:', error);
       this.showError(`Failed to delete: ${error.message}`);
@@ -1276,30 +1294,6 @@ const FileExplorer = {
   /**
    * Подсветка выбранного файла/папки
    */
-  // highlightSelectedFile: function(filePath) {
-  //   // Удаляем выделение у всех элементов
-  //   document.querySelectorAll('.file-item').forEach(item => {
-  //     item.classList.remove('selected', 'selected-folder');
-  //   });
-
-  //   // Находим выбранный элемент
-  //   const selectedItem = this.fileItems.find(item => {
-  //     const itemPath = item.dataset.path;
-  //     return itemPath === filePath || (itemPath + '/') === filePath;
-  //   });
-
-  //   if (selectedItem) {
-  //     const isFolder = selectedItem.querySelector('.mdi-folder');
-  //     if (isFolder) {
-  //       selectedItem.classList.add('selected-folder');
-  //       this.deleteBtn.disabled = false;
-  //       this.currentFile = filePath.endsWith('/') ? filePath : filePath + '/';
-  //     } else {
-  //       selectedItem.classList.add('selected');
-  //       this.deleteBtn.disabled = true;
-  //     }
-  //   }
-  // },
   highlightSelectedFile: function(filePath) {
     // Удаляем выделение у всех элементов
     document.querySelectorAll('.file-item').forEach(item => {

@@ -416,24 +416,10 @@ body {
   right: 0;
 }
 
-/* .CodeMirror {
-  font-family: 'Fira Code', monospace;
-  height: 100%;
-  text-align: left;
-} */
-
 /* Стили для разных тем */
 .cm-s-material .CodeMirror-gutters { background: #263238; }
 .cm-s-material-darker .CodeMirror-gutters { background: #212121; }
 .cm-s-dracula .CodeMirror-gutters { background: #282a36; }
-
-/* Нумерация строк в превью */
-/* .hljs-ln-numbers {
-  text-align: right;
-  padding-right: 10px;
-  color: #6e7681;
-  border-right: 1px solid #6e7681;
-} */
 
 /* Гарантированно скрываем оригинальный textarea */
 #markdown-editor {
@@ -454,10 +440,6 @@ body {
   max-width: 100%;
   height: auto;
 }
-
-/* ==================== */
-/* Модальные окна */
-/* ==================== */
 
 /* ==================== */
 /* Модальные окна */

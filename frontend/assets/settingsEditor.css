@@ -1,0 +1,446 @@
+/* ===================================
+ Основные стили модального окна настроек 
+ =================================== */
+/* Основные стили модального окна настроек */
+.settings-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.settings-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: -1;
+}
+
+.settings-modal-content {
+  position: relative;
+  background-color: var(--filetree-bg);
+  border-radius: 5px;
+  width: 95%;
+  max-width: 1400px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+/* Шапка модального окна */
+.settings-modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.settings-modal-header h3 {
+  margin: 0;
+  font-size: 1.3em;
+  color: #66afe9;
+}
+
+.settings-close-modal {
+  font-size: 1.5em;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #aaa;
+  transition: color 0.2s;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+
+.settings-close-modal:hover {
+  color: white;
+}
+
+/* Основное содержимое (две колонки с независимой прокруткой) */
+.settings-modal-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+}
+
+/* Левая колонка - настройки */
+
+.settings-options-column {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-right: 15px;
+  height: 100%;
+  max-height: calc(90vh - 150px);
+}
+
+/* Фавикон и лого */
+/* Стили для загрузки изображений */
+.settings-images-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+.settings-images-section h4 {
+  margin-top: 0;
+  color: #66afe9;
+  font-size: 1.1rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #444;
+}
+
+.image-upload-group {
+  margin-bottom: 15px;
+}
+
+.image-upload-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.image-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.image-preview {
+  flex: 1;
+  min-height: 50px;
+  border: 1px dashed #444;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.image-preview-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.image-preview-content img {
+  max-height: 50px;
+  max-width: 100%;
+}
+
+.image-preview-content span {
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.6);
+}
+/* Правая колонка - редактор */
+
+.settings-editor-column {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  max-height: calc(90vh - 150px);
+}
+
+.settings-editor-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #444;
+  border-radius: 4px;
+  height: 100%;
+}
+
+.settings-editor-container .CodeMirror {
+  height: 100%;
+  font-size: 14px;
+}
+
+/* Подвал модального окна */
+.settings-modal-footer {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  border-top: 1px solid #444;
+  flex-shrink: 0;
+}
+
+/* Стили для полей ввода */
+.settings-header-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-field label {
+  font-size: 0.9em;
+  margin-bottom: 5px;
+  color: rgba(255,255,255,0.8);
+}
+
+.settings-input {
+  padding: 8px 12px;
+  background: #263238;
+  border: 1px solid #444;
+  color: #f8f8f2;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.settings-input:focus {
+  border-color: #66afe9;
+  outline: none;
+}
+
+/* Блоки выбора темы */
+.settings-theme-selector {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.theme-option {
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  padding: 15px;
+  border: 1px solid #444;
+}
+
+.theme-option label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  font-weight: bold;
+  color: #66afe9;
+  cursor: pointer;
+}
+
+.theme-option .theme-toggle {
+  margin-right: 10px;
+}
+
+.theme-selection {
+  padding: 0;
+  background: transparent;
+  margin-top: 10px;
+}
+
+/* Выбор цветов */
+.color-picker {
+  display: grid;
+  grid-template-columns: 100px 1fr 30px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.color-picker label {
+  font-size: 0.85em;
+  color: rgba(255,255,255,0.7);
+}
+
+.color-select {
+  padding: 6px;
+  background: #263238;
+  border: 1px solid #444;
+  color: #f8f8f2;
+  border-radius: 4px;
+}
+
+.color-select:focus {
+  border-color: #66afe9;
+  outline: none;
+}
+
+.color-preview {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+/* Превью иконок */
+.icon-preview {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.icon-preview i {
+  font-size: 24px;
+  color: #f8f8f2;
+  opacity: 0.9;
+  text-align: center;
+}
+
+.icon-preview span {
+  color: rgba(255,255,255,0.8);
+}
+
+/* Настройки features */
+.settings-features-section {
+  margin-top: 20px;
+}
+
+.features-option > label {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  color: #66afe9;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.features-selection {
+  margin-top: 10px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.feature-block {
+  background: #263238;
+  border-radius: 4px;
+  padding: 15px;
+  border: 1px solid #444;
+}
+
+.feature-block h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #66afe9;
+  font-size: 1.1rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #444;
+}
+
+.feature-checkbox {
+  margin: 8px 0;
+}
+
+.feature-checkbox label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #f8f8f2;
+  font-size: 0.9rem;
+}
+
+.feature-checkbox input {
+  margin-right: 10px;
+}
+
+.feature-checkbox small {
+  color: rgba(255,255,255,0.6);
+  margin-left: 5px;
+  font-size: 0.8em;
+}
+
+/* Кастомный скроллбар */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 1024px) {
+  .settings-modal-body {
+    grid-template-columns: 1fr;
+  }
+  
+  .settings-options-column {
+    padding-right: 0;
+    max-height: 40vh;
+  }
+  
+  .settings-editor-column {
+    max-height: 40vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-modal-content {
+    width: 98%;
+    padding: 10px;
+  }
+  
+  .settings-header-fields {
+    grid-template-columns: 1fr;
+  }
+  
+  .settings-theme-selector {
+    grid-template-columns: 1fr;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-modal {
+    padding: 10px;
+  }
+  
+  .settings-modal-content {
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .settings-modal-header h3 {
+    font-size: 1.1em;
+  }
+  
+  .color-picker {
+    grid-template-columns: 80px 1fr 30px;
+  }
+}

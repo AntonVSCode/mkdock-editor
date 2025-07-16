@@ -1,3 +1,4 @@
+![208d01ef-33b4-4f49-aab3-8d841c03a196.png](/images/208d01ef-33b4-4f49-aab3-8d841c03a196.png)
 # Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps
 
 Table of Contents
@@ -29,7 +30,7 @@ exit
 
 Create, Verify and list the created database
 
-```sql
+```sql title="bubble_sort.py"
 sysadmin@monitor:~$ influx
 Connected to http://localhost:8086 version 1.8.3
 InfluxDB shell version: 1.8.3

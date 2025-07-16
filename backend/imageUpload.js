@@ -23,7 +23,7 @@ async function handleUpload(req) {
   return {
     displayName: originalName,
     storedName: uniqueName,
-    relativePath: `../images/${uniqueName}`
+    relativePath: `images/${uniqueName}`
   };
 }
 

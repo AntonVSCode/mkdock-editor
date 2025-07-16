@@ -1,40 +1,61 @@
-site_name: Моя документация  
-docs_dir: docs               
-site_dir: site               
-
+site_name: BASH
+docs_dir: docs
+site_dir: site
 theme:
-  name: material            
+  name: material
   palette:
-    primary: cyan           # цветовая палитра
-    accent: indigo          # акцентный цвет
-  locale: en                # локализация
+    - scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: pink
+      accent: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
-    - content.code.annotate
-    - content.code.copy
-    - content.code.select
-
+    - navigation.tabs
+    - navigation.top
+    - navigation.indexes
+    - navigation.sections
+    - navigation.expand
+    - navigation.instant
+    - navigation.tracking
+    - search.highlight
+    - search.suggest
 markdown_extensions:
-  # Подсветка кода
   - codehilite:
       use_pygments: true
       guess_lang: true
       linenums: true
+      linenums_style: table
+      css_class: highlight
   - pymdownx.highlight:
+      use_pygments: true
+      linenums: true
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences:
-      preserve_tabs: true    # Сохранять табы в коде
-
+      preserve_tabs: true
+  - toc:
+      permalink: true
+      toc_depth: 6
 plugins:
-  - search:
-      lang: ["ru", "en"]   # поддержка языков
   - tags
-
+  - search:
+      lang:
+        - ru
+        - en
+nav:
+  - <i class="material-icons">home</i> Главная: index.md
+  - Proxmox: index2.md
 extra:
-  images_dir: images       # Из рабочего конфига
-  # css:
-  # javascript:
-
+  images_dir: images
+extra_css:
+  - assets/material-icons/material-icons.css

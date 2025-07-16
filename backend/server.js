@@ -1,3 +1,5 @@
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const path = require('path');
@@ -6,14 +8,34 @@ const yaml = require('js-yaml');
 const { exec } = require('child_process');
 const fileManager = require('./fileManager');
 const imageUpload = require('./imageUpload');
+const archiver = require('archiver');
+const ASSETS_DIR = path.join(__dirname, '../mkdocs-project/docs/assets');
+
+const MKDOCS_CONFIG_PATH = path.join(__dirname, '../mkdocs-project/mkdocs.yml');
+const MKDOCS_DEFAULT_CONFIG_PATH = path.join(__dirname, '../mkdocs-project/mkdocs.default.yml');
+
+// Создаем папки при старте сервера
+const BACKUP_DIR = path.join(__dirname, '../backups');
+const FRONTEND_ASSETS_DIR = path.join(__dirname, '../frontend/assets');
 
 const app = express();
 const PORT = 3000;
+const apiRouter = require('./routes/api');
+app.use('/api', apiRouter);
+app.use('/editor/api', apiRouter); // Дублирование для поддержки старых ссылок
 
 // Middleware
 app.use(express.json());
 app.use(fileUpload());
 app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Создаем папки если их нет
+if (!fs.existsSync(BACKUP_DIR)) {
+  fs.mkdirSync(BACKUP_DIR, { recursive: true });
+}
+if (!fs.existsSync(FRONTEND_ASSETS_DIR)) {
+  fs.mkdirSync(FRONTEND_ASSETS_DIR, { recursive: true });
+}
 
 // Функция для восстановления оригинального имени (добавьте в начало файла)
 function restoreOriginalName(storedName) {
@@ -27,6 +49,23 @@ app.get('/', (req, res) => {
   res.redirect('http://mkdocknew.northeurope.cloudapp.azure.com/editor');
 });
 
+// Статические файлы
+app.use('/assets', express.static(
+  path.join(__dirname, '../frontend/assets'),
+  { setHeaders: (res) => res.set('Access-Control-Allow-Origin', '*') }
+));
+
+app.use('/docs-assets', express.static(
+  path.join(__dirname, '../mkdocs-project/docs/assets'),
+  { setHeaders: (res) => res.set('Access-Control-Allow-Origin', '*') }
+));
+
+app.use('/images', express.static(
+  path.join(__dirname, '../mkdocs-project/docs/images'),
+  { setHeaders: (res) => res.set('Access-Control-Allow-Origin', '*') }
+));
+
+
 // Проверка инициализации
 async function initialize() {
   try {
@@ -34,6 +73,7 @@ async function initialize() {
     console.log('MKDOCS_ROOT:', fileManager.MKDOCS_ROOT);
     console.log('DOCS_DIR:', fileManager.DOCS_DIR);
 
+    // 1. Проверка и создание папки docs
     const docsExists = await fileManager.pathExists(fileManager.DOCS_DIR);
     if (!docsExists) {
       console.log('Docs directory not found, creating...');
@@ -42,6 +82,36 @@ async function initialize() {
         path.join(fileManager.DOCS_DIR, 'index.md'),
         '# Welcome\n\nThis is a new MkDocs project'
       );
+      console.log('Created docs directory with index.md');
+    }
+
+    // 2. Проверка и создание mkdocs.yml
+    if (!await fileManager.pathExists(MKDOCS_CONFIG_PATH)) {
+      console.log('mkdocs.yml not found, creating default config...');
+      const defaultConfig = `site_name: My Docs\nnav:\n  - Home: index.md\n`;
+      await fs.promises.writeFile(MKDOCS_CONFIG_PATH, defaultConfig);
+      console.log('Created default mkdocs.yml');
+    }
+
+    // 3. Проверка и создание mkdocs.default.yml (если не существует)
+    if (!await fileManager.pathExists(MKDOCS_DEFAULT_CONFIG_PATH)) {
+      console.log('mkdocs.default.yml not found, creating...');
+      try {
+        const currentConfig = await fs.promises.readFile(MKDOCS_CONFIG_PATH, 'utf8');
+        await fs.promises.writeFile(MKDOCS_DEFAULT_CONFIG_PATH, currentConfig);
+        console.log('Created mkdocs.default.yml from current config');
+      } catch (error) {
+        console.error('Failed to create default config:', error);
+        // Создаем пустой файл, если не удалось прочитать текущий конфиг
+        await fs.promises.writeFile(MKDOCS_DEFAULT_CONFIG_PATH, `site_name: My Docs\n`);
+      }
+    }
+
+    // 4. Проверка папки images
+    const imagesDir = path.join(fileManager.DOCS_DIR, 'images');
+    if (!await fileManager.pathExists(imagesDir)) {
+      console.log('Images directory not found, creating...');
+      await fs.promises.mkdir(imagesDir, { recursive: true });
     }
 
     console.log('Server initialized successfully');
@@ -53,6 +123,18 @@ async function initialize() {
 }
 
 // API Routes
+
+app.use('/api', require('./routes/api')); // Можно вынести в отдельный файл
+
+// Добавьте этот маршрут перед другими API маршрутами
+app.get('/favicon.ico', (req, res) => {
+  const faviconPath = path.join(__dirname, '../frontend/assets/favicon.ico');
+  if (fs.existsSync(faviconPath)) {
+    res.sendFile(faviconPath);
+  } else {
+    res.status(404).end();
+  }
+});
 
 // Получение списка файлов
 app.get('/editor/api/files', async (req, res) => {
@@ -473,14 +555,128 @@ app.delete('/editor/api/delete-folder', async (req, res) => {
     }
 });
 
-app.use('/mkdocs-project/docs/images', express.static(
-  path.join(__dirname, '../mkdocs-project/docs/images'),
-  {
-    setHeaders: (res) => {
-      res.set('Access-Control-Allow-Origin', '*');
-    }
-  }
+app.use('/assets', express.static(
+  path.join(__dirname, '../mkdocs-project/docs/assets'),
+  { setHeaders: (res) => res.set('Access-Control-Allow-Origin', '*') }
 ));
+
+// Маршруты для загрузки favicon и логотипа в тему mkdocs
+app.post('/editor/api/upload-favicon', async (req, res) => {
+  try {
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const image = req.files.image;
+    const uploadPath = path.join(ASSETS_DIR, 'favicon.ico');
+
+    // Создаём папку assets, если её нет
+    if (!fs.existsSync(ASSETS_DIR)) {
+      await fs.promises.mkdir(ASSETS_DIR, { recursive: true });
+    }
+
+    await image.mv(uploadPath);
+    res.json({ success: true, filename: 'favicon.ico' });
+  } catch (err) {
+    console.error('Favicon upload error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/editor/api/upload-logo', async (req, res) => {
+  try {
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const image = req.files.image;
+    const ext = path.extname(image.name).toLowerCase();
+
+    // Разрешаем только PNG
+    if (ext !== '.png') {
+      return res.status(400).json({ error: 'Only PNG files are allowed' });
+    }
+
+    const uploadPath = path.join(ASSETS_DIR, 'logo.png');
+
+    // Создаём папку assets, если её нет
+    if (!fs.existsSync(ASSETS_DIR)) {
+      await fs.promises.mkdir(ASSETS_DIR, { recursive: true });
+    }
+
+    // Удаляем старый логотип, если он есть
+    const oldLogoPath = path.join(ASSETS_DIR, 'logo.png');
+    if (fs.existsSync(oldLogoPath)) {
+      await fs.promises.unlink(oldLogoPath);
+    }
+
+    await image.mv(uploadPath);
+    res.json({ success: true, filename: 'logo.png' });
+  } catch (err) {
+    console.error('Logo upload error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Маршруты для работы с бэкапами
+app.get('/editor/api/backups', async (req, res) => {
+  try {
+    const backups = await SideModals.loadBackups();
+    res.json(backups);
+  } catch (err) {
+    console.error('Error getting backups:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/editor/api/backups', async (req, res) => {
+  try {
+    const backupName = await SideModals.createBackup();
+    res.json({ success: true, backup: backupName });
+  } catch (err) {
+    console.error('Error creating backup:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/editor/api/backups/download', async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) {
+      return res.status(400).json({ error: 'Backup name is required' });
+    }
+    
+    const filePath = path.join(BACKUP_DIR, name);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Backup not found' });
+    }
+    
+    res.download(filePath, name);
+  } catch (err) {
+    console.error('Error downloading backup:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/editor/api/backups', async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) {
+      return res.status(400).json({ error: 'Backup name is required' });
+    }
+    
+    const filePath = path.join(BACKUP_DIR, name);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Backup not found' });
+    }
+    
+    await fs.promises.unlink(filePath);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting backup:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Запуск сервера
 async function startServer() {
@@ -496,5 +692,47 @@ async function startServer() {
   }
 }
 
+// Получение конфига
+app.get('/editor/api/mkdocs-config', async (req, res) => {
+  try {
+    const content = await fs.promises.readFile(
+      path.join(__dirname, '../mkdocs-project/mkdocs.yml'), 
+      'utf8'
+    );
+    res.type('yaml').send(content);
+  } catch (error) {
+    console.error('Error reading config:', error);
+    res.status(500).json({ error: 'Failed to read config' });
+  }
+});
+
+// Получение дефолтного конфига
+app.get('/editor/api/mkdocs-default-config', async (req, res) => {
+  try {
+    const content = await fs.promises.readFile(
+      path.join(__dirname, '../mkdocs-project/mkdocs.default.yml'),
+      'utf8'
+    );
+    res.type('yaml').send(content);
+  } catch (error) {
+    console.error('Error reading default config:', error);
+    res.status(500).json({ error: 'Failed to read default config' });
+  }
+});
+
+// Сохранение конфига
+app.post('/editor/api/mkdocs-config', async (req, res) => {
+  try {
+    await fs.promises.writeFile(
+      path.join(__dirname, '../mkdocs-project/mkdocs.yml'),
+      req.body.content,
+      'utf8'
+    );
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error saving config:', error);
+    res.status(500).json({ error: 'Failed to save config' });
+  }
+});
 
 startServer();
