@@ -8,6 +8,7 @@ Table of Contents
 def example():
     pass
 ```
+![image.png](images/3cab905d-5ad6-47af-961f-6036f92fc530.png)
 Monitoring Proxmox with Grafana will be a good idea to see the actual resource utilization on our Proxmox cluster. Already we have covered in our previous guide about “[How to monitor Linux servers using Prometheus and Grafana](https://www.linuxsysadmins.com/prometheus-with-grafana-for-linux-server/)“. However, in this guide let’s focus on how to monitor the Proxmox virtualization platform with the help of Proxmox and influxDb.
 
 Proxmox supports Graphite and InfluxDB while comparing the advantage of using InfluxDB and graphite, InfluxDB owns the match. Let’s start to setup influx DB by following below guide.

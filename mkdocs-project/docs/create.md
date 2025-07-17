@@ -5,7 +5,7 @@ tags: [tag, tag2]
 # New File
 adasdasdasda
 Start editing here...
-![3 Game Pack! - Candy Land + Chutes and Ladders + Original Memory Game (U)-screenshot.png](images/test/e3c6c96d-89aa-4151-afcc-9d734d53a402.jpg)
+
 ![3 Game Pack! - Candy Land + Chutes and Ladders + Original Memory Game (U)-screenshot.png](images/a6212004-4ccc-493f-b019-1f749a5cf8cb.png)
 
 ![208d01ef-33b4-4f49-aab3-8d841c03a196.png](images/208d01ef-33b4-4f49-aab3-8d841c03a196.png)

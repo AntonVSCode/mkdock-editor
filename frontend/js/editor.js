@@ -19,10 +19,13 @@ const Editor = {
     const settings = this.loadSettings();
     
     // Инициализируем соответствующий парсер
+    const container = document.getElementById('markdown-editor-container');
+    if (container) container.innerHTML = '<textarea id="markdown-editor"></textarea>';
+    
     if (settings.markdownParser === 'marked') {
-      this.initWithMarked();  // Режим с использованием marked.js
+      this.initWithMarked();
     } else {
-      this.initWithCodeMirror(); // Режим с использованием CodeMirror (по умолчанию)
+      this.initWithCodeMirror();
     }
   },
 
@@ -42,6 +45,7 @@ const Editor = {
    * (более быстрый, но с базовой поддержкой Markdown)
    */
   initWithCodeMirror: function() {
+    console.log('Initializing CodeMirror editor');
     const container = document.getElementById('markdown-editor-container');
     const textarea = document.getElementById('markdown-editor');
     
@@ -119,6 +123,7 @@ const Editor = {
    * (более полная поддержка Markdown, но менее интерактивный)
    */
   initWithMarked: function() {
+      console.log('Initializing marked.js editor');
       const container = document.getElementById('markdown-editor-container');
       const textarea = document.getElementById('markdown-editor');
       
