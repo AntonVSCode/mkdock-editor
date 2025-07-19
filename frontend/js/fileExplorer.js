@@ -710,10 +710,15 @@ const FileExplorer = {
 
           if (!dirName) return;
 
+          // const response = await fetch('/editor/api/directories', {
+          //     method: 'POST',
+          //     headers: {'Content-Type': 'application/json'},
+          //     body: JSON.stringify({dirname: dirName})
+          // });
           const response = await fetch('/editor/api/directories', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({dirname: dirName})
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({dirname: dirName})
           });
 
           if (!response.ok) throw new Error('Failed to create directory');

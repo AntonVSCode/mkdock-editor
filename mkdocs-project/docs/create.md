@@ -1,4 +1,4 @@
-![29cccc87-cf16-494e-a72e-ff2aafee642c.jpg](images/29cccc87-cf16-494e-a72e-ff2aafee642c.jpg)---
+---
 tags: [tag, tag2]
 ---
 

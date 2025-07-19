@@ -192,30 +192,6 @@ app.post('/editor/api/files', async (req, res) => {
   }
 });
 
-// Создание новой директории
-app.post('/editor/api/directories', async (req, res) => {
-  try {
-    const { dirname } = req.body;
-    console.log('Creating directory:', dirname);
-    
-    if (!dirname) {
-      return res.status(400).json({ error: 'Directory name is required' });
-    }
-
-    const dirPath = path.join(fileManager.DOCS_DIR, dirname);
-    
-    if (await fileManager.pathExists(dirPath)) {
-      return res.status(400).json({ error: 'Directory already exists' });
-    }
-
-    await fs.promises.mkdir(dirPath, { recursive: true });
-    res.json({ success: true, path: dirname });
-  } catch (err) {
-    console.error('Error creating directory:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Чтение файла
 app.get('/editor/api/file', async (req, res) => {
   try {
@@ -373,7 +349,8 @@ app.post('/api/reload-mkdocs', async (req, res) => {
 // Галерея изображений
 app.get('/editor/api/images', async (req, res) => {
   try {
-    const imagesDir = path.join(__dirname, '../mkdocs-project/docs/images');
+    const subfolder = req.query.folder || '';
+    const imagesDir = path.join(__dirname, '../mkdocs-project/docs/images', subfolder);
     
     // Создаем папку, если не существует
     if (!fs.existsSync(imagesDir)) {
@@ -402,6 +379,193 @@ app.get('/editor/api/images', async (req, res) => {
     });
   }
 });
+
+// Маршрут для создания папки в галерее изображений
+// Создание новой директории
+// app.post('/editor/api/directories', async (req, res) => {
+//   try {
+//     const { dirname } = req.body;
+    
+//     if (!dirname) {
+//       return res.status(400).json({ error: 'Directory name is required' });
+//     }
+
+//     // Проверяем разрешённые пути (допускаем как с 'images/', так и без)
+//     const normalizedDirname = dirname.startsWith('images/') ? dirname : `images/${dirname}`;
+    
+//     const dirPath = path.join(__dirname, '../mkdocs-project/docs', normalizedDirname);
+    
+//     console.log('Attempting to create directory at:', dirPath); // Логирование
+    
+//     if (fs.existsSync(dirPath)) {
+//       return res.status(400).json({ error: 'Directory already exists' });
+//     }
+
+//     // Создаем все родительские папки
+//     await fs.promises.mkdir(dirPath, { recursive: true });
+    
+//     res.json({ 
+//       success: true, 
+//       path: normalizedDirname,
+//       message: 'Directory created successfully'
+//     });
+//   } catch (err) {
+//     console.error('Error creating directory:', err);
+//     res.status(500).json({ 
+//       error: err.message,
+//       stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+//     });
+//   }
+// });
+app.post('/editor/api/directories', async (req, res) => {
+  try {
+    const { dirname, context = 'files' } = req.body; // Добавляем параметр context
+    
+    if (!dirname) {
+      return res.status(400).json({ error: 'Directory name is required' });
+    }
+
+    let basePath;
+    if (context === 'images') {
+      // Для галереи изображений - создаем в images
+      basePath = path.join(__dirname, '../mkdocs-project/docs/images');
+    } else {
+      // Для файлового менеджера - создаем в корне docs
+      basePath = path.join(__dirname, '../mkdocs-project/docs');
+    }
+
+    // Удаляем префикс images/, если он есть (на случай, если фронт его добавил)
+    const normalizedDirname = dirname.replace(/^images\//, '');
+    const dirPath = path.join(basePath, normalizedDirname);
+    
+    console.log('Attempting to create directory at:', dirPath);
+    
+    if (fs.existsSync(dirPath)) {
+      return res.status(400).json({ error: 'Directory already exists' });
+    }
+
+    await fs.promises.mkdir(dirPath, { recursive: true });
+    
+    // Возвращаем правильный относительный путь в зависимости от контекста
+    const returnPath = context === 'images' 
+      ? `images/${normalizedDirname}` 
+      : normalizedDirname;
+    
+    res.json({ 
+      success: true, 
+      path: returnPath,
+      message: 'Directory created successfully'
+    });
+  } catch (err) {
+    console.error('Error creating directory:', err);
+    res.status(500).json({ 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
+// Проверка существования папки в галерея изображений
+app.get('/editor/api/folder-exists', async (req, res) => {
+  try {
+    const { path } = req.query;
+    if (!path) return res.status(400).json({ error: 'Path is required' });
+
+    // Декодируем путь
+    const decodedPath = decodeURIComponent(path);
+    
+    // Проверка безопасности пути
+    if (decodedPath.includes('../') || decodedPath.includes('..\\')) {
+      return res.status(400).json({ error: 'Invalid path' });
+    }
+
+    // Формируем полный путь (учитываем, что path уже содержит 'images/')
+    const fullPath = path.join(__dirname, '../mkdocs-project/docs', decodedPath);
+    
+    try {
+      const exists = fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory();
+      res.json(exists);
+    } catch (err) {
+      console.error('Filesystem error:', err);
+      res.status(500).json({ error: 'Filesystem operation failed' });
+    }
+  } catch (err) {
+    console.error('Endpoint error:', err);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
+// Удаление изображения из галереи
+app.delete('/editor/api/images', async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) {
+      return res.status(400).json({ error: 'Image name is required' });
+    }
+
+    // Исправленный путь - проверяем в папке images
+    const imagePath = path.join(__dirname, '../mkdocs-project/docs/images', name);
+    
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+
+    await fs.promises.unlink(imagePath);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting image:', err);
+    res.status(500).json({ 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
+app.get('/editor/api/images-and-folders', async (req, res) => {
+  try {
+    const folder = req.query.folder || '';
+    const fullPath = path.join(__dirname, '../mkdocs-project/docs/images', folder);
+    
+    // Проверяем существование папки
+    if (!fs.existsSync(fullPath)) {
+      return res.status(404).json({ error: 'Folder not found' });
+    }
+
+    // Читаем содержимое директории
+    const entries = await fs.promises.readdir(fullPath, { withFileTypes: true });
+    
+    const result = {
+      images: [],
+      folders: []
+    };
+
+    // Фильтруем изображения и папки
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    
+    entries.forEach(entry => {
+      if (entry.isDirectory()) {
+        result.folders.push({
+          name: entry.name,
+          path: path.join(folder, entry.name)
+        });
+      } else if (entry.isFile() && imageExtensions.includes(path.extname(entry.name).toLowerCase())) {
+        result.images.push({
+          displayName: entry.name,
+          storedName: path.join(folder, entry.name)
+        });
+      }
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error('Error loading folder content:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Перемещение файла
 app.post('/editor/api/move-file', async (req, res) => {
     try {
