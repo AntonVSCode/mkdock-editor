@@ -1,5 +1,3 @@
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const path = require('path');
@@ -10,6 +8,7 @@ const fileManager = require('./fileManager');
 const imageUpload = require('./imageUpload');
 const archiver = require('archiver');
 const ASSETS_DIR = path.join(__dirname, '../mkdocs-project/docs/assets');
+const { v4: uuidv4 } = require('uuid');
 
 const MKDOCS_CONFIG_PATH = path.join(__dirname, '../mkdocs-project/mkdocs.yml');
 const MKDOCS_DEFAULT_CONFIG_PATH = path.join(__dirname, '../mkdocs-project/mkdocs.default.yml');
@@ -26,7 +25,11 @@ app.use('/editor/api', apiRouter); // Дублирование для подде
 
 // Middleware
 app.use(express.json());
-app.use(fileUpload());
+//app.use(fileUpload());
+app.use(fileUpload({
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB лимит
+  useTempFiles: false // Работаем с файлами в памяти
+}));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Создаем папки если их нет
@@ -380,43 +383,7 @@ app.get('/editor/api/images', async (req, res) => {
   }
 });
 
-// Маршрут для создания папки в галерее изображений
-// Создание новой директории
-// app.post('/editor/api/directories', async (req, res) => {
-//   try {
-//     const { dirname } = req.body;
-    
-//     if (!dirname) {
-//       return res.status(400).json({ error: 'Directory name is required' });
-//     }
-
-//     // Проверяем разрешённые пути (допускаем как с 'images/', так и без)
-//     const normalizedDirname = dirname.startsWith('images/') ? dirname : `images/${dirname}`;
-    
-//     const dirPath = path.join(__dirname, '../mkdocs-project/docs', normalizedDirname);
-    
-//     console.log('Attempting to create directory at:', dirPath); // Логирование
-    
-//     if (fs.existsSync(dirPath)) {
-//       return res.status(400).json({ error: 'Directory already exists' });
-//     }
-
-//     // Создаем все родительские папки
-//     await fs.promises.mkdir(dirPath, { recursive: true });
-    
-//     res.json({ 
-//       success: true, 
-//       path: normalizedDirname,
-//       message: 'Directory created successfully'
-//     });
-//   } catch (err) {
-//     console.error('Error creating directory:', err);
-//     res.status(500).json({ 
-//       error: err.message,
-//       stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-//     });
-//   }
-// });
+// Маршрут для создания папки в галерее и файловом менеджере
 app.post('/editor/api/directories', async (req, res) => {
   try {
     const { dirname, context = 'files' } = req.body; // Добавляем параметр context
@@ -499,21 +466,108 @@ app.get('/editor/api/folder-exists', async (req, res) => {
 });
 
 // Удаление изображения из галереи
+// app.delete('/editor/api/images', async (req, res) => {
+//   try {
+//     const { name } = req.query;
+//     if (!name) {
+//       return res.status(400).json({ error: 'Image name is required' });
+//     }
+
+//     // Декодируем имя файла
+//     const decodedName = decodeURIComponent(name);
+    
+//     // Проверяем безопасность пути
+//     if (decodedName.includes('../') || decodedName.includes('..\\')) {
+//       return res.status(400).json({ error: 'Invalid file name' });
+//     }
+
+//     const imagePath = path.join(__dirname, '../mkdocs-project/docs/images', decodedName);
+    
+//     // Проверяем существование файла
+//     if (!fs.existsSync(imagePath)) {
+//       return res.status(404).json({ error: 'Image not found' });
+//     }
+
+//     // Проверяем, что это файл
+//     const stat = await fs.promises.stat(imagePath);
+//     if (!stat.isFile()) {
+//       return res.status(400).json({ error: 'Path is not a file' });
+//     }
+
+//     // Удаляем файл
+//     await fs.promises.unlink(imagePath);
+    
+//     // Удаляем метаданные (если есть)
+//     const metaPath = path.join(__dirname, '../mkdocs-project/docs/images/images_meta/_index.json');
+//     if (fs.existsSync(metaPath)) {
+//       const metaData = JSON.parse(await fs.promises.readFile(metaPath, 'utf8'));
+//       if (metaData[decodedName]) {
+//         delete metaData[decodedName];
+//         await fs.promises.writeFile(metaPath, JSON.stringify(metaData, null, 2));
+//       }
+//     }
+
+//     res.json({ success: true });
+//   } catch (err) {
+//     console.error('Error deleting image:', err);
+//     res.status(500).json({ 
+//       error: err.message,
+//       stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+//     });
+//   }
+// });
+
+// Измените маршрут удаления изображений
 app.delete('/editor/api/images', async (req, res) => {
   try {
-    const { name } = req.query;
+    const { name, folder = '' } = req.query;
     if (!name) {
       return res.status(400).json({ error: 'Image name is required' });
     }
 
-    // Исправленный путь - проверяем в папке images
-    const imagePath = path.join(__dirname, '../mkdocs-project/docs/images', name);
+    // Декодируем имя файла
+    const decodedName = decodeURIComponent(name);
     
+    // Проверяем безопасность пути
+    if (decodedName.includes('../') || decodedName.includes('..\\')) {
+      return res.status(400).json({ error: 'Invalid file name' });
+    }
+
+    // Формируем полный путь с учетом папки
+    const imagePath = path.join(
+      __dirname, 
+      '../mkdocs-project/docs/images', 
+      folder, 
+      decodedName
+    );
+    
+    // Проверяем существование файла
     if (!fs.existsSync(imagePath)) {
       return res.status(404).json({ error: 'Image not found' });
     }
 
+    // Проверяем, что это файл
+    const stat = await fs.promises.stat(imagePath);
+    if (!stat.isFile()) {
+      return res.status(400).json({ error: 'Path is not a file' });
+    }
+
+    // Удаляем файл
     await fs.promises.unlink(imagePath);
+    
+    // Удаляем метаданные (если есть)
+    const metaPath = path.join(__dirname, '../mkdocs-project/docs/images/images_meta/_index.json');
+    if (fs.existsSync(metaPath)) {
+      const metaData = JSON.parse(await fs.promises.readFile(metaPath, 'utf8'));
+      const imageKey = Object.keys(metaData).find(key => 
+        key.endsWith(path.basename(decodedName))
+      );
+      if (imageKey) {
+        delete metaData[imageKey];
+        await fs.promises.writeFile(metaPath, JSON.stringify(metaData, null, 2));
+      }
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting image:', err);
@@ -524,45 +578,100 @@ app.delete('/editor/api/images', async (req, res) => {
   }
 });
 
+// Удаление метаданных изображения
+app.delete('/editor/api/images-meta/:name', async (req, res) => {
+  try {
+    const { name } = req.params;
+    if (!name) {
+      return res.status(400).json({ error: 'Image name is required' });
+    }
+
+    const metaPath = path.join(__dirname, '../mkdocs-project/docs/images/images_meta/_index.json');
+    
+    // Читаем текущие метаданные
+    let metaData = {};
+    try {
+      metaData = JSON.parse(await fs.promises.readFile(metaPath, 'utf8'));
+    } catch (err) {
+      console.error('Error reading meta file:', err);
+      return res.status(404).json({ error: 'Meta file not found' });
+    }
+
+    // Удаляем запись о изображении
+    if (metaData[name]) {
+      delete metaData[name];
+      await fs.promises.writeFile(metaPath, JSON.stringify(metaData, null, 2));
+      return res.json({ success: true });
+    }
+
+    return res.status(404).json({ error: 'Image meta not found' });
+  } catch (err) {
+    console.error('Error deleting image meta:', err);
+    res.status(500).json({ 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
+
+// маршрут получения изображений
 app.get('/editor/api/images-and-folders', async (req, res) => {
   try {
     const folder = req.query.folder || '';
     const fullPath = path.join(__dirname, '../mkdocs-project/docs/images', folder);
     
-    // Проверяем существование папки
-    if (!fs.existsSync(fullPath)) {
-      return res.status(404).json({ error: 'Folder not found' });
-    }
-
-    // Читаем содержимое директории
+    // Создаем папку если не существует
+    await fs.promises.mkdir(fullPath, { recursive: true });
+    
+    // Читаем содержимое
     const entries = await fs.promises.readdir(fullPath, { withFileTypes: true });
+    
+    // Читаем метаданные
+    const metaPath = path.join(__dirname, '../mkdocs-project/docs/images/_meta/images.json');
+    let allMeta = {};
+    
+    try {
+      if (await fs.promises.access(metaPath).then(() => true).catch(() => false)) {
+        allMeta = JSON.parse(await fs.promises.readFile(metaPath, 'utf8'));
+      }
+    } catch (err) {
+      console.error('Error reading meta:', err);
+    }
     
     const result = {
       images: [],
       folders: []
     };
-
+    
     // Фильтруем изображения и папки
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     
-    entries.forEach(entry => {
+    for (const entry of entries) {
       if (entry.isDirectory()) {
         result.folders.push({
           name: entry.name,
           path: path.join(folder, entry.name)
         });
       } else if (entry.isFile() && imageExtensions.includes(path.extname(entry.name).toLowerCase())) {
-        result.images.push({
+        const storedName = path.join(folder, entry.name);
+        const meta = allMeta[storedName] || {
           displayName: entry.name,
-          storedName: path.join(folder, entry.name)
-        });
+          storedName,
+          originalName: entry.name
+        };
+        result.images.push(meta);
       }
-    });
-
+    }
+    
     res.json(result);
+    
   } catch (err) {
     console.error('Error loading folder content:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 
@@ -838,6 +947,214 @@ app.delete('/editor/api/backups', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting backup:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Маршрут для загрузки в галерею
+app.post('/editor/api/upload-to-gallery', async (req, res) => {
+  try {
+    if (!req.files?.image) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Получаем folder из тела запроса (может быть undefined или пустой строкой)
+    const targetFolder = req.body.folder || '';
+    const imagesDir = path.join(__dirname, '../mkdocs-project/docs/images');
+    const fullPath = path.join(imagesDir, targetFolder);
+    const image = req.files.image;
+
+    // Создаем папку если не существует с улучшенной обработкой ошибок
+    try {
+      await fs.promises.mkdir(fullPath, { recursive: true });
+      console.log(`Directory created/verified: ${fullPath}`);
+    } catch (err) {
+      console.error(`Error creating directory ${fullPath}:`, err);
+      throw new Error('Failed to create target directory');
+    }
+
+    // Генерируем уникальное имя
+    const originalName = image.name;
+    const ext = path.extname(originalName);
+    const uniqueName = `${uuidv4()}${ext}`;
+    const targetPath = path.join(fullPath, uniqueName);
+
+    // Логирование перед сохранением
+    console.log(`Attempting to save to: ${targetPath}`);
+
+    // Сохраняем файл
+    await image.mv(targetPath);
+
+    // Получаем метаданные
+    const stats = await fs.promises.stat(targetPath);
+    let dimensions = { width: 0, height: 0 };
+    try {
+      dimensions = sizeOf(targetPath);
+    } catch (e) {
+      console.error('Error getting dimensions:', e);
+    }
+
+    const meta = {
+      originalName,
+      storedName: uniqueName,
+      path: targetFolder ? `images/${targetFolder}/${uniqueName}` : `images/${uniqueName}`,
+      size: stats.size,
+      uploadDate: new Date().toISOString(),
+      dimensions
+    };
+
+    // Сохраняем метаданные
+    await saveImageMeta(meta);
+
+    res.json({
+      success: true,
+      meta
+    });
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+//////////////////////////////////////////////////
+async function appendToJson(filePath, key, data) {
+  let content = {};
+  try {
+    content = JSON.parse(await fs.readFile(filePath, 'utf8'));
+  } catch (e) {
+    // Файл не существует - это нормально для первого запуска
+  }
+  
+  content[key] = data;
+  await fs.writeFile(filePath, JSON.stringify(content, null, 2));
+}
+
+//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+async function saveImageMeta(meta) {
+  const META_DIR = path.join(__dirname, '../mkdocs-project/docs/images/images_meta');
+  
+  try {
+    await fs.promises.mkdir(META_DIR, { recursive: true });
+    
+    const metaPath = path.join(META_DIR, '_index.json');
+    let allMeta = {};
+    
+    try {
+      const data = await fs.promises.readFile(metaPath, 'utf8');
+      allMeta = JSON.parse(data);
+    } catch (e) {
+      console.log('Creating new meta file');
+    }
+    
+    allMeta[meta.storedName] = meta;
+    
+    await fs.promises.writeFile(
+      metaPath,
+      JSON.stringify(allMeta, null, 2),
+      'utf8'
+    );
+    
+  } catch (err) {
+    console.error('Error in saveImageMeta:', err);
+    throw err;
+  }
+}
+
+// Endpoint для получения метаданных
+app.get('/editor/api/images-meta', async (req, res) => {
+  const { folder = '', page = 1, limit = 50 } = req.query;
+  
+  try {
+    const metaFile = path.join(__dirname, '../mkdocs-project/docs/images/images_meta/_index.json');
+    
+    let content = {};
+    try {
+      content = JSON.parse(await fs.promises.readFile(metaFile, 'utf8'));
+    } catch (err) {
+      console.error('Error reading meta file:', err);
+      return res.json({ items: [], total: 0 });
+    }
+    
+    // Фильтрация по папке
+    let items = Object.values(content);
+    if (folder) {
+      items = items.filter(item => 
+        item.path.startsWith(`images/${folder}/`) || 
+        (folder === '' && !item.path.includes('/'))
+      );
+    }
+    
+    // Пагинация
+    const start = (page - 1) * limit;
+    const paginatedItems = items.slice(start, start + limit);
+    
+    res.json({
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: items.length,
+      items: paginatedItems
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+//
+//
+//
+////////////////////////////////////////////////////
+async function readJsonChunk(filePath, page, limit) {
+  // Реализация потокового чтения JSON
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  
+  return new Promise((resolve) => {
+    const items = [];
+    const stream = fs.createReadStream(filePath, { 
+      encoding: 'utf8',
+      start: findLineStart(filePath, start),
+      end: findLineStart(filePath, end)
+    });
+    
+    stream.on('data', (chunk) => {
+      // Парсим только нужную часть
+      const partial = `{${chunk.split('{').pop().split('}')[0]}}`;
+      try {
+        const data = JSON.parse(partial);
+        items.push(...Object.values(data));
+      } catch (e) {}
+    });
+    
+    stream.on('end', () => resolve(items));
+  });
+}
+
+// Маршрут для получения папок
+app.get('/editor/api/folders', async (req, res) => {
+  try {
+    const folderPath = req.query.path || '';
+    const fullPath = path.join(__dirname, '../mkdocs-project/docs/images', folderPath);
+    
+    await fs.promises.mkdir(fullPath, { recursive: true });
+    
+    const entries = await fs.promises.readdir(fullPath, { withFileTypes: true });
+    
+    const folders = entries
+      .filter(entry => entry.isDirectory())
+      .map(entry => ({
+        name: entry.name,
+        path: folderPath ? `${folderPath}/${entry.name}` : entry.name
+      }));
+    
+    res.json(folders);
+  } catch (err) {
+    console.error('Error loading folders:', err);
     res.status(500).json({ error: err.message });
   }
 });

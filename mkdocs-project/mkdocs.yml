@@ -26,6 +26,8 @@ theme:
     - navigation.tracking
     - search.highlight
     - search.suggest
+    - navigation.path
+    - navigation.footer
 markdown_extensions:
   - codehilite:
       use_pygments: true

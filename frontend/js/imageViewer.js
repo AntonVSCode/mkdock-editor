@@ -6,6 +6,9 @@ class ImageViewer {
     this.imageCache = {};
     this.currentPath = ''; // Текущий путь
     this.folders = [];    // Список папок
+    this.currentPage = 1;
+    this.loadedPages = new Set();
+    this.metaCache = new Map();
     
     // Явная привязка методов
     this.show = this.show.bind(this);
@@ -26,22 +29,79 @@ class ImageViewer {
 
   async loadImageList() {
     try {
-      const response = await fetch(`/editor/api/images-and-folders?folder=${encodeURIComponent(this.currentPath)}`, {
-        headers: { 'Accept': 'application/json' }
+      this.showSkeletons();
+      
+      // Загружаем изображения с пагинацией и фильтрацией по папке
+      const imagesResponse = await fetch(
+        `/editor/api/images-meta?folder=${encodeURIComponent(this.currentPath)}&page=${this.currentPage}`
+      );
+      
+      if (!imagesResponse.ok) throw new Error(`Server error: ${imagesResponse.status}`);
+      
+      const imagesData = await imagesResponse.json();
+
+      // Фильтруем изображения по текущей папке
+      const filteredImages = (imagesData.items || []).filter(img => {
+        const imgFolder = img.path.split('/').slice(0, -1).join('/');
+        return imgFolder === `images/${this.currentPath}` || 
+              (this.currentPath === '' && imgFolder === 'images');
       });
       
-      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      // Для первой страницы заменяем, для последующих - добавляем
+      if (this.currentPage === 1) {
+        this.images = filteredImages;
+      } else {
+        this.images = [...this.images, ...filteredImages];
+      }
       
-      const data = await response.json();
-      this.images = data.images || [];
-      this.folders = data.folders || [];
+      // Загружаем папки и исключаем images_meta
+      const foldersResponse = await fetch(
+        `/editor/api/folders?path=${encodeURIComponent(this.currentPath)}`
+      );
+      
+      if (foldersResponse.ok) {
+        this.folders = (await foldersResponse.json()).filter(folder => 
+          folder.name !== 'images_meta'
+        );
+      } else {
+        this.folders = [];
+      }
       
       await this.showImageList();
       this.updateBreadcrumbs(this.currentPath);
+      
+      if (!this.loadedPages.has(this.currentPage)) {
+        this.setupInfiniteScroll();
+        this.loadedPages.add(this.currentPage);
+      }
     } catch (error) {
       console.error('Failed to load images:', error);
       showNotification('Не удалось загрузить содержимое галереи', 'error');
     }
+  }
+
+  // Добавляем новые методы
+  showSkeletons() {
+    const container = document.querySelector('.thumbnail-grid');
+    if (!container) return;
+    
+    const skeleton = `
+      <div class="image-skeleton" style="height: 150px; background: #f0f0f0; border-radius: 5px;"></div>
+    `.repeat(10);
+    
+    container.innerHTML += skeleton;
+  }
+
+  setupInfiniteScroll() {
+    const container = document.getElementById('image-list-container');
+    if (!container) return;
+    
+    container.onscroll = () => {
+      if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
+        this.currentPage++;
+        this.loadImageList();
+      }
+    };
   }
 
 // Вспомогательный метод для извлечения имени файла
@@ -89,16 +149,13 @@ extractFileName(fullPath) {
 
 createModal() {
   return new Promise((resolve) => {
-    // Проверка на существование модального окна
     if (this.modal && document.body.contains(this.modal)) {
-      //console.log('Modal already exists');
       resolve();
       return;
     }
 
-    //console.log('Creating new modal');
     this.modal = document.createElement('div');
-    this.modal.className = 'image-viewer-modal'; // Только класс, без inline-стилей
+    this.modal.className = 'image-viewer-modal';
     this.modal.innerHTML = `
       <div class="image-viewer-content">
         <div class="image-viewer-header">
@@ -107,15 +164,32 @@ createModal() {
             <button id="create-folder-btn" class="icon-btn" title="Создать папку">
               <i class="mdi mdi-folder-plus"></i>
             </button>
+            <button id="gallery-upload-btn" class="icon-btn" title="Загрузить изображение">
+              <i class="mdi mdi-image-plus"></i>
+            </button>
           </div>
           <button class="close-btn">&times;</button>
         </div>
         <div class="current-folder">
           <div class="gallery-breadcrumbs"></div>
-          <!--<span class="folder-path">images/</span>-->
         </div>
-        <div class="image-list-container" id="image-list-container">
-          <div class="thumbnail-grid"></div>
+        <div class="image-viewer-body">
+          <div class="image-list-container" id="image-list-container">
+            <div class="thumbnail-grid"></div>
+          </div>
+          <div class="image-details-panel">
+            <div class="image-preview-container">
+              <img id="image-preview" src="" alt="Preview">
+            </div>
+            <div class="image-info">
+              <h3>Информация о файле</h3>
+              <div class="info-row"><strong>Имя:</strong> <span id="info-name">-</span></div>
+              <div class="info-row"><strong>Размер:</strong> <span id="info-size">-</span></div>
+              <div class="info-row"><strong>Разрешение:</strong> <span id="info-dimensions">-</span></div>
+              <div class="info-row"><strong>Дата загрузки:</strong> <span id="info-date">-</span></div>
+              <div class="info-row"><strong>Путь:</strong> <span id="info-path">-</span></div>
+            </div>
+          </div>
         </div>
         <div class="image-controls">
           <button id="insert-btn" disabled>Вставить в документ</button>
@@ -147,6 +221,11 @@ createModal() {
       this.createFolder();
     });
 
+    // Обработчик для загрузки изображений
+    document.getElementById('gallery-upload-btn').addEventListener('click', () => {
+      this.uploadImageToGallery();
+    });
+
     resolve();
   });
 }
@@ -162,12 +241,95 @@ async navigateToFolder(folderPath) {
   }
 }
 
+async uploadImageToGallery() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const loading = showNotification('Загрузка изображения...', 'info', 0);
+    
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      // Явно добавляем folder, даже если он пустой
+      formData.append('folder', this.currentPath || '');
+      
+      const response = await fetch('/editor/api/upload-to-gallery', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Upload failed');
+      }
+      
+      const result = await response.json();
+      
+      // Обновляем галерею
+      this.currentPage = 1;
+      this.loadedPages.clear();
+      await this.loadImageList();
+      
+      showNotification('Изображение успешно загружено', 'success');
+      
+    } catch (error) {
+      console.error('Upload error:', error);
+      showNotification(`Ошибка загрузки: ${error.message}`, 'error');
+    } finally {
+      if (loading && loading.remove) {
+        loading.remove();
+      }
+    }
+  };
+  
+  input.click();
+}
+
+updateImageInfo(image) {
+  if (!image) {
+    // Скрываем или очищаем панель информации, если изображение не выбрано
+    const detailsPanel = document.querySelector('.image-details-panel');
+    if (detailsPanel) {
+      detailsPanel.innerHTML = '<p>Выберите изображение для просмотра информации</p>';
+    }
+    return;
+  }
+
+  // Обновляем информацию на панели
+  document.getElementById('info-name').textContent = image.originalName || '-';
+  document.getElementById('info-size').textContent = image.size ? `${(image.size / 1024).toFixed(2)} KB` : '-';
+  
+  if (image.dimensions && image.dimensions.width && image.dimensions.height) {
+    document.getElementById('info-dimensions').textContent = `${image.dimensions.width}×${image.dimensions.height}`;
+  } else {
+    document.getElementById('info-dimensions').textContent = '-';
+  }
+  
+  document.getElementById('info-date').textContent = image.uploadDate ? 
+    new Date(image.uploadDate).toLocaleString() : '-';
+  document.getElementById('info-path').textContent = image.path || '-';
+  
+  // Обновляем превью
+  const previewImg = document.getElementById('image-preview');
+  if (image.path) {
+    previewImg.src = `/${image.path}`;
+  } else {
+    previewImg.src = '';
+  }
+}
+
 // Метод для обновления состояния кнопок
 updateButtonsState() {
   const insertBtn = document.getElementById('insert-btn');
   const deleteBtn = document.getElementById('delete-btn');
   
-  if (this.currentIndex !== undefined && this.images.length > 0) {
+  if (this.currentImage) {
     insertBtn.disabled = false;
     deleteBtn.disabled = false;
   } else {
@@ -221,118 +383,95 @@ async createFolder() {
 
 // Метод для удаления изображения
 async deleteImage() {
-  if (this.currentIndex === undefined || !this.images[this.currentIndex]) {
+  if (!this.currentImage) {
     showNotification('Сначала выберите изображение', 'error');
-    return false;
+    return;
   }
 
-  const image = this.images[this.currentIndex];
-  if (!image || !image.storedName) {
-    showNotification('Не удалось определить изображение', 'error');
-    return false;
-  }
+  const image = this.currentImage;
+  const confirmed = confirm(`Удалить изображение "${image.originalName}"?`);
+  if (!confirmed) return;
 
-  // Создаем модальное окно подтверждения
-  const modal = document.createElement('div');
-  modal.className = 'confirmation-modal';
-  modal.innerHTML = `
-    <div class="confirmation-content">
-      <h3>Удалить изображение?</h3>
-      <p>Вы уверены, что хотите удалить "${image.displayName}"?</p>
-      <div class="confirmation-buttons">
-        <button class="btn-secondary">Отмена</button>
-        <button class="btn-danger">Удалить</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  // Ожидаем решения пользователя
-  return new Promise((resolve) => {
-    modal.querySelector('.btn-secondary').addEventListener('click', () => {
-      modal.remove();
-      resolve(false);
-    });
+  try {
+    // Получаем путь к папке из image.path
+    const folderPath = image.path.split('/').slice(1, -1).join('/');
     
-    modal.querySelector('.btn-danger').addEventListener('click', async () => {
-      try {
-        const response = await fetch(`/editor/api/images?name=${encodeURIComponent(image.storedName)}`, {
-          method: 'DELETE'
-        });
-
-        if (!response.ok) throw new Error('Не удалось удалить изображение');
-
-        this.images.splice(this.currentIndex, 1);
-        this.currentIndex = Math.min(this.currentIndex, this.images.length - 1);
-        await this.showImageList();
-        showNotification('Изображение удалено', 'success');
-        resolve(true);
-      } catch (error) {
-        console.error('Error deleting image:', error);
-        showNotification(`Ошибка при удалении: ${error.message}`, 'error');
-        resolve(false);
-      } finally {
-        modal.remove();
-      }
+    // Удаляем само изображение
+    const deleteResponse = await fetch(`/editor/api/images?name=${encodeURIComponent(image.storedName)}&folder=${encodeURIComponent(folderPath)}`, {
+      method: 'DELETE'
     });
-  });
+
+    if (!deleteResponse.ok) {
+      const errorData = await deleteResponse.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Не удалось удалить изображение');
+    }
+
+    // Удаляем из локального списка
+    this.images = this.images.filter(img => img.storedName !== image.storedName);
+    this.currentImage = null;
+    
+    // Обновляем список
+    await this.showImageList();
+    showNotification('Изображение удалено', 'success');
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    showNotification(`Ошибка при удалении: ${error.message}`, 'error');
+  }
 }
 
 async showImageList() {
   const container = document.getElementById('image-list-container');
-  if (!container) return;
-
-  if (this.images.length === 0 && this.folders.length === 0) {
-    container.innerHTML = '<p>Папка пуста</p>';
+  if (!container) {
+    console.error('Container not found!');
     return;
   }
+
+  // Очищаем контейнер
+  container.innerHTML = '';
+
+  // Создаем grid-контейнер
+  const grid = document.createElement('div');
+  grid.className = 'thumbnail-grid';
   
-  // Проверка данных
-  if ((!this.images || !Array.isArray(this.images)) && (!this.folders || !Array.isArray(this.folders))) {
-    container.innerHTML = '<p>Ошибка: некорректные данные</p>';
-    return;
+  // Добавляем папки
+  if (this.folders.length > 0) {
+    this.folders.forEach(folder => {
+      const folderCard = document.createElement('div');
+      folderCard.className = 'thumbnail-card folder-card';
+      folderCard.innerHTML = `
+        <div class="thumbnail-preview">
+          <i class="mdi mdi-folder"></i>
+        </div>
+        <div class="thumbnail-name">${folder.name}</div>
+      `;
+      folderCard.addEventListener('click', () => this.navigateToFolder(folder.path));
+      grid.appendChild(folderCard);
+    });
   }
 
-  if ((!this.images || this.images.length === 0) && (!this.folders || this.folders.length === 0)) {
-    container.innerHTML = '<p>Нет доступных изображений или папок</p>';
-    return;
+  // Добавляем изображения
+  if (this.images.length > 0) {
+    this.images.forEach(image => {
+      const imgCard = document.createElement('div');
+      imgCard.className = 'thumbnail-card';
+      imgCard.innerHTML = `
+        <div class="thumbnail-preview">
+          <img src="/${image.path}" alt="${image.originalName}" 
+              onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\"height:100%;display:flex;align-items:center;justify-content:center;\"><i class=\"mdi mdi-image-broken\" style=\"font-size:40px;color:#ccc;\"></i></div>';">
+        </div>
+        <div class="thumbnail-name">${image.originalName}</div>
+      `;
+      imgCard.addEventListener('click', () => this.selectImage(image));
+      grid.appendChild(imgCard);
+    });
   }
 
-  try {
-    // Показываем индикатор загрузки
-    container.innerHTML = '<p>Загрузка...</p>';
-    
-    // Создаем контейнер для миниатюр
-    const grid = document.createElement('div');
-    grid.className = 'thumbnail-grid';
-    grid.style.display = 'grid';
-    grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
-    grid.style.gap = '15px';
-    grid.style.padding = '10px';
-    
-    // Сначала показываем папки
-    if (this.folders && this.folders.length > 0) {
-      this.folders.forEach(folder => {
-        const folderCard = this.createFolderCard(folder);
-        grid.appendChild(folderCard);
-      });
-    }
-    
-    // Затем показываем изображения
-    if (this.images && this.images.length > 0) {
-      await Promise.all(this.images.map(async (image, index) => {
-        const imageCard = this.createImageCard(image, index);
-        grid.appendChild(imageCard);
-      }));
-    }
-    
-    container.innerHTML = '';
-    container.appendChild(grid);
-    
-  } catch (error) {
-    container.innerHTML = '<p>Ошибка при загрузке содержимого</p>';
+  // Если нет данных
+  if (this.folders.length === 0 && this.images.length === 0) {
+    grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:20px;">Папка пуста</p>';
   }
+
+  container.appendChild(grid);
 }
 
 createFolderCard(folder) {
@@ -387,7 +526,97 @@ createFolderCard(folder) {
   return card;
 }
 
-createImageCard(image, index) {
+// createImageCard(image, index) {
+//   const card = document.createElement('div');
+//   card.className = 'thumbnail-card image-card';
+//   card.dataset.index = index;
+//   card.style.border = '1px solid #ddd';
+//   card.style.borderRadius = '5px';
+//   card.style.padding = '8px';
+//   card.style.textAlign = 'center';
+//   card.style.cursor = 'pointer';
+//   card.style.transition = 'all 0.2s';
+  
+//   card.addEventListener('mouseenter', () => {
+//     card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+//   });
+  
+//   card.addEventListener('mouseleave', () => {
+//     card.style.boxShadow = 'none';
+//   });
+  
+//   // Название изображения
+//   const name = document.createElement('div');
+//   name.textContent = image.displayName || image.originalName || `Изображение ${index + 1}`;
+//   name.style.marginTop = '8px';
+//   name.style.fontSize = '14px';
+//   name.style.whiteSpace = 'nowrap';
+//   name.style.overflow = 'hidden';
+//   name.style.textOverflow = 'ellipsis';
+  
+//   // Контейнер для превью
+//   const preview = document.createElement('div');
+//   preview.style.height = '100px';
+//   preview.style.display = 'flex';
+//   preview.style.alignItems = 'center';
+//   preview.style.justifyContent = 'center';
+//   preview.style.backgroundColor = '#f5f5f5';
+//   preview.style.borderRadius = '3px';
+//   preview.style.overflow = 'hidden';
+  
+//   // Элемент изображения
+//   const img = document.createElement('img');
+//   img.style.maxWidth = '100%';
+//   img.style.maxHeight = '100%';
+//   img.style.objectFit = 'contain';
+  
+//   // Загружаем изображение
+//   try {
+//     const imgUrl = `${window.location.origin}/images/${image.storedName || image.filename}`;
+//     img.src = imgUrl;
+    
+//     img.onerror = () => {
+//       // Заглушка если изображение не загрузилось
+//       preview.innerHTML = `
+//         <div style="color:#666; font-size:12px;">
+//           <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#999">
+//             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+//             <polyline points="9 22 9 12 15 12 15 22"></polyline>
+//           </svg>
+//           <p>Не удалось загрузить</p>
+//         </div>
+//       `;
+//     };
+//   } catch (error) {
+//     console.error('Error loading preview:', error);
+//   }
+  
+//   preview.appendChild(img);
+//   card.appendChild(preview);
+//   card.appendChild(name);
+  
+//   // Обработчик клика
+//   card.addEventListener('click', (e) => {
+//     e.preventDefault();
+    
+//     // Убираем выделение у всех карточек
+//     document.querySelectorAll('.image-card').forEach(c => {
+//       c.classList.remove('selected');
+//     });
+    
+//     // Выделяем текущую карточку
+//     card.classList.add('selected');
+    
+//     // Запоминаем выбранное изображение
+//     this.currentIndex = index;
+    
+//     // Обновляем состояние кнопок
+//     this.updateButtonsState();
+//   });
+  
+//   return card;
+// }
+async createImageCard(image, index) {
   const card = document.createElement('div');
   card.className = 'thumbnail-card image-card';
   card.dataset.index = index;
@@ -397,14 +626,31 @@ createImageCard(image, index) {
   card.style.textAlign = 'center';
   card.style.cursor = 'pointer';
   card.style.transition = 'all 0.2s';
+  card.style.position = 'relative'; // Для позиционирования tooltip
   
-  card.addEventListener('mouseenter', () => {
-    card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-  });
+  // Добавляем tooltip с метаданными
+  const tooltip = document.createElement('div');
+  tooltip.className = 'image-tooltip';
+  tooltip.style.display = 'none';
+  tooltip.style.position = 'absolute';
+  tooltip.style.bottom = '100%';
+  tooltip.style.left = '50%';
+  tooltip.style.transform = 'translateX(-50%)';
+  tooltip.style.backgroundColor = 'white';
+  tooltip.style.padding = '8px';
+  tooltip.style.borderRadius = '4px';
+  tooltip.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+  tooltip.style.zIndex = '100';
+  tooltip.style.minWidth = '200px';
+  tooltip.style.textAlign = 'left';
+  tooltip.style.whiteSpace = 'nowrap';
   
-  card.addEventListener('mouseleave', () => {
-    card.style.boxShadow = 'none';
-  });
+  tooltip.innerHTML = `
+    <div><strong>Имя:</strong> ${image.displayName || image.originalName || `Изображение ${index + 1}`}</div>
+    <div><strong>Размер:</strong> ${image.size ? (image.size / 1024).toFixed(2) + ' KB' : 'неизвестно'}</div>
+    ${image.dimensions ? `<div><strong>Разрешение:</strong> ${image.dimensions.width}x${image.dimensions.height}</div>` : ''}
+    ${image.uploadDate ? `<div><strong>Загружено:</strong> ${new Date(image.uploadDate).toLocaleString()}</div>` : ''}
+  `;
   
   // Название изображения
   const name = document.createElement('div');
@@ -433,7 +679,8 @@ createImageCard(image, index) {
   
   // Загружаем изображение
   try {
-    const imgUrl = `${window.location.origin}/images/${image.storedName || image.filename}`;
+    const imgPath = image.path || `images/${image.storedName}`;
+    const imgUrl = `${window.location.origin}/${imgPath}`;
     img.src = imgUrl;
     
     img.onerror = () => {
@@ -455,6 +702,18 @@ createImageCard(image, index) {
   preview.appendChild(img);
   card.appendChild(preview);
   card.appendChild(name);
+  card.appendChild(tooltip);
+  
+  // Обработчики hover для tooltip и эффектов
+  card.addEventListener('mouseenter', () => {
+    tooltip.style.display = 'block';
+    card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+  });
+  
+  card.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+    card.style.boxShadow = 'none';
+  });
   
   // Обработчик клика
   card.addEventListener('click', (e) => {
@@ -479,47 +738,6 @@ createImageCard(image, index) {
 }
 
 // Хлебные крошки
-// updateBreadcrumbs(currentPath) {
-//   if (!this.modal) return; // Добавьте эту проверку
-
-//   const breadcrumbsContainer = this.modal.querySelector('.gallery-breadcrumbs');
-//   if (!breadcrumbsContainer) return;
-  
-//   const parts = currentPath.split('/').filter(Boolean);
-//   let pathSoFar = '';
-  
-//   breadcrumbsContainer.innerHTML = '';
-  
-//   // Добавляем корневую папку
-//   const rootCrumb = document.createElement('span');
-//   rootCrumb.className = 'gallery-crumb';
-//   rootCrumb.innerHTML = '<i class="mdi mdi-folder"></i> images';
-//   rootCrumb.addEventListener('click', () => {
-//     this.navigateToFolder('');
-//     //document.querySelector('.folder-path').textContent = 'images/';
-//   });
-//   breadcrumbsContainer.appendChild(rootCrumb);
-  
-//   // Добавляем остальные части пути
-//   parts.forEach(part => {
-//     pathSoFar = pathSoFar ? `${pathSoFar}/${part}` : part;
-    
-//     const separator = document.createElement('span');
-//     separator.className = 'gallery-separator';
-//     separator.textContent = '/';
-//     breadcrumbsContainer.appendChild(separator);
-    
-//     const crumb = document.createElement('span');
-//     crumb.className = 'gallery-crumb';
-//     crumb.innerHTML = `<i class="mdi mdi-folder"></i> ${part}`;
-//     crumb.addEventListener('click', () => {
-//       this.navigateToFolder(pathSoFar);
-//       document.querySelector('.folder-path').textContent = `images/${pathSoFar}`;
-//     });
-//     breadcrumbsContainer.appendChild(crumb);
-//   });
-// }
-
 updateBreadcrumbs(currentPath) {
   if (!this.modal) return;
 
@@ -637,20 +855,45 @@ hide() {
     this.preloadImage(prevIndex);
   }
 
+  // insertImage() {
+  //   if (this.currentIndex === undefined || !this.images[this.currentIndex]) {
+  //     showNotification('Сначала выберите изображение', 'error');
+  //     return;
+  //   }
+
+  //   const image = this.images[this.currentIndex];
+  //   const markdown = `![${image.displayName}](images/${image.storedName})`;
+    
+  //   if (typeof Editor !== 'undefined' && Editor.insertAtCursor) {
+  //     Editor.insertAtCursor(markdown);
+  //     this.hide();
+  //   } else {
+  //     showNotification('Редактор не доступен', 'error');
+  //   }
+  // }
   insertImage() {
-    if (this.currentIndex === undefined || !this.images[this.currentIndex]) {
+    if (!this.currentImage) {
       showNotification('Сначала выберите изображение', 'error');
       return;
     }
 
-    const image = this.images[this.currentIndex];
-    const markdown = `![${image.displayName}](images/${image.storedName})`;
+    const image = this.currentImage;
+    const markdown = `![${image.originalName || image.displayName}](${image.path})`;
     
     if (typeof Editor !== 'undefined' && Editor.insertAtCursor) {
       Editor.insertAtCursor(markdown);
       this.hide();
     } else {
-      showNotification('Редактор не доступен', 'error');
+      // Fallback для случаев, когда Editor не доступен
+      const textarea = document.querySelector('textarea, [contenteditable]');
+      if (textarea) {
+        const selectionStart = textarea.selectionStart;
+        const value = textarea.value || textarea.innerText;
+        textarea.value = value.slice(0, selectionStart) + markdown + value.slice(selectionStart);
+        textarea.dispatchEvent(new Event('input'));
+      } else {
+        showNotification('Редактор не доступен', 'error');
+      }
     }
   }
 
@@ -669,10 +912,58 @@ hide() {
     });
   }
 
+  selectImage(image) {
+    // Снимаем выделение со всех карточек
+    document.querySelectorAll('.thumbnail-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+
+    // Находим карточку с этим изображением
+    const cards = document.querySelectorAll('.thumbnail-card');
+    for (const card of cards) {
+      const img = card.querySelector('img');
+      if (img && img.src.includes(image.storedName || encodeURIComponent(image.originalName))) {
+        // Добавляем класс selected
+        card.classList.add('selected');
+        
+        // Сохраняем выбранное изображение
+        this.currentImage = image;
+        
+        // Обновляем состояние кнопок
+        this.updateButtonsState();
+        
+        // Обновляем информацию о файле
+        this.updateImageInfo(image);
+        break;
+      }
+    }
+  }
+
 }
+
+// Web Worker для обработки метаданных
+const setupMetaWorker = () => {
+  if (window.Worker) {
+    const metaWorker = new Worker('js/meta-worker.js');
+    
+    metaWorker.onmessage = (e) => {
+      if (e.data.error) {
+        console.error('Worker error:', e.data.error);
+      } else {
+        // Обработка данных от воркера
+        window.imageViewer?.processMetaData?.(e.data);
+      }
+    };
+    
+    return metaWorker;
+  }
+  return null;
+};
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
   window.imageViewer = new ImageViewer();
+  window.imageViewer.metaWorker = setupMetaWorker(); // Сохраняем ссылку на воркер
   window.imageViewer.init();
 });
+

@@ -45,7 +45,7 @@ const Editor = {
    * (более быстрый, но с базовой поддержкой Markdown)
    */
   initWithCodeMirror: function() {
-    console.log('Initializing CodeMirror editor');
+    //console.log('Initializing CodeMirror editor');
     const container = document.getElementById('markdown-editor-container');
     const textarea = document.getElementById('markdown-editor');
     
@@ -196,9 +196,6 @@ const Editor = {
     location.reload();
   },
 
-  // Остальные методы остаются без изменений
-  // ... (initFileHeader, setupEventListeners, handleEditorInput, и т.д.)
-  
   /**
    * Инициализация панели инструментов Markdown
    */
@@ -250,22 +247,6 @@ const Editor = {
     }
   },
 
-  // handleEditorInput: function() {
-  //     clearTimeout(this.saveTimeout);
-  //     clearTimeout(this.previewTimeout);
-
-  //     this.saveTimeout = setTimeout(() => this.saveFile(), 1500);
-  //     this.previewTimeout = setTimeout(async () => {
-  //       const previewContainer = document.getElementById('preview-container');
-  //       if (!previewContainer || !previewContainer.classList.contains('hidden')) {
-  //         await Preview.refresh(this.getContent());
-  //       }
-  //     }, 500);
-      
-  //     if (this.codemirror) {
-  //       setTimeout(() => this.codemirror.refresh(), 100);
-  //     }
-  // },
   handleEditorInput: function() {
     clearTimeout(this.saveTimeout);
     clearTimeout(this.previewTimeout);
@@ -468,23 +449,6 @@ const Editor = {
       showNotification('Не удалось сохранить файл', 'error');
     }
   },
-
-  // uploadImage: async function(file) {
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append('image', file);
-
-  //     const response = await fetch('/editor/api/upload', {
-  //       method: 'POST',
-  //       body: formData
-  //     });
-  //     const data = await response.json();
-  //     return data.url;
-  //   } catch (error) {
-  //     showNotification('Не удалось загрузить изображение:', error);
-  //     return null;
-  //   }
-  // },
 
   uploadImage: async function(file) {
     try {

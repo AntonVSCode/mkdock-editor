@@ -1,342 +1,447 @@
 /* Основные стили модального окна просмотра изображений */
 .image-viewer-modal {
-  position: fixed; /* Фиксированное позиционирование */
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%; /* На всю ширину экрана */
-  height: 100%; /* На всю высоту экрана */
-  background-color: rgba(0, 0, 0, 0.9); /* Полупрозрачный черный фон */
-  z-index: 10000; /* Высокий z-index для перекрытия других элементов */
-  display: none; /* По умолчанию скрыто */
-  justify-content: center; /* Центрирование по горизонтали */
-  align-items: center; /* Центрирование по вертикали */
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 10000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
-/* Активное состояние модального окна */
 .image-viewer-modal.active {
-  display: flex; /* Показываем модальное окно */
+  display: flex;
 }
 
 /* Контейнер содержимого модального окна */
 .image-viewer-content {
-  background: white; /* Белый фон */
-  border-radius: 8px; /* Скругленные углы */
-  width: 90%; /* Ширина 90% от экрана */
-  max-width: 1200px; /* Максимальная ширина */
-  height: 85vh; /* Высота 85% от высоты экрана */
+  background: #ffffff;
+  border-radius: 12px;
+  width: 90%; /* Было 95% */
+  max-width: 1400px; 
+  height: 90vh;
   display: flex;
-  flex-direction: column; /* Вертикальное расположение элементов */
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3); /* Тень */
-  overflow: hidden; /* Скрытие выходящего за границы контента */
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  margin: 20px auto; /* Добавляем отступы сверху/снизу */
 }
 
 /* Шапка модального окна */
 .image-viewer-header {
-  padding: 15px 20px; /* Внутренние отступы */
-  border-bottom: 1px solid #eee; /* Граница снизу */
+  padding: 16px 24px;
+  border-bottom: 1px solid #eaeaea;
   display: flex;
-  justify-content: space-between; /* Распределение пространства между элементами */
-  align-items: center; /* Выравнивание по центру по вертикали */
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
 }
 
-/* Левая часть шапки (для кнопок и заголовка) */
 .header-left {
   display: flex;
-  align-items: center; /* Выравнивание по центру по вертикали */
-  gap: 15px; /* Расстояние между элементами */
+  align-items: center;
+  gap: 16px;
 }
 
-/* Заголовок модального окна */
 .image-viewer-title {
-  margin: 0; /* Убираем стандартные отступы */
-  font-size: 1.3rem; /* Размер шрифта */
-  color: #333; /* Цвет текста */
+  margin: 0;
+  font-size: 1.4rem;
+  color: #2d3748;
+  font-weight: 600;
 }
 
-/* Кнопка закрытия */
 .close-btn {
-  background: none; /* Прозрачный фон */
-  border: none; /* Без границы */
-  font-size: 24px; /* Размер шрифта */
-  cursor: pointer; /* Курсор-указатель */
-  color: #666; /* Цвет иконки */
-  line-height: 1; /* Межстрочный интервал */
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #6b7280;
+  line-height: 1;
+  transition: color 0.2s;
 }
 
-/* Кнопка закрытия при наведении */
 .close-btn:hover {
-  color: #333; /* Темнее цвет иконки */
+  color: #1a365d;
 }
 
-/* Кнопки с иконками */
 .icon-btn {
-  background: none; /* Прозрачный фон */
-  border: none; /* Без границы */
-  color: #666; /* Цвет иконки */
-  cursor: pointer; /* Курсор-указатель */
-  font-size: 20px; /* Размер шрифта */
-  padding: 5px; /* Внутренние отступы */
-  border-radius: 4px; /* Скругленные углы */
-  transition: all 0.2s; /* Плавные переходы */
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 22px;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
-/* Кнопки с иконками при наведении */
 .icon-btn:hover {
-  color: #4285f4; /* Синий цвет иконки */
-  background-color: rgba(66, 133, 244, 0.1); /* Светло-синий фон */
+  color: #4299e1;
+  background-color: rgba(66, 153, 225, 0.1);
 }
 
-/* Контейнер для списка изображений */
+/* Основное тело модального окна */
+.image-viewer-body {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Левая часть - список изображений */
 .image-list-container {
-  flex-grow: 1; /* Занимает все доступное пространство */
-  overflow-y: auto; /* Вертикальная прокрутка при необходимости */
-  padding: 15px; /* Внутренние отступы */
-  scroll-behavior: smooth; /* Плавная прокрутка */
+  flex: 0 0 60%; /* Было 65% */
+  overflow-y: auto;
+  padding: 16px; /* Было 20px */
+  background: #f8fafc;
 }
 
-/* Кастомный скроллбар для контейнера изображений */
-.image-list-container::-webkit-scrollbar {
-  width: 8px; /* Ширина скроллбара */
-}
-
-.image-list-container::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Цвет трека */
-  border-radius: 4px; /* Скругленные углы */
-}
-
-.image-list-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1; /* Цвет ползунка */
-  border-radius: 4px; /* Скругленные углы */
-}
-
-.image-list-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8; /* Цвет ползунка при наведении */
-}
-
-/* Сетка миниатюр */
 .thumbnail-grid {
-  display: grid; /* Используем CSS Grid */
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Автоподбор колонок */
-  gap: 15px; /* Расстояние между элементами */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
 }
 
-/* Карточка миниатюры */
 .thumbnail-card {
-  border: 1px solid #e0e0e0; /* Граница */
-  border-radius: 6px; /* Скругленные углы */
-  overflow: hidden; /* Скрытие выходящего за границы контента */
-  cursor: pointer; /* Курсор-указатель */
-  transition: all 0.2s; /* Плавные переходы */
-  background-color: white; /* Белый фон */
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: white;
+  position: relative;
 }
 
-/* Карточка миниатюры при наведении */
 .thumbnail-card:hover {
-  transform: translateY(-3px); /* Смещение вверх */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Тень */
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e0;
 }
 
-/* Превью миниатюры */
 .thumbnail-preview {
-  height: 140px; /* Фиксированная высота */
+  height: 140px; /* Было 160px */
   display: flex;
-  align-items: center; /* Центрирование по вертикали */
-  justify-content: center; /* Центрирование по горизонтали */
-  background: #f5f5f5; /* Светло-серый фон */
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  position: relative;
 }
 
-/* Изображение в превью */
 .thumbnail-preview img {
-  max-width: 100%; /* Максимальная ширина 100% */
-  max-height: 100%; /* Максимальная высота 100% */
-  object-fit: contain; /* Сохранение пропорций */
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: opacity 0.3s;
 }
 
-/* Название миниатюры */
+.thumbnail-preview .image-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e0;
+  font-size: 40px;
+}
+
 .thumbnail-name {
-  padding: 10px; /* Внутренние отступы */
-  font-size: 13px; /* Размер шрифта */
-  text-align: center; /* Выравнивание по центру */
-  white-space: nowrap; /* Запрет переноса строк */
-  overflow: hidden; /* Скрытие выходящего за границы текста */
-  text-overflow: ellipsis; /* Многоточие при переполнении */
-  border-top: 1px solid #eee; /* Граница сверху */
+  padding: 12px 8px;
+  font-size: 14px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid #edf2f7;
+  color: #4a5568;
 }
 
-/* Контейнер для кнопок управления */
-.image-controls {
-  padding: 15px; /* Внутренние отступы */
-  text-align: center; /* Выравнивание по центру */
-  border-top: 1px solid #eee; /* Граница сверху */
+/* Правая часть - детали изображения */
+.image-details-panel {
+  flex: 0 0 40%;
+  border-left: 1px solid #e2e8f0;
+  padding: 12px; /* Уменьшаем отступы */
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
-/* Кнопка вставки */
-#insert-btn {
-  background-color: #4a6bdf; /* Синий фон */
-  color: white; /* Белый текст */
-  border: none; /* Без границы */
-  padding: 10px 20px; /* Внутренние отступы */
-  border-radius: 4px; /* Скругленные углы */
-  cursor: pointer; /* Курсор-указатель */
-  font-size: 14px; /* Размер шрифта */
+/* Контейнер превью изображения */
+.image-preview-container {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px; /* Уменьшаем отступ */
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px; /* Уменьшаем отступы */
+  min-height: 250px; /* Уменьшаем минимальную высоту */
 }
 
-/* Кнопка вставки при наведении */
-#insert-btn:hover {
-  background-color: #3a56c0; /* Темно-синий фон */
+#image-preview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
-/* Стили для выбранной карточки */
-.thumbnail-card.selected {
-  border: 2px solid #4285f4; /* Синяя граница */
-  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3); /* Синяя тень */
-  background-color: #f8f9fa; /* Светло-серый фон */
+/* Информация об изображении */
+.image-info {
+  font-size: 13px; /* Уменьшаем размер шрифта */
+  color: #4a5568;
 }
 
-/* Хлебные крошки галереи */
+.image-info h3 {
+  margin-top: 0;
+  margin-bottom: 16px; /* Уменьшаем отступ */
+  color: #2d3748;
+  font-size: 16px; /* Уменьшаем размер заголовка */
+  font-weight: 600;
+  padding-bottom: 8px; /* Уменьшаем отступ */
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Строки с информацией */
+.info-row {
+  margin-bottom: 8px; /* Уменьшаем отступ между строками */
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.info-row strong {
+  flex: 0 0 100px; /* Уменьшаем ширину для меток */
+  color: #718096;
+  font-weight: 500;
+  font-size: 13px; /* Уменьшаем размер шрифта */
+}
+
+.info-row span {
+  flex: 1;
+  word-break: break-word;
+  color: #2d3748;
+  font-size: 13px; /* Уменьшаем размер шрифта */
+}
+
+/* Хлебные крошки */
 .gallery-breadcrumbs {
-  padding: 10px 20px; /* Внутренние отступы */
-  background: #f5f5f5; /* Светло-серый фон */
-  border-bottom: 1px solid #eee; /* Граница снизу */
+  padding: 12px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eaeaea;
   display: flex;
-  align-items: center; /* Выравнивание по центру по вертикали */
-  flex-wrap: wrap; /* Перенос на новую строку при необходимости */
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-/* Элемент хлебных крошек */
 .gallery-crumb {
-  cursor: pointer; /* Курсор-указатель */
-  color: #4285f4; /* Синий цвет */
+  cursor: pointer;
+  color: #4299e1;
   display: flex;
-  align-items: center; /* Выравнивание по центру по вертикали */
-  padding: 4px 8px; /* Внутренние отступы */
-  border-radius: 4px; /* Скругленные углы */
-  transition: background-color 0.2s; /* Плавный переход */
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-size: 14px;
 }
 
-/* Элемент хлебных крошек при наведении */
 .gallery-crumb:hover {
-  background-color: rgba(66, 133, 244, 0.1); /* Светло-синий фон */
-  text-decoration: none; /* Убираем подчеркивание */
+  background-color: rgba(66, 153, 225, 0.1);
+  text-decoration: none;
 }
 
-/* Иконка в хлебных крошках */
 .gallery-crumb i {
-  margin-right: 5px; /* Отступ справа */
+  margin-right: 6px;
+  font-size: 18px;
 }
 
-/* Разделитель в хлебных крошках */
 .gallery-separator {
-  margin: 0 5px; /* Отступы по бокам */
-  color: #666; /* Серый цвет */
+  color: #cbd5e0;
+  font-size: 18px;
+}
+
+/* Кнопки управления */
+.image-controls {
+  padding: 16px 24px;
+  text-align: right;
+  border-top: 1px solid #eaeaea;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+#insert-btn, #delete-btn {
+  padding: 10px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+}
+
+#insert-btn {
+  background-color: #4299e1;
+  color: white;
+}
+
+#insert-btn:hover {
+  background-color: #3182ce;
+}
+
+#delete-btn {
+  background-color: #f56565;
+  color: white;
+}
+
+#delete-btn:hover {
+  background-color: #e53e3e;
 }
 
 /* Стили для папок */
 .folder-card .thumbnail-preview {
-  color: #FFC107; /* Желтый цвет иконки */
-  font-size: 50px; /* Размер иконки */
+  color: #f6ad55;
 }
 
 .folder-card .thumbnail-name {
-  font-weight: bold; /* Жирный шрифт */
+  font-weight: 500;
 }
 
-/* Текущая папка */
-.current-folder {
-  padding: 10px 20px; /* Внутренние отступы */
-  background-color: #f8f9fa; /* Светло-серый фон */
-  border-bottom: 1px solid #eee; /* Граница снизу */
+/* Подсказки */
+.image-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 240px;
+  font-size: 13px;
+  pointer-events: none;
+  border: 1px solid #e2e8f0;
 }
 
-/* Путь к папке */
-.folder-path {
-  font-family: monospace; /* Моноширинный шрифт */
-  color: #555; /* Темно-серый цвет */
+.image-tooltip div {
+  margin: 6px 0;
+  line-height: 1.4;
 }
 
-/* Модальное окно подтверждения */
-.confirmation-modal {
-  position: fixed; /* Фиксированное позиционирование */
-  top: 0;
-  left: 0;
-  width: 100%; /* На всю ширину экрана */
-  height: 100%; /* На всю высоту экрана */
-  background-color: rgba(0,0,0,0.5); /* Полупрозрачный черный фон */
-  z-index: 10001; /* Выше основного модального окна */
-  display: flex;
-  justify-content: center; /* Центрирование по горизонтали */
-  align-items: center; /* Центрирование по вертикали */
+.thumbnail-card:hover .image-tooltip {
+  display: block;
 }
 
-/* Контент модального окна подтверждения */
-.confirmation-content {
-  background: white; /* Белый фон */
-  padding: 25px; /* Внутренние отступы */
-  border-radius: 8px; /* Скругленные углы */
-  max-width: 400px; /* Максимальная ширина */
-  width: 90%; /* Ширина 90% от экрана */
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2); /* Тень */
-  text-align: center; /* Выравнивание по центру */
+/* Добавьте эти стили в ваш CSS файл */
+.thumbnail-card.selected {
+  border: 2px solid #4299e1 !important;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3) !important;
+  transform: translateY(-2px);
+  background-color: #f8fafc;
 }
 
-/* Заголовок модального окна подтверждения */
-.confirmation-content h3 {
-  margin-top: 0; /* Убираем отступ сверху */
-  color: #333; /* Цвет текста */
+.thumbnail-card.selected .thumbnail-preview {
+  background-color: #ebf8ff;
 }
 
-/* Текст модального окна подтверждения */
-.confirmation-content p {
-  margin-bottom: 25px; /* Отступ снизу */
-  color: #666; /* Серый цвет текста */
+.thumbnail-card.selected .thumbnail-name {
+  font-weight: 500;
+  color: #2b6cb0;
 }
 
-/* Кнопки модального окна подтверждения */
-.confirmation-buttons {
-  display: flex;
-  justify-content: center; /* Центрирование по горизонтали */
-  gap: 15px; /* Расстояние между кнопками */
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Адаптивные стили для больших экранов (1600px и больше) */
-@media (min-width: 1600px) {
-  .thumbnail-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Увеличиваем минимальную ширину */
-  }
+.image-skeleton {
+  height: 160px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: loading 1.5s infinite;
 }
 
-/* Адаптивные стили для средних экранов (до 1200px) */
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Адаптивность */
 @media (max-width: 1200px) {
+  .image-viewer-content {
+    max-width: 1000px;
+  }
+
+  .image-viewer-body {
+    flex-direction: column;
+  }
+  
+  .image-list-container,
+  .image-details-panel {
+    flex: 1 1 100%;
+  }
+  
+  .image-details-panel {
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+    padding: 20px;
+  }
+  
   .thumbnail-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Стандартная минимальная ширина */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Было 180px */
+    gap: 12px; /* Было 18px */
   }
 }
 
-/* Адаптивные стили для планшетов (до 768px) */
 @media (max-width: 768px) {
   .image-viewer-content {
-    width: 98%; /* Увеличиваем ширину */
-    height: 95vh; /* Увеличиваем высоту */
+    width: 95%;
+    height: 95vh;
   }
   
   .thumbnail-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Уменьшаем минимальную ширину */
-    gap: 15px; /* Расстояние между элементами */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
   }
   
   .thumbnail-preview {
-    height: 120px; /* Уменьшаем высоту превью */
+    height: 140px;
+  }
+  
+  .image-controls {
+    justify-content: center;
   }
 }
 
-/* Адаптивные стили для мобильных устройств (до 480px) */
 @media (max-width: 480px) {
   .thumbnail-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Еще меньше минимальная ширина */
-    gap: 10px; /* Меньше расстояние между элементами */
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
   
   .thumbnail-preview {
-    height: 100px; /* Еще меньше высота превью */
+    height: 120px;
+  }
+  
+  .image-viewer-header {
+    padding: 12px 16px;
+  }
+  
+  .image-list-container {
+    padding: 16px;
   }
 }
