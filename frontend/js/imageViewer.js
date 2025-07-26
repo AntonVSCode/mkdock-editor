@@ -232,9 +232,17 @@ createModal() {
 
 async navigateToFolder(folderPath) {
   try {
-    this.currentPath = folderPath;
-    await this.loadImageList(); // Это загрузит новые данные
-    this.updateBreadcrumbs(folderPath);
+    // Если кликнули на "images" - сбрасываем путь
+    if (folderPath === '') {
+      this.currentPath = '';
+    } 
+    // Если кликнули на промежуточную папку - устанавливаем соответствующий путь
+    else {
+      this.currentPath = folderPath;
+    }
+    
+    await this.loadImageList();
+    this.updateBreadcrumbs(this.currentPath);
   } catch (error) {
     console.error('Error navigating to folder:', error);
     showNotification('Не удалось загрузить содержимое папки', 'error');
@@ -454,14 +462,30 @@ async showImageList() {
     this.images.forEach(image => {
       const imgCard = document.createElement('div');
       imgCard.className = 'thumbnail-card';
-      imgCard.innerHTML = `
-        <div class="thumbnail-preview">
-          <img src="/${image.path}" alt="${image.originalName}" 
-              onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\"height:100%;display:flex;align-items:center;justify-content:center;\"><i class=\"mdi mdi-image-broken\" style=\"font-size:40px;color:#ccc;\"></i></div>';">
-        </div>
-        <div class="thumbnail-name">${image.originalName}</div>
-      `;
+      
+      // Создаем элементы вручную вместо innerHTML
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'thumbnail-preview';
+      
+      const img = document.createElement('img');
+      img.src = `/${image.path}`;
+      img.alt = image.originalName;
+      
+      // Обработчик ошибки загрузки
+      img.onerror = () => {
+        previewDiv.innerHTML = '<i class="mdi mdi-image-broken" style="font-size:40px;color:#ccc;"></i>';
+      };
+      
+      previewDiv.appendChild(img);
+      
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'thumbnail-name';
+      nameDiv.textContent = image.originalName;
+      
+      imgCard.appendChild(previewDiv);
+      imgCard.appendChild(nameDiv);
       imgCard.addEventListener('click', () => this.selectImage(image));
+      
       grid.appendChild(imgCard);
     });
   }
@@ -526,96 +550,6 @@ createFolderCard(folder) {
   return card;
 }
 
-// createImageCard(image, index) {
-//   const card = document.createElement('div');
-//   card.className = 'thumbnail-card image-card';
-//   card.dataset.index = index;
-//   card.style.border = '1px solid #ddd';
-//   card.style.borderRadius = '5px';
-//   card.style.padding = '8px';
-//   card.style.textAlign = 'center';
-//   card.style.cursor = 'pointer';
-//   card.style.transition = 'all 0.2s';
-  
-//   card.addEventListener('mouseenter', () => {
-//     card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-//   });
-  
-//   card.addEventListener('mouseleave', () => {
-//     card.style.boxShadow = 'none';
-//   });
-  
-//   // Название изображения
-//   const name = document.createElement('div');
-//   name.textContent = image.displayName || image.originalName || `Изображение ${index + 1}`;
-//   name.style.marginTop = '8px';
-//   name.style.fontSize = '14px';
-//   name.style.whiteSpace = 'nowrap';
-//   name.style.overflow = 'hidden';
-//   name.style.textOverflow = 'ellipsis';
-  
-//   // Контейнер для превью
-//   const preview = document.createElement('div');
-//   preview.style.height = '100px';
-//   preview.style.display = 'flex';
-//   preview.style.alignItems = 'center';
-//   preview.style.justifyContent = 'center';
-//   preview.style.backgroundColor = '#f5f5f5';
-//   preview.style.borderRadius = '3px';
-//   preview.style.overflow = 'hidden';
-  
-//   // Элемент изображения
-//   const img = document.createElement('img');
-//   img.style.maxWidth = '100%';
-//   img.style.maxHeight = '100%';
-//   img.style.objectFit = 'contain';
-  
-//   // Загружаем изображение
-//   try {
-//     const imgUrl = `${window.location.origin}/images/${image.storedName || image.filename}`;
-//     img.src = imgUrl;
-    
-//     img.onerror = () => {
-//       // Заглушка если изображение не загрузилось
-//       preview.innerHTML = `
-//         <div style="color:#666; font-size:12px;">
-//           <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#999">
-//             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-//             <polyline points="9 22 9 12 15 12 15 22"></polyline>
-//           </svg>
-//           <p>Не удалось загрузить</p>
-//         </div>
-//       `;
-//     };
-//   } catch (error) {
-//     console.error('Error loading preview:', error);
-//   }
-  
-//   preview.appendChild(img);
-//   card.appendChild(preview);
-//   card.appendChild(name);
-  
-//   // Обработчик клика
-//   card.addEventListener('click', (e) => {
-//     e.preventDefault();
-    
-//     // Убираем выделение у всех карточек
-//     document.querySelectorAll('.image-card').forEach(c => {
-//       c.classList.remove('selected');
-//     });
-    
-//     // Выделяем текущую карточку
-//     card.classList.add('selected');
-    
-//     // Запоминаем выбранное изображение
-//     this.currentIndex = index;
-    
-//     // Обновляем состояние кнопок
-//     this.updateButtonsState();
-//   });
-  
-//   return card;
-// }
 async createImageCard(image, index) {
   const card = document.createElement('div');
   card.className = 'thumbnail-card image-card';
@@ -752,14 +686,18 @@ updateBreadcrumbs(currentPath) {
   // Корневая папка "images"
   const rootCrumb = document.createElement('span');
   rootCrumb.className = 'gallery-crumb';
+  rootCrumb.dataset.path = '';
   rootCrumb.innerHTML = '<i class="mdi mdi-folder"></i> images';
   rootCrumb.addEventListener('click', () => {
     this.navigateToFolder('');
   });
+  if (currentPath === '') {
+    rootCrumb.classList.add('active');
+  }
   breadcrumbsContainer.appendChild(rootCrumb);
 
   // Остальные части пути
-  parts.forEach(part => {
+  parts.forEach((part, index) => {
     pathSoFar = pathSoFar ? `${pathSoFar}/${part}` : part;
 
     const separator = document.createElement('span');
@@ -769,10 +707,17 @@ updateBreadcrumbs(currentPath) {
 
     const crumb = document.createElement('span');
     crumb.className = 'gallery-crumb';
+    crumb.dataset.path = pathSoFar;
     crumb.innerHTML = `<i class="mdi mdi-folder"></i> ${part}`;
     crumb.addEventListener('click', () => {
       this.navigateToFolder(pathSoFar);
     });
+    
+    // Подсвечиваем только последнюю крошку (текущую папку)
+    if (index === parts.length - 1) {
+      crumb.classList.add('active');
+    }
+    
     breadcrumbsContainer.appendChild(crumb);
   });
 }

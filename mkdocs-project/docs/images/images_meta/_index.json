@@ -10,17 +10,6 @@
       "height": 0
     }
   },
-  "c7cfc84a-4f5f-491a-ad54-c886f134a466.png": {
-    "originalName": "image.png",
-    "storedName": "c7cfc84a-4f5f-491a-ad54-c886f134a466.png",
-    "path": "images/bash/c7cfc84a-4f5f-491a-ad54-c886f134a466.png",
-    "size": 1072782,
-    "uploadDate": "2025-07-23T11:45:36.488Z",
-    "dimensions": {
-      "width": 0,
-      "height": 0
-    }
-  },
   "ccb1baaf-f85c-4f47-ad93-7779c8713f50.png": {
     "originalName": "Adventures of Batman & Robin, The (USA)-screenshot.png",
     "storedName": "ccb1baaf-f85c-4f47-ad93-7779c8713f50.png",
@@ -104,6 +93,28 @@
     "path": "images/da411eb8-0dcc-4f2b-b4bc-85aeb62d0c11.png",
     "size": 51157,
     "uploadDate": "2025-07-23T12:49:09.697Z",
+    "dimensions": {
+      "width": 0,
+      "height": 0
+    }
+  },
+  "0c96c311-5f79-4c8d-a6ec-e99061809abd.png": {
+    "originalName": "Devastator (Japan)-screenshot.png",
+    "storedName": "0c96c311-5f79-4c8d-a6ec-e99061809abd.png",
+    "path": "images/bash/0c96c311-5f79-4c8d-a6ec-e99061809abd.png",
+    "size": 126852,
+    "uploadDate": "2025-07-23T15:34:43.397Z",
+    "dimensions": {
+      "width": 0,
+      "height": 0
+    }
+  },
+  "3a71c628-8f76-4bf7-ae3d-52ed3477541a.png": {
+    "originalName": "logo.png",
+    "storedName": "3a71c628-8f76-4bf7-ae3d-52ed3477541a.png",
+    "path": "images/bash/test/3a71c628-8f76-4bf7-ae3d-52ed3477541a.png",
+    "size": 157358,
+    "uploadDate": "2025-07-24T09:34:18.169Z",
     "dimensions": {
       "width": 0,
       "height": 0

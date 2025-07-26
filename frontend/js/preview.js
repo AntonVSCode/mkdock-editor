@@ -25,27 +25,6 @@ class MkDocsPreview {
     }
   }
 
-  // async loadMarked() {
-  //     if (this.markedLoaded) return;
-      
-  //     // Проверяем, возможно marked уже загружен
-  //     if (typeof marked !== 'undefined') {
-  //         this.markedLoaded = true;
-  //         return;
-  //     }
-      
-  //     // Пытаемся использовать локальный файл
-  //     try {
-  //         // Предполагаем, что marked.min.js уже подключен в index.html
-  //         if (typeof marked === 'undefined') {
-  //             throw new Error('marked.js not loaded');
-  //         }
-  //         this.markedLoaded = true;
-  //     } catch (error) {
-  //         console.error('Failed to load marked.js locally', error);
-  //         // Можно добавить fallback на CDN здесь, если нужно
-  //     }
-  // }
   async loadMarked() {
     if (this.markedLoaded) return;
     
@@ -73,41 +52,6 @@ class MkDocsPreview {
     }
   }
 
-  // async loadHighlightJs() {
-  //   if (this.highlightJsLoaded || typeof hljs !== 'undefined') {
-  //     this.highlightJsLoaded = true;
-  //     return;
-  //   }
-
-  //   return new Promise((resolve, reject) => {
-  //     // Создаем элемент для стилей
-  //     const link = document.createElement('link');
-  //     link.rel = 'stylesheet';
-  //     link.href = 'assets/vendor/default.min.css';
-  //     document.head.appendChild(link);
-
-  //     // Загружаем скрипт highlight.js
-  //     const script = document.createElement('script');
-  //     script.src = 'assets/vendor/highlight.min.js';
-  //     script.onload = () => {
-  //       // Инициализируем подсветку для всех блоков кода
-  //       document.querySelectorAll('pre code').forEach((block) => {
-  //         hljs.highlightElement(block);
-  //         // Добавляем нумерацию строк, если подключена библиотека
-  //         if (typeof hljs.lineNumbersBlock === 'function') {
-  //           hljs.lineNumbersBlock(block);
-  //         }
-  //       });
-  //       this.highlightJsLoaded = true;
-  //       resolve();
-  //     };
-  //     script.onerror = () => {
-  //       console.error('Failed to load highlight.js');
-  //       reject(new Error('Failed to load highlight.js'));
-  //     };
-  //     document.head.appendChild(script);
-  //   });
-  // }
   async loadHighlightJs() {
     if (this.highlightJsLoaded) return;
 
@@ -167,42 +111,6 @@ class MkDocsPreview {
     this.highlightJsLoaded = true;
   }
 // Конец нового кода
-  // async refresh(content = null) {
-  //     if (!this.isPreviewVisible) return;
-
-  //     try {
-  //         if (content) this.currentContent = content;
-          
-  //         // Убедимся, что marked.js загружен
-  //         await this.loadMarked();
-          
-  //         // Убедимся, что highlight.js загружен
-  //         if (typeof hljs === 'undefined') {
-  //             await new Promise(resolve => {
-  //                 const checkInterval = setInterval(() => {
-  //                     if (typeof hljs !== 'undefined') {
-  //                         clearInterval(checkInterval);
-  //                         resolve();
-  //                     }
-  //                 }, 100);
-  //             });
-  //         }
-
-  //         const processed = this.processContent(this.currentContent);
-  //         const html = marked.parse(processed);
-  //         this.updatePreview(html);
-          
-  //         // Применяем подсветку синтаксиса
-  //         if (typeof hljs !== 'undefined') {
-  //             this.previewContainer.querySelectorAll('pre code').forEach((block) => {
-  //                 hljs.highlightElement(block);
-  //             });
-  //         }
-  //     } catch (error) {
-  //         console.error('Preview error:', error);
-  //         this.showError('Failed to render preview');
-  //     }
-  // }
   async refresh(content = null) {
     if (!this.isPreviewVisible) return;
 
