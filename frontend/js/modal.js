@@ -174,42 +174,32 @@ const SideModals = {
     
     // Получаем элементы управления с проверкой на существование
     const themeSelect = modal.querySelector('#editor-theme');
-    const parserSelect = modal.querySelector('#markdown-parser');
+    //const parserSelect = modal.querySelector('#markdown-parser');
     const saveBtn = modal.querySelector('#save-settings');
     
-    if (!themeSelect || !parserSelect || !saveBtn) return;
+    if (!themeSelect || !saveBtn) return;
 
     // Загружаем текущие настройки из localStorage
     const currentTheme = localStorage.getItem('editorTheme') || 'material';
-    const currentParser = localStorage.getItem('markdownParser') || 'codemirror';
     
     // Устанавливаем текущие значения
     themeSelect.value = currentTheme;
-    parserSelect.value = currentParser;
 
     // Обработчик сохранения настроек
     saveBtn.addEventListener('click', () => {
         const theme = themeSelect.value;
-        const parser = parserSelect.value;
         
         // Проверяем, изменились ли настройки
         const themeChanged = theme !== currentTheme;
-        const parserChanged = parser !== currentParser;
         
         // Сохраняем настройки
         localStorage.setItem('editorTheme', theme);
-        localStorage.setItem('markdownParser', parser);
         
         // Применяем изменения через Editor если он доступен
         if (window.Editor) {
             // Применяем тему без перезагрузки
             if (themeChanged && Editor.cmInstance) {
                 Editor.cmInstance.setOption('theme', theme);
-            }
-            
-            // При изменении парсера - перезагружаем страницу
-            if (parserChanged) {
-                setTimeout(() => location.reload(), 300);
             }
         }
         
@@ -374,10 +364,6 @@ const SideModals = {
       'material', 'material-darker', 'dracula', 
       'eclipse', 'monokai', 'solarized', 'ambiance'
     ];
-    const parsers = [
-      {value: 'codemirror', label: 'CodeMirror (встроенный)'},
-      {value: 'marked', label: 'marked.js (более полный)'}
-    ];
 
     // Проверяем существование фавикона через API
     let faviconExists = false;
@@ -402,13 +388,6 @@ const SideModals = {
             `<option value="${theme}">${theme}</option>`
           ).join('')}
           </select>
-        </div>
-        <div class="form-group">
-          <label>Парсер:</label>
-          <select id="markdown-parser" class="form-control">
-            <option value="codemirror">CodeMirror (быстрый)</option>
-            <option value="marked">marked.js (полный)</option>
-          </select>
           <button id="save-settings" class="btn-primary">Сохранить</button>
         </div>
         <div class="form-group favicon-container">
@@ -425,7 +404,6 @@ const SideModals = {
                 Удалить
               </button>
             ` : ''}
-          </div>
         </div>
         
         <div class="backup-section">

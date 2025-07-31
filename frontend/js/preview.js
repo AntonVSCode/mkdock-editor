@@ -2,9 +2,9 @@ class MkDocsPreview {
   constructor() {
     this.previewContainer = document.getElementById('preview-content');
     this.currentContent = '';
-    this.markedLoaded = false;
     this.isPreviewVisible = true;
     this.highlightJsLoaded = false;
+    this.materialStylesLoaded = false;
   }
 
   init() {
@@ -17,39 +17,32 @@ class MkDocsPreview {
 
   async loadDependencies() {
     try {
-      await this.loadMarked();
-      await this.loadHighlightJs();
+      await Promise.all([
+        this.loadHighlightJs(),
+        this.loadMaterialStyles()
+      ]);
     } catch (error) {
       console.error('Failed to load dependencies:', error);
-      this.showError('Failed to load required resources');
     }
   }
 
-  async loadMarked() {
-    if (this.markedLoaded) return;
+  async loadMaterialStyles() {
+    if (this.materialStylesLoaded) return;
     
-    try {
-      if (typeof marked === 'undefined') {
-        // Попробуйте явно загрузить marked.js
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-      }
-      
-      marked.setOptions({
-        baseUrl: '/',
-        breaks: true,
-        gfm: true
-      });
-      this.markedLoaded = true;
-    } catch (error) {
-      console.error('Failed to load marked.js:', error);
-      throw error;
-    }
+    return new Promise((resolve) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'assets/material-preview.css';
+      link.onload = () => {
+        this.materialStylesLoaded = true;
+        resolve();
+      };
+      link.onerror = () => {
+        console.warn('Failed to load material-preview.css');
+        resolve();
+      };
+      document.head.appendChild(link);
+    });
   }
 
   async loadHighlightJs() {
@@ -89,7 +82,7 @@ class MkDocsPreview {
       };
       script.onerror = (e) => {
         console.error('Failed to load highlight.js', e);
-        reject(new Error('Failed to load highlight.js'));
+        resolve(); // Продолжаем даже если не удалось загрузить highlight.js
       };
       document.head.appendChild(script);
     });
@@ -110,63 +103,85 @@ class MkDocsPreview {
     
     this.highlightJsLoaded = true;
   }
-// Конец нового кода
-  async refresh(content = null) {
+
+  refresh(content = null) {
     if (!this.isPreviewVisible) return;
 
     try {
       if (content) this.currentContent = content;
       
-      await this.loadMarked();
-      await this.loadHighlightJs();
-
-      const processed = this.processContent(this.currentContent);
-      const html = marked.parse(processed);
+      // Получаем HTML либо из CodeMirror, либо из простого преобразования
+      let html = '';
+      if (window.Editor?.cmInstance?.markdownRenderer) {
+        const tempElement = document.createElement('div');
+        window.Editor.cmInstance.markdownRenderer(tempElement, this.currentContent);
+        html = tempElement.innerHTML;
+      } else {
+        // Fallback для простого отображения, если CodeMirror не доступен
+        html = this.simpleMarkdownToHtml(this.currentContent);
+      }
       this.updatePreview(html);
       
       // Применяем подсветку после обновления контента
-      this.initHighlightJs();
+      this.applySyntaxHighlighting();
     } catch (error) {
       console.error('Preview error:', error);
       this.showError('Failed to render preview');
     }
   }
 
-  applySyntaxHighlighting() {
-    if (typeof hljs !== 'undefined' && this.previewContainer) {
-      this.previewContainer.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightElement(block);
-      });
-    }
+  simpleMarkdownToHtml(markdown) {
+        // Обработка блоков кода
+    markdown = markdown.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, 
+      '<pre><code class="language-$1">$2</code></pre>');
+    
+    // Обработка admonitions (!!! note)
+    markdown = markdown.replace(/^!!! (\w+)(?:\s+"(.+)")?/gm, 
+      '<div class="admonition $1"><p class="admonition-title">$2</p>');
+    
+    // Обработка ссылок и изображений
+    markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/g, 
+      '<img alt="$1" src="$2" class="materialboxed">');
+    markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/g, 
+      '<a href="$2" target="_blank">$1</a>');
+    // Базовое преобразование Markdown в HTML (только основные элементы)
+    return markdown
+      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+      .replace(/^\* (.*$)/gm, '<li>$1</li>')
+      .replace(/^\> (.*$)/gm, '<blockquote>$1</blockquote>')
+      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2">')
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+      .replace(/\n/g, '<br>');
   }
 
-  processContent(markdown) {
-    // Сначала обрабатываем специальные блоки (admonitions, tabs)
-    let processed = markdown
-      .replace(/^!!! (\w+)(?:\s+"(.+)")?/gm, '<div class="admonition $1">\n<p class="admonition-title">$2</p>')
-      .replace(/^\?\?\? (\w+)(?:\s+"(.+)")?/gm, '<details class="admonition $1">\n<summary>$2</summary>')
-      .replace(/^=== "(.+)"$/gm, '<div class="tab">\n<h3>$1</h3>')
-      .replace(/^\s*$/gm, (m, offset, str) => {
-        const prevLine = str.substring(0, offset).split('\n').pop();
-        return prevLine?.startsWith('<div class="admonition') ? '</div>' : 
-              prevLine?.startsWith('<details') ? '</details>' :
-              prevLine?.startsWith('<div class="tab"') ? '</div>' : m;
+  applySyntaxHighlighting() {
+    if (typeof hljs !== 'undefined' && this.previewContainer) {
+      // Подсветка блоков кода
+      this.previewContainer.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+              if (typeof hljs.lineNumbersBlock === 'function') {
+          hljs.lineNumbersBlock(block);
+        }
       });
-
-    // Затем обрабатываем пути изображений для предпросмотра
-    processed = processed.replace(
-      /\]\(images\/([^)]+)\)/g, 
-      '](/images/$1)'
-    );
-
-    return processed;
+      
+      // Инициализация Materialbox для изображений
+      if (typeof M !== 'undefined' && M.Materialbox) {
+        const images = this.previewContainer.querySelectorAll('.materialboxed');
+        M.Materialbox.init(images);
+      }
+    }
   }
 
   updatePreview(html) {
     if (!this.previewContainer) return;
     
     this.previewContainer.innerHTML = `
-      <div class="markdown-body">
+      <div class="markdown-body material-theme">
         ${html || 'Preview will appear here'}
       </div>
     `;
@@ -176,7 +191,7 @@ class MkDocsPreview {
     if (!this.previewContainer) return;
     
     this.previewContainer.innerHTML = `
-      <div class="preview-error">
+      <div class="preview-error material-theme">
         <i class="mdi mdi-alert-circle"></i>
         <span>${message}</span>
       </div>
@@ -185,4 +200,3 @@ class MkDocsPreview {
 }
 
 const Preview = new MkDocsPreview();
-

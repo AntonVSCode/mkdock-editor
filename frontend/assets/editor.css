@@ -362,7 +362,7 @@ body {
 }
 
 /* Панели инструментов */
-.editor-toolbar {
+/* .editor-toolbar {
   padding: 10px 15px;
   background-color: white;
   border-bottom: 1px solid var(--border-color);
@@ -378,7 +378,7 @@ body {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-}
+} */
 
 /* Основной контейнер редактора */
 .editor-wrapper {

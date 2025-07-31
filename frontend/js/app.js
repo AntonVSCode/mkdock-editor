@@ -1,90 +1,16 @@
-// document.addEventListener('DOMContentLoaded', async () => {
-//   try {
-
-//     // Проверяем компоненты
-//     if (typeof FileExplorer === 'undefined' || typeof Editor === 'undefined') {
-//       throw new Error('Required components are not loaded');
-//     }
-
-//     // Инициализация модулей
-//     await Promise.all([
-//       Editor.init(),
-//       FileExplorer.init(),
-//       Preview.init(),
-//       typeof MaterialShortcuts !== 'undefined' && MaterialShortcuts.init(),
-//       // Инициализация редактора настроек
-//       //typeof SettingsEditor !== 'undefined' && new SettingsEditor()
-//       typeof SettingsEditor !== 'undefined' && document.querySelector('.explorer-footer a') && new SettingsEditor()
-//     ]);
-//     // Проверка поддержки API
-//     if (!window.Promise || !window.fetch) {
-//       throw new Error('Browser not supported');
-//     }
-
-//     // Проверка наличия необходимых компонентов перед инициализацией
-//     if (typeof FileExplorer === 'undefined' || typeof Editor === 'undefined' || typeof Preview === 'undefined') {
-//       throw new Error('Required components are not loaded');
-//     }
-
-//     // Инициализация модулей с проверкой их доступности
-//     await Promise.all([
-//       typeof Editor.init === 'function' ? Editor.init() : Promise.resolve(),
-//       typeof FileExplorer.init === 'function' ? FileExplorer.init() : Promise.resolve(),
-//       typeof Preview.init === 'function' ? Preview.init() : Promise.resolve(),
-//       typeof MaterialShortcuts === 'object' && typeof MaterialShortcuts.init === 'function' ? 
-//         MaterialShortcuts.init() : Promise.resolve(),
-//     ]);
-
-//     // Обработчики для кнопок файлового менеджера
-//     document.getElementById('new-folder')?.addEventListener('click', async (e) => {
-//       console.log('New folder button clicked directly');
-//       await FileExplorer.createNewDirectory();
-//     });
-
-//     // Инициализация просмотрщика изображений
-//     if (window.imageViewer && typeof window.imageViewer.init === 'function') {
-//       await window.imageViewer.init();
-//     }
-
-//     // Настройка обработчиков
-//     document.getElementById('refresh-preview')?.addEventListener('click', () => {
-//       if (typeof Editor.getContent === 'function' && typeof Preview.refresh === 'function') {
-//         Preview.refresh(Editor.getContent());
-//       }
-//     });
-
-//     // Первоначальная загрузка
-//     if (typeof FileExplorer.loadFiles === 'function') {
-//       await FileExplorer.loadFiles();
-//     }
-    
-//     if (typeof Preview.refresh === 'function') {
-//       Preview.refresh('# Welcome to MkDocs Editor');
-//     }
-
-//   } catch (error) {
-//     console.error('Initialization error:', error);
-//     // Fallback для превью
-//     const previewContainer = document.getElementById('preview-content');
-//     if (previewContainer) {
-//       previewContainer.innerHTML = `
-//         <div class="preview-error">
-//           <i class="mdi mdi-alert-circle"></i>
-//           <span>Initialization Error: ${error.message}</span>
-//         </div>
-//       `;
-//     }
-//   }
-// });
-
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // Проверка поддержки API
+    // 1. Проверка поддержки браузером необходимых API
     if (!window.Promise || !window.fetch) {
-      throw new Error('Browser not supported');
+      throw new Error('Ваш браузер не поддерживается. Требуется современный браузер.');
     }
 
-    // Проверка наличия необходимых компонентов перед инициализацией
+    // 2. Проверка загрузки CodeMirror
+    if (!window.CodeMirror) {
+      throw new Error('CodeMirror не загружен. Проверьте подключение скриптов.');
+    }
+
+    // 3. Проверка наличия основных компонентов
     const requiredComponents = {
       FileExplorer: FileExplorer?.init,
       Editor: Editor?.init,
@@ -93,61 +19,98 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     for (const [name, initFn] of Object.entries(requiredComponents)) {
       if (!initFn) {
-        throw new Error(`Required component ${name} is not loaded`);
+        throw new Error(`Не удалось загрузить необходимый компонент: ${name}`);
       }
     }
 
-    // Инициализация модулей
+    // 4. Инициализация редактора (первым, так как другие модули зависят от него)
+    await Editor.init();
+
+    // 5. Инициализация MaterialShortcuts (если загружен)
+    if (typeof MaterialShortcuts !== 'undefined') {
+      MaterialShortcuts.init(Editor);
+      MaterialShortcuts.setupButtons();
+      
+      // Устанавливаем горячие клавиши после полной инициализации
+      if (Editor.cmInstance) {
+        MaterialShortcuts.registerHotkeys();
+      }
+    }
+
+    // 6. Инициализация остальных компонентов
     await Promise.all([
-      Editor.init(),
       FileExplorer.init(),
       Preview.init(),
-      typeof MaterialShortcuts !== 'undefined' && MaterialShortcuts.init(),
-      typeof SettingsEditor !== 'undefined' && document.querySelector('.explorer-footer a') && new SettingsEditor(),
       typeof window.imageViewer !== 'undefined' && window.imageViewer.init()
     ]);
 
-    // Обработчики для кнопок файлового менеджера
+    // 7. Установка обработчиков событий
+
+    // Обработчик для создания новой папки
     document.getElementById('new-folder')?.addEventListener('click', async () => {
       await FileExplorer.createNewDirectory();
     });
 
-    // Первоначальная загрузка
+    // Обработчик для открытия настроек конфига
+    document.getElementById('open-mkdocs-settings')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (typeof SettingsEditor !== 'undefined') {
+        new SettingsEditor();
+      } else {
+        console.warn('SettingsEditor не загружен');
+      }
+    });
+
+    // Обработчик для обновления превью
+    document.getElementById('refresh-preview')?.addEventListener('click', () => {
+      if (typeof Editor.getContent === 'function' && typeof Preview.refresh === 'function') {
+        Preview.refresh(Editor.getContent());
+      }
+    });
+
+    // Обработчик для переключения превью
+    document.getElementById('toggle-preview')?.addEventListener('click', function() {
+      const preview = document.getElementById('preview-container');
+      if (!preview) return;
+
+      preview.classList.toggle("hidden");
+
+      // Обновляем размеры редактора
+      if (typeof Editor !== 'undefined' && Editor.codemirror) {
+          Editor.codemirror.refresh();
+      }
+
+      // Обновляем содержимое превью если оно становится видимым
+      if (!preview.classList.contains("hidden") && typeof Preview.refresh === 'function') {
+          Preview.refresh(Editor.getContent());
+      }
+    });
+
+    // 8. Первоначальная загрузка файлов и установка приветственного сообщения
     await FileExplorer.loadFiles();
     Preview.refresh('# Welcome to MkDocs Editor');
 
   } catch (error) {
-    console.error('Initialization error:', error);
+    console.error('Ошибка инициализации:', error);
+    
+    // Показываем понятное сообщение об ошибке пользователю
     const previewContainer = document.getElementById('preview-content');
     if (previewContainer) {
       previewContainer.innerHTML = `
-        <div class="preview-error">
+        <div class="error-alert">
           <i class="mdi mdi-alert-circle"></i>
-          <span>Initialization Error: ${error.message}</span>
+          <h3>Ошибка загрузки редактора</h3>
+          <p>${error.message}</p>
+          <button onclick="location.reload()" class="reload-btn">
+            <i class="mdi mdi-refresh"></i> Перезагрузить
+          </button>
         </div>
       `;
     }
-    showNotification(`Ошибка инициализации: ${error.message}`, 'error');
+    
+    // Показываем уведомление
+    if (typeof showNotification === 'function') {
+      showNotification(`Ошибка инициализации: ${error.message}`, 'error');
+    }
   }
 });
-
-// Обработчик для кнопки превью
-document.getElementById('toggle-preview')?.addEventListener('click', function() {
-    const preview = document.getElementById('preview-container');
-    if (!preview) return;
-
-    preview.classList.toggle("hidden");
-
-    // Обновляем размеры редактора при переключении
-    if (typeof Editor !== 'undefined' && Editor.codemirror) {
-        Editor.codemirror.refresh();
-    }
-
-    // Обновляем содержимое превью если оно становится видимым
-    if (!preview.classList.contains("hidden")) {
-        if (typeof Preview.refresh === 'function' && typeof Editor.getContent === 'function') {
-            Preview.refresh(Editor.getContent());
-        }
-    }
-});
-

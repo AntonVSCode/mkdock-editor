@@ -800,22 +800,6 @@ hide() {
     this.preloadImage(prevIndex);
   }
 
-  // insertImage() {
-  //   if (this.currentIndex === undefined || !this.images[this.currentIndex]) {
-  //     showNotification('Сначала выберите изображение', 'error');
-  //     return;
-  //   }
-
-  //   const image = this.images[this.currentIndex];
-  //   const markdown = `![${image.displayName}](images/${image.storedName})`;
-    
-  //   if (typeof Editor !== 'undefined' && Editor.insertAtCursor) {
-  //     Editor.insertAtCursor(markdown);
-  //     this.hide();
-  //   } else {
-  //     showNotification('Редактор не доступен', 'error');
-  //   }
-  // }
   insertImage() {
     if (!this.currentImage) {
       showNotification('Сначала выберите изображение', 'error');

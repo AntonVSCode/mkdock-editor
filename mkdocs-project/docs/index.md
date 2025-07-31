@@ -7,7 +7,7 @@ tags:
 
 ### Welcome to MkDocs
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+**For full** `*documentation*` ~~visit~~ [mkdocs.org](https://www.mkdocs.org).
 
 ## Commands
 
@@ -17,20 +17,12 @@ For full documentation visit [mkdocs.org](https://www.mkdocs.org).
 * `mkdocs -h` - Print help message and exit.
 [test](index2.md#install-grafana-for-monitoring-proxmox)
 ## Project layout
-
+``
+`вфывфыв`
 
     mkdocs.yml    # The configuration file.
     docs/
         index.md  # The documentation homepage.
         ...       # Other markdown pages, images and other files.
 
-!!! warning "Warning"
 
-    Your warning content here
-!!! note "Note"
-
-    Your note content here
-??? note "Foldable Title"
-
-    Your foldable content here
-# # ## ## **bold****bold**---\n---\n??? note\n\n    ??? note\n\n    

@@ -11,21 +11,38 @@ const Editor = {
 
   /**
    * Инициализация редактора
-   * Определяет какой парсер использовать (CodeMirror или marked) 
    * на основе сохраненных настроек
    */
   init: function() {
-    // Загружаем настройки из localStorage
-    const settings = this.loadSettings();
-    
-    // Инициализируем соответствующий парсер
-    const container = document.getElementById('markdown-editor-container');
-    if (container) container.innerHTML = '<textarea id="markdown-editor"></textarea>';
-    
-    if (settings.markdownParser === 'marked') {
-      this.initWithMarked();
-    } else {
-      this.initWithCodeMirror();
+    try {
+      // Проверяем загружен ли CodeMirror
+      if (!window.CodeMirror) {
+        console.warn('CodeMirror не загружен, используется простой редактор');
+        return this.initWithMarked();
+      }
+
+      // Загружаем настройки из localStorage
+      const settings = this.loadSettings();
+      const container = document.getElementById('markdown-editor-container');
+      
+      if (!container) {
+        throw new Error('Контейнер редактора не найден');
+      }
+
+      // Инициализируем соответствующий парсер
+      container.innerHTML = '<textarea id="markdown-editor"></textarea>';
+      
+      if (settings.markdownParser === 'marked') {
+        this.initWithMarked();
+      } else {
+        this.initWithCodeMirror();
+      }
+
+      return this;
+    } catch (error) {
+      console.error('Ошибка инициализации редактора:', error);
+      // Fallback на простой редактор
+      return this.initWithMarked();
     }
   },
 
@@ -45,17 +62,15 @@ const Editor = {
    * (более быстрый, но с базовой поддержкой Markdown)
    */
   initWithCodeMirror: function() {
-    //console.log('Initializing CodeMirror editor');
-    const container = document.getElementById('markdown-editor-container');
-    const textarea = document.getElementById('markdown-editor');
-    
-    // Проверяем наличие необходимых элементов
-    if (!container || !textarea) {
-      console.error('Editor elements not found');
-      return;
-    }
-
     try {
+      const container = document.getElementById('markdown-editor-container');
+      const textarea = document.getElementById('markdown-editor');
+      
+      // Проверяем наличие необходимых элементов
+      if (!container || !textarea) {
+        throw new Error('Элементы редактора не найдены');
+      }
+
       // Удаляем предыдущий экземпляр CodeMirror, если есть
       const previousEditor = container.querySelector('.CodeMirror');
       if (previousEditor) previousEditor.remove();
@@ -64,8 +79,7 @@ const Editor = {
       const currentTheme = localStorage.getItem('editorTheme') || 'material';
 
       // Создаем экземпляр CodeMirror
-      this.cmInstance = CodeMirror(container, {
-        value: textarea.value || '',
+      this.cmInstance = CodeMirror.fromTextArea(textarea, {
         mode: {
           name: "markdown",            // Режим Markdown
           highlightFormatting: true,   // Подсветка форматирования
@@ -82,40 +96,45 @@ const Editor = {
         indentUnit: 2,                 // Ширина отступа
         indentWithTabs: false,         // Использовать пробелы для отступов
         tabSize: 2,                    // Размер табуляции
-        extraKeys: {
-          "Ctrl-Space": "autocomplete",   // Горячая клавиша для подсказок
-          "Ctrl-Enter": () => this.saveFile(),
-          "F5": () => Preview.refresh(this.getContent())
-          //"Ctrl-B": () => this.wrapSelection('**', '**'), // Горячая клавиша для жирного текста Пока не реализовано
-          //"Ctrl-I": () => this.wrapSelection('*', '*'),   // Горячая клавиша для курсивного текста Пока не реализовано
-        }
+        //extraKeys: this.getHotkeys()   // Горячие клавиши
       });
 
-      // Обновляем тему редактора при изменении в других вкладках
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'editorTheme' && this.cmInstance) {
-          this.cmInstance.setOption('theme', e.newValue);
-        }
-      });
-
-      // Автоматическое обновление превью при изменениях
-      this.cmInstance.on('change', () => {
-        clearTimeout(this.previewTimeout);
-        this.previewTimeout = setTimeout(() => {
-          Preview.refresh(this.getContent());
-        }, 500);
-      });
-
+      // Настройка событий
+      this.setupCodeMirrorEvents();
+      
+      // Инициализация MaterialShortcuts (если он загружен)
+      if (typeof MaterialShortcuts !== 'undefined') {
+        this.materialShortcuts = MaterialShortcuts.init(this);
+        // Инициализация обработчиков кнопок Material
+      } else {
+        console.warn('MaterialShortcuts не загружен, некоторые функции недоступны');
+      }
+      
       // Инициализируем остальные компоненты
-      this.initMarkdownToolbar();
-      this.setupEventListeners();
       this.initFileHeader();
       
     } catch (error) {
-      console.error('CodeMirror init error:', error);
+      console.error('Ошибка инициализации CodeMirror:', error);
       // Если CodeMirror не загрузился - используем marked.js как fallback
       this.initWithMarked();
     }
+  },
+
+  setupCodeMirrorEvents: function() {
+    // Обновляем тему редактора при изменении в других вкладках
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'editorTheme' && this.cmInstance) {
+        this.cmInstance.setOption('theme', e.newValue);
+      }
+    });
+
+    // Автоматическое обновление превью при изменениях
+    this.cmInstance.on('change', () => {
+      clearTimeout(this.previewTimeout);
+      this.previewTimeout = setTimeout(() => {
+        Preview.refresh(this.getContent());
+      }, 500);
+    });
   },
 
     /**
@@ -123,33 +142,31 @@ const Editor = {
    * (более полная поддержка Markdown, но менее интерактивный)
    */
   initWithMarked: function() {
-      console.log('Initializing marked.js editor');
-      const container = document.getElementById('markdown-editor-container');
-      const textarea = document.getElementById('markdown-editor');
-      
-      // Очищаем контейнер и показываем обычный textarea
-      container.innerHTML = '';
-      container.appendChild(textarea);
-      textarea.style.display = 'block';
-      this.editor = textarea;
+    console.log('Initializing marked.js editor');
+    const container = document.getElementById('markdown-editor-container');
+    const textarea = document.getElementById('markdown-editor');
+    
+    // Очищаем контейнер и показываем обычный textarea
+    container.innerHTML = '';
+    container.appendChild(textarea);
+    textarea.style.display = 'block';
+    this.editor = textarea;
 
-      // Загружаем highlight.js для превью
-      this.loadHighlightJs().then(() => {
-          // Настраиваем обработчик для обновления превью
-          textarea.addEventListener('input', () => {
-              Preview.refresh(textarea.value);
-          });
-          
-          // Инициализируем превью с текущим содержимым
-          Preview.refresh(textarea.value);
-      }).catch(error => {
-          console.error('Failed to load highlight.js:', error);
-      });
+    // Загружаем highlight.js для превью
+    this.loadHighlightJs().then(() => {
+        // Настраиваем обработчик для обновления превью
+        textarea.addEventListener('input', () => {
+            Preview.refresh(textarea.value);
+        });
+        
+        // Инициализируем превью с текущим содержимым
+        Preview.refresh(textarea.value);
+    }).catch(error => {
+        console.error('Failed to load highlight.js:', error);
+    });
 
-      // Инициализируем остальные компоненты
-      this.initMarkdownToolbar();
-      this.setupEventListeners();
-      this.initFileHeader();
+    // Инициализируем остальные компоненты
+    this.initFileHeader();
   },
 
   loadHighlightJs: function() {
@@ -197,19 +214,6 @@ const Editor = {
   },
 
   /**
-   * Инициализация панели инструментов Markdown
-   */
-  initMarkdownToolbar: function() {
-    document.querySelectorAll('.markdown-toolbar button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const textToInsert = btn.dataset.insert;
-        this.insertAtCursor(textToInsert);
-        this.resetTimers();
-      });
-    });
-  },
-
-  /**
    * Инициализация компонента хлебных крошек
    */
   initFileHeader: function() {
@@ -222,29 +226,6 @@ const Editor = {
     
     // Инициализируем обработчики кликов
     this.setupBreadcrumbs();
-  },
-
-  setupEventListeners: function() {
-  // Добавляем проверки на существование элементов
-    const imageUpload = document.getElementById('image-upload');
-    if (!imageUpload) {
-      console.warn('Image upload element not found');
-      return;
-    }
-    if (imageUpload) {
-      imageUpload.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const url = await this.uploadImage(file);
-          if (url) {
-            this.insertAtCursor(`![${file.name}](${url})`);
-          }
-        }
-        e.target.value = '';
-      });
-    } else {
-      showNotification('image-upload element not found');
-    }
   },
 
   handleEditorInput: function() {
@@ -280,16 +261,6 @@ const Editor = {
     if (currentParser !== parser) {
       location.reload();
     }
-  },
-
-  initMarkdownToolbar: function() {
-    document.querySelectorAll('.markdown-toolbar button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const textToInsert = btn.dataset.insert;
-        this.insertAtCursor(textToInsert);
-        this.resetTimers();
-      });
-    });
   },
 
   /**
@@ -450,25 +421,6 @@ const Editor = {
     }
   },
 
-  uploadImage: async function(file) {
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const response = await fetch('/editor/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await response.json();
-      
-      // Возвращаем относительный путь для MkDocs
-      return data.url.replace(/^\/images\//, 'images/');
-    } catch (error) {
-      showNotification('Не удалось загрузить изображение:', error);
-      return null;
-    }
-  },
-
   // Добавим метод для преобразования путей при предпросмотре
   transformPathsForPreview: function(content) {
     // Заменяем относительные пути на абсолютные для предпросмотра
@@ -515,6 +467,7 @@ const Editor = {
 document.addEventListener('DOMContentLoaded', () => {
   Editor.init();
 });
+
 // Кастомный режим для MkDocs (обработка admonitions и вкладок)
 CodeMirror.defineMode("mkdocs-markdown", function(config) {
   const markdown = CodeMirror.getMode(config, "markdown");
@@ -542,4 +495,49 @@ CodeMirror.defineMode("mkdocs-markdown", function(config) {
     indent: markdown.indent,
     blankLine: markdown.blankLine
   };
+});
+
+// Обработчики для выпадающих меню
+function setupDropdowns() {
+  document.querySelectorAll('.dropdown').forEach(dropdown => {
+    const btn = dropdown.querySelector('.dropbtn');
+    const content = dropdown.querySelector('.dropdown-content');
+    
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Закрываем все другие открытые меню
+      document.querySelectorAll('.dropdown-content').forEach(otherContent => {
+        if (otherContent !== content) {
+          otherContent.style.display = 'none';
+        }
+      });
+      // Переключаем текущее меню
+      content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    // Обработчики для кнопок внутри меню
+    content.querySelectorAll('.dropdown-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const textToInsert = btn.getAttribute('data-insert');
+        if (textToInsert) {
+          Editor.insertAtCursor(textToInsert);
+        }
+        content.style.display = 'none';
+      });
+    });
+  });
+
+  // Закрытие меню при клике вне его
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-content').forEach(content => {
+      content.style.display = 'none';
+    });
+  });
+}
+
+// Инициализация при загрузке документа
+document.addEventListener('DOMContentLoaded', () => {
+  Editor.init();
+  setupDropdowns();
 });

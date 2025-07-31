@@ -9,13 +9,13 @@
   <link rel="stylesheet" href="assets/editor.css">
   <link rel="stylesheet" href="assets/button.css">
   <link rel="stylesheet" href="assets/notification.css">
-  <!-- <link rel="stylesheet" href="assets/syntax-theme.css"> -->
   <link rel="stylesheet" href="assets/settingsEditor.css">
   <link rel="stylesheet" href="assets/image-viewer.css">
   <link rel="stylesheet" href="assets/modal.css">
   <link rel="stylesheet" href="assets/vendor/codemirror/lib/codemirror.css">  <!-- Основной стиль CodeMirror -->
   <link rel="stylesheet" href="assets/vendor/codemirror/hint/show-hint.css">
   <link rel="stylesheet" href="assets/vendor/default.min.css"> <!-- Стиль по умолчанию для подсветки синтаксиса -->
+  <link rel="stylesheet" href="assets/material-preview.css">
   <!-- Тема для подсказок CodeMirror -->
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/material.css">        <!-- Тема Material для CodeMirror -->
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/material-darker.min.css">
@@ -26,7 +26,6 @@
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/ambiance.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
  
-  <!-- <link rel="stylesheet" href="assets/vendor/highlightjs-line-numbers.min.css"> -->
   <style>
     /* Стили для нижнего меню */
     .explorer-footer {
@@ -146,38 +145,131 @@
           </div>
       <!-- Верхняя панель редактора -->
       <div class="editor-toolbar">
-        <button id="note-btn" class="toolbar-btn">
-          <i class="mdi mdi-alert-circle-outline"></i> Note
-        </button>
-        <button id="foldable-btn" class="toolbar-btn">
-          <i class="mdi mdi-chevron-down-box-outline"></i> Foldable
-        </button>
-        <button id="image-gallery-btn" class="toolbar-btn">
+        <!-- Выпадающее меню для Admonitions -->
+        <div class="dropdown toolbar-group">
+          <button class="dropbtn block-btn">
+            <i class="mdi mdi-alert-box-outline"></i> Admonitions
+          </button>
+          <div class="dropdown-content">
+            <button class="dropdown-btn" data-insert="!!! note \"Note Title\"\n\n    Content here\n">
+              <i class="mdi mdi-information-outline"></i> Note
+            </button>
+            <button class="dropdown-btn" data-insert="!!! warning \"Warning Title\"\n\n    Content here\n">
+              <i class="mdi mdi-alert-outline"></i> Warning
+            </button>
+            <button class="dropdown-btn" data-insert="!!! danger \"Danger Title\"\n\n    Content here\n">
+              <i class="mdi mdi-alert-octagon-outline"></i> Danger
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-btn" data-insert="!!! tip \"Tip Title\"\n\n    Content here\n">
+              <i class="mdi mdi-lightbulb-on-outline"></i> Tip
+            </button>
+          </div>
+        </div>
+        <!-- Выпадающее меню для Foldable Blocks -->
+        <div class="dropdown toolbar-group">
+          <button class="dropbtn block-btn">
+            <i class="mdi mdi-chevron-down-box-outline"></i> Foldable
+          </button>
+          <div class="dropdown-content">
+            <button class="dropdown-btn" data-insert="??? note \"Note Title\"\n\n    Content here\n">
+              <i class="mdi mdi-information-outline"></i> Note
+            </button>
+            <button class="dropdown-btn" data-insert="??? example \"Example Title\"\n\n    Content here\n">
+              <i class="mdi mdi-code-braces"></i> Example
+            </button>
+          </div>
+        </div>
+        <!-- Кнопки без выпадающего меню -->
+        <div class="toolbar-group">
+          <button id="tabs-btn" class="toolbar-btn block-btn" title="Tabs Block (Ctrl+Alt+T)">
+            <i class="mdi mdi-tab"></i> Tabs
+          </button>
+          <button id="code-btn" class="toolbar-btn block-btn" title="Code Block (Ctrl+Alt+C)">
+            <i class="mdi mdi-code-tags"></i> Code
+          </button>
+          <button id="codejs-btn" class="toolbar-btn block-btn" title="Code Block (Ctrl+Alt+C)">
+            <i class="mdi mdi-code-tags"></i> Code
+          </button>
+        </div>
+        <!-- Группа медиа -->
+        <div class="toolbar-group">
+          <button id="image-gallery-btn" class="toolbar-btn media-btn" title="Галерея изображений">
           <i class="mdi mdi-image-multiple"></i> Галерея
         </button>
         <input type="file" id="image-upload" accept="image/*" style="display: none;">
+        </div>
+        <div class="toolbar-group">
+          <button id="save-btn" class="toolbar-btn" title="Сохранить (Ctrl+S)">
+            <i class="mdi mdi-content-save"></i> Сохранить
+          </button>
+        </div>
       </div>
       
-      <!-- Панель форматирования -->
+      <!-- Нижний тулбар - базовые элементы -->
       <div class="markdown-toolbar">
-        <button data-insert="# " title="Заголовок 1">H1</button>
-        <button data-insert="## " title="Заголовок 2">H2</button>
-        <button data-insert="**bold**" title="Жирный">B</button>
-        <button data-insert="*italic*" title="Курсив">I</button>
-        <button data-insert="[link](url)" title="Ссылка">Link</button>
-        <button data-insert="![alt](image.png)" title="Изображение">Img</button>
-        <button data-insert="!!! note\n\n    " title="Блок note">Note</button>
-        <button data-insert="??? note\n\n    " title="Сворачиваемый блок">Fold</button>
-        <button data-insert="---\n" title="Горизонтальная линия">Line</button>
-          <button data-insert="!!! note\n\n    " title="Admonition Note">
-          <i class="mdi mdi-alert-circle-outline"></i>
-        </button>
-        <button data-insert="??? note\n\n    " title="Foldable Block">
-          <i class="mdi mdi-chevron-down-box-outline"></i>
-        </button>
-        <button data-insert="=== \"Tab Title\"\n\n    " title="Tabs Block">
-          <i class="mdi mdi-tab"></i>
-        </button>
+        <!-- Выпадающее меню для заголовков -->
+        <div class="dropdown toolbar-group">
+          <button class="dropbtn format-btn">
+            <i class="mdi mdi-format-header"></i> Заголовки
+          </button>
+          <div class="dropdown-content">
+            <button class="dropdown-btn" data-insert="# ">
+              <i class="mdi mdi-format-header-1"></i> H1
+            </button>
+            <button class="dropdown-btn" data-insert="## ">
+              <i class="mdi mdi-format-header-2"></i> H2
+            </button>
+            <button class="dropdown-btn" data-insert="### ">
+              <i class="mdi mdi-format-header-3"></i> H3
+            </button>
+            <button class="dropdown-btn" data-insert="#### ">
+              <i class="mdi mdi-format-header-4"></i> H4
+            </button>
+            <button class="dropdown-btn" data-insert="##### ">
+              <i class="mdi mdi-format-header-5"></i> H5
+            </button>
+            <button class="dropdown-btn" data-insert="###### ">
+              <i class="mdi mdi-format-header-6"></i> H6
+            </button>
+          </div>
+        </div>
+
+        <!-- Группа форматирования текста -->
+        <div class="toolbar-group">
+          <button class="toolbar-btn format-btn" data-insert="**" data-wrap="**" title="Bold (Ctrl+B)">
+            <i class="mdi mdi-format-bold"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="*" data-wrap="*" title="Italic (Ctrl+I)">
+            <i class="mdi mdi-format-italic"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="`" title="Inline Code">
+            <i class="mdi mdi-code-brackets"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="~~" data-wrap="~~" title="Зачеркнутый текст">
+            <i class="mdi mdi-format-strikethrough"></i>
+          </button> 
+        </div>
+
+        <!-- Группа ссылок и изображений -->
+        <div class="toolbar-group">
+          <button class="toolbar-btn format-btn" data-insert="[link text](url)" title="Insert Link">
+            <i class="mdi mdi-link"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="![alt text](image.png)" title="Insert Image">
+            <i class="mdi mdi-image"></i>
+          </button>
+        </div>
+
+        <!-- Группа списков -->
+        <div class="toolbar-group">
+          <button class="toolbar-btn format-btn" data-insert="- " title="Bullet List">
+            <i class="mdi mdi-format-list-bulleted"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="1. " title="Numbered List">
+            <i class="mdi mdi-format-list-numbered"></i>
+          </button>
+        </div>
       </div>
       
       <!-- Область редактора и предпросмотра -->
@@ -204,7 +296,7 @@
   <script src="assets/vendor/highlight.min.js"></script>
   <!-- Затем плагин для нумерации строк -->
   <script src="assets/vendor/highlightjs-line-numbers.min.js"></script>
-  <script src="assets/vendor/marked.min.js"></script>
+  <!-- <script src="assets/vendor/marked.min.js"></script> -->
   <!-- В конец body перед другими скриптами добавить -->
   <script src="assets/vendor/codemirror/lib/codemirror.js"></script>
   <script src="assets/vendor/codemirror/markdown.js"></script>            <!-- Режим Markdown -->
@@ -216,16 +308,16 @@
   <script src="assets/vendor/codemirror/html-hint.js"></script>           <!-- Подсказки для HTML -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script> <!-- Для работы с YAML -->
   <!-- Подключение скриптов -->
-  <script src="js/settingsEditor.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/fileExplorer.js"></script>
-  <script src="js/editor.js"></script>
-  <script src="js/modal.js"></script>
   <script src="js/preview.js"></script>
-  <script src="js/fileSearch.js"></script>
   <script src="js/materialShortcuts.js"></script>
-  <script src="js/imageViewer.js"></script>
+  <script src="js/editor.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/settingsEditor.js"></script>
+  <script src="js/modal.js"></script>
+  <script src="js/fileSearch.js"></script>
+  <script src="js/imageViewer.js"></script>
   
   <script>
     // Обработчики для управления меню

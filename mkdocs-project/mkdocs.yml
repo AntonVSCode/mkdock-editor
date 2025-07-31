@@ -19,16 +19,24 @@ theme:
   features:
     - navigation.tabs
     - navigation.top
-    - navigation.indexes
     - navigation.sections
-    - navigation.expand
     - navigation.instant
     - navigation.tracking
     - search.highlight
     - search.suggest
+    - toc.integrate
+    - content.tabs
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - header.autohide
     - navigation.path
     - navigation.footer
+    - navigation.instant.progress
 markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
   - codehilite:
       use_pygments: true
       guess_lang: true

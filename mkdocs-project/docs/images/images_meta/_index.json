@@ -21,17 +21,6 @@
       "height": 0
     }
   },
-  "0c93304d-30cb-4013-a892-4b3b7d9e2b0e.png": {
-    "originalName": "Amazing Spider-Man vs. The Kingpin, The (USA)-screenshot.png",
-    "storedName": "0c93304d-30cb-4013-a892-4b3b7d9e2b0e.png",
-    "path": "images/0c93304d-30cb-4013-a892-4b3b7d9e2b0e.png",
-    "size": 27285,
-    "uploadDate": "2025-07-23T12:47:15.103Z",
-    "dimensions": {
-      "width": 0,
-      "height": 0
-    }
-  },
   "4f80f9e6-4d7b-473b-b539-1a1aa867f93f.png": {
     "originalName": "Anett Futatabi (Japan)-screenshot.png",
     "storedName": "4f80f9e6-4d7b-473b-b539-1a1aa867f93f.png",
@@ -87,17 +76,6 @@
       "height": 0
     }
   },
-  "da411eb8-0dcc-4f2b-b4bc-85aeb62d0c11.png": {
-    "originalName": "Cyborg 009 (Japan)-screenshot.png",
-    "storedName": "da411eb8-0dcc-4f2b-b4bc-85aeb62d0c11.png",
-    "path": "images/da411eb8-0dcc-4f2b-b4bc-85aeb62d0c11.png",
-    "size": 51157,
-    "uploadDate": "2025-07-23T12:49:09.697Z",
-    "dimensions": {
-      "width": 0,
-      "height": 0
-    }
-  },
   "0c96c311-5f79-4c8d-a6ec-e99061809abd.png": {
     "originalName": "Devastator (Japan)-screenshot.png",
     "storedName": "0c96c311-5f79-4c8d-a6ec-e99061809abd.png",
@@ -115,6 +93,28 @@
     "path": "images/bash/test/3a71c628-8f76-4bf7-ae3d-52ed3477541a.png",
     "size": 157358,
     "uploadDate": "2025-07-24T09:34:18.169Z",
+    "dimensions": {
+      "width": 0,
+      "height": 0
+    }
+  },
+  "e115f038-de3d-4f1f-9e44-737a73d20956.png": {
+    "originalName": "logo.png",
+    "storedName": "e115f038-de3d-4f1f-9e44-737a73d20956.png",
+    "path": "images/e115f038-de3d-4f1f-9e44-737a73d20956.png",
+    "size": 157358,
+    "uploadDate": "2025-07-29T10:13:49.119Z",
+    "dimensions": {
+      "width": 0,
+      "height": 0
+    }
+  },
+  "3d123539-6ebc-424d-9cc7-fab451b4eee2.ico": {
+    "originalName": "edit.ico",
+    "storedName": "3d123539-6ebc-424d-9cc7-fab451b4eee2.ico",
+    "path": "images/bash/3d123539-6ebc-424d-9cc7-fab451b4eee2.ico",
+    "size": 16958,
+    "uploadDate": "2025-07-29T10:14:12.054Z",
     "dimensions": {
       "width": 0,
       "height": 0

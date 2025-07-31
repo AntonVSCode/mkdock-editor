@@ -14,6 +14,7 @@ button, .btn {
   font-size: 14px;
   border: none;
   outline: none;
+  font-family: inherit;
 }
 
 /* Основные кнопки инструментов */
@@ -188,4 +189,167 @@ button, .btn {
 
 .file-explorer.collapsed ~ .toggle-sidebar-btn {
   display: block;
+}
+
+/* Верхний тулбар - сложные элементы */
+.editor-toolbar {
+  padding: 10px 15px;
+  background-color: white;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Нижний тулбар - базовые элементы */
+.markdown-toolbar {
+  padding: 8px 15px;
+  background-color: var(--secondary-color);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Группы кнопок */
+.toolbar-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0 8px;
+  border-right: 1px solid var(--border-color);
+}
+
+.toolbar-group:last-child {
+  border-right: none;
+}
+
+/* Кнопки форматирования */
+.format-btn {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.format-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* Кнопки блоков */
+.block-btn {
+  background-color: #f0f7ff;
+  border: 1px solid #c2d9f0;
+  color: #2c5fa8;
+}
+
+.block-btn:hover {
+  background-color: #d8e9ff;
+}
+
+/* Кнопки медиа */
+.media-btn {
+  background-color: #fff0f0;
+  border: 1px solid #f0c2c2;
+  color: #a82c2c;
+}
+
+.media-btn:hover {
+  background-color: #ffd8d8;
+}
+
+/* Выпадающие меню */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  z-index: 100;
+  padding: 8px 0;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown-item {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-color);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
+}
+
+/* Стили для кнопок в выпадающих меню */
+.dropdown-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 0;
+}
+
+.dropdown-btn:hover {
+  background-color: #f5f5f5;
+}
+
+/* Иконки в кнопках */
+.toolbar-btn i {
+  font-size: 18px;
+}
+
+/* Подсказки */
+.tooltip {
+  position: relative;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  width: 120px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+#save-btn {
+  color: #4CAF50; /* Зеленый цвет иконки */
+}
+
+#save-btn:hover {
+  background-color: rgba(76, 175, 80, 0.1); /* Светло-зеленый фон при наведении */
 }
