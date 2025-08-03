@@ -19,12 +19,12 @@ theme:
   features:
     - navigation.tabs
     - navigation.top
+    - navigation.indexes
     - navigation.sections
     - navigation.instant
     - navigation.tracking
     - search.highlight
     - search.suggest
-    - toc.integrate
     - content.tabs
     - content.code.annotate
     - content.code.copy
@@ -34,6 +34,7 @@ theme:
     - navigation.footer
     - navigation.instant.progress
 markdown_extensions:
+  - attr_list
   - admonition
   - pymdownx.details
   - pymdownx.superfences
@@ -62,10 +63,7 @@ plugins:
       lang:
         - ru
         - en
-nav:
-  - <i class="material-icons">home</i> Главная: index.md
-  - Proxmox: index2.md
+extra_css:
+  - assets/mdi/materialdesignicons.min.css
 extra:
   images_dir: images
-extra_css:
-  - assets/material-icons/material-icons.css

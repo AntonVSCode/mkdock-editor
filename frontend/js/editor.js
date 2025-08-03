@@ -8,6 +8,9 @@ const Editor = {
   currentFileElement: null,    // Элемент с именем текущего файла
   previewTimeout: null,        // Таймер для обновления превью
   saveTimeout: null,           // Таймер для автосохранения
+  //typo: null,
+  //typoEn: null,
+  //spellcheckTimeout: null,
 
   /**
    * Инициализация редактора
@@ -35,7 +38,7 @@ const Editor = {
       if (settings.markdownParser === 'marked') {
         this.initWithMarked();
       } else {
-        this.initWithCodeMirror();
+         this.initWithCodeMirror();
       }
 
       return this;
@@ -96,7 +99,6 @@ const Editor = {
         indentUnit: 2,                 // Ширина отступа
         indentWithTabs: false,         // Использовать пробелы для отступов
         tabSize: 2,                    // Размер табуляции
-        //extraKeys: this.getHotkeys()   // Горячие клавиши
       });
 
       // Настройка событий
@@ -109,10 +111,10 @@ const Editor = {
       } else {
         console.warn('MaterialShortcuts не загружен, некоторые функции недоступны');
       }
-      
+
       // Инициализируем остальные компоненты
       this.initFileHeader();
-      
+     
     } catch (error) {
       console.error('Ошибка инициализации CodeMirror:', error);
       // Если CodeMirror не загрузился - используем marked.js как fallback
@@ -120,7 +122,7 @@ const Editor = {
     }
   },
 
-  setupCodeMirrorEvents: function() {
+     setupCodeMirrorEvents: function() {
     // Обновляем тему редактора при изменении в других вкладках
     window.addEventListener('storage', (e) => {
       if (e.key === 'editorTheme' && this.cmInstance) {
@@ -201,7 +203,7 @@ const Editor = {
       });
   },
 
-    /**
+     /**
    * Сохранение настроек редактора
    * @param {string} theme - Название темы
    * @param {string} parser - Выбранный парсер (codemirror/marked)
@@ -394,31 +396,40 @@ const Editor = {
     });
   },
 
-  saveFile: async function() {
-    if (!this.currentFile) return;
-
-    try {
-      const content = this.getContent();
-      const response = await fetch('/editor/api/file', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          path: this.currentFile,
-          content: content
-        })
-      });
-
-      if (!response.ok) throw new Error('Save failed');
-      
-      // Обновляем превью после сохранения, если оно видимо
-      const previewContainer = document.getElementById('preview-container');
-      if (!previewContainer || !previewContainer.classList.contains('hidden')) {
-        Preview.refresh(content);
+  saveFile: function() {
+    return new Promise(async (resolve) => {
+      if (!this.currentFile) {
+        showNotification('Не удалось сохранить файл: файл не выбран', 'error');
+        resolve();
+        return;
       }
-    } catch (error) {
-      //console.error('Error saving file:', error);
-      showNotification('Не удалось сохранить файл', 'error');
-    }
+
+      try {
+        const content = this.getContent();
+        const response = await fetch('/editor/api/file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            path: this.currentFile,
+            content: content
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Save failed');
+        }
+        
+        // Обновляем превью после сохранения, если оно видимо
+        const previewContainer = document.getElementById('preview-container');
+        if (!previewContainer || !previewContainer.classList.contains('hidden')) {
+          Preview.refresh(content);
+        }
+        resolve();
+      } catch (error) {
+        showNotification('Не удалось сохранить файл', 'error');
+        resolve(); // Все равно резолвим промис, так как ошибка уже обработана
+      }
+    });
   },
 
   // Добавим метод для преобразования путей при предпросмотре

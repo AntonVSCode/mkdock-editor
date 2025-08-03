@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/monokai.min.css">
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/solarized.min.css">
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/ambiance.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="assets/vendor/mdi/materialdesignicons.min.css">
  
   <style>
     /* Стили для нижнего меню */
@@ -143,7 +143,7 @@
               <span class="filename">no file selected</span>
             </div>
           </div>
-      <!-- Верхняя панель редактора -->
+      <!-- Верхняя панель редактора (editor-toolbar) - содержит кнопки для сложных элементов (admonitions, tabs и т.д.) -->
       <div class="editor-toolbar">
         <!-- Выпадающее меню для Admonitions -->
         <div class="dropdown toolbar-group">
@@ -206,7 +206,7 @@
         </div>
       </div>
       
-      <!-- Нижний тулбар - базовые элементы -->
+      <!-- Нижний тулбар - (markdown-toolbar) - содержит базовые элементы разметки -->
       <div class="markdown-toolbar">
         <!-- Выпадающее меню для заголовков -->
         <div class="dropdown toolbar-group">
@@ -296,7 +296,6 @@
   <script src="assets/vendor/highlight.min.js"></script>
   <!-- Затем плагин для нумерации строк -->
   <script src="assets/vendor/highlightjs-line-numbers.min.js"></script>
-  <!-- <script src="assets/vendor/marked.min.js"></script> -->
   <!-- В конец body перед другими скриптами добавить -->
   <script src="assets/vendor/codemirror/lib/codemirror.js"></script>
   <script src="assets/vendor/codemirror/markdown.js"></script>            <!-- Режим Markdown -->

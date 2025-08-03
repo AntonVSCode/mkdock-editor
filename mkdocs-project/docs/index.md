@@ -4,12 +4,14 @@ tags:
   - JavaScript
   - CSS
 ---
-
+[Главная страница](index.md){: .mdi .mdi-home }
+[Proxmox](index2.md){: .mdi .mdi-server }
+asdas 
 ### Welcome to MkDocs
 
 **For full** `*documentation*` ~~visit~~ [mkdocs.org](https://www.mkdocs.org).
 
-## Commands
+## Command
 
 * `mkdocs new [dir-name]` - Create a new project.
 * `mkdocs serve` - Start the live-reloading docs server.

@@ -87,6 +87,7 @@ var MaterialShortcuts = (function() {
       }
       
       this.editor = editorInstance;
+      //this.editor.enableSpellcheck(); // Автоматически включаем проверку
       this.registerHotkeys();
       this.setupButtons();
       return this;
@@ -204,20 +205,26 @@ var MaterialShortcuts = (function() {
             }
           }
         }
-        const saveBtn = document.getElementById('save-btn');
-        if (saveBtn) {
-          saveBtn.onclick = (e) => {
-            e.preventDefault();
-            this.editor.saveFile(); // Используем существующий метод сохранения
-            showNotification('Файл сохранён', 'success', 'mdi mdi-content-save');
-          };
-        }
       };
 
       // Назначаем обработчик на все кнопки с data-insert
       document.querySelectorAll('.markdown-toolbar button[data-insert]').forEach(btn => {
         btn.onclick = handleInsertClick;
       });
+
+      // Обработчик для кнопки сохранения
+      const saveBtn = document.getElementById('save-btn');
+      if (saveBtn) {
+        saveBtn.onclick = async (e) => {
+          e.preventDefault();
+          try {
+            await this.editor.saveFile();
+            showNotification('Файл успешно сохранён', 'success', 'mdi mdi-content-save');
+          } catch (error) {
+            showNotification('Ошибка при сохранении файла', 'error', 'mdi mdi-alert-circle');
+          }
+        };
+      }
 
       // Кнопки верхнего тулбара (вставка шаблонов)
       const templateButtons = {
@@ -315,7 +322,7 @@ var MaterialShortcuts = (function() {
         'Ctrl-Alt-C': () => this.insertTemplate('code'),
         'Ctrl-Alt-J': () => this.insertTemplate('codejs'),
         'Ctrl-Alt-H': () => this.insertTemplate('codehtml'),
-        'Ctrl-Alt-S': () => this.insertTemplate('codecss'),
+        'Ctrl-Alt-M': () => this.insertTemplate('codecss'),
         'Ctrl-Alt-1': () => _insertHeading(cm, _templates.h1),
         'Ctrl-Alt-2': () => _insertHeading(cm, _templates.h2),
         'Ctrl-Alt-3': () => _insertHeading(cm, _templates.h3),
