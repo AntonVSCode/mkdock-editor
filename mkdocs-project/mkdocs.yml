@@ -45,15 +45,14 @@ markdown_extensions:
       linenums_style: table
       css_class: highlight
   - pymdownx.highlight:
-      use_pygments: true
-      linenums: true
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
+      use_pygments: true
+      linenums: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences:
-      preserve_tabs: true
+  - pymdownx.superfences
   - toc:
       permalink: true
       toc_depth: 6

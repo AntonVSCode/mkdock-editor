@@ -131,32 +131,41 @@ class MkDocsPreview {
   }
 
   simpleMarkdownToHtml(markdown) {
-        // Обработка блоков кода
-    markdown = markdown.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, 
-      '<pre><code class="language-$1">$2</code></pre>');
-    
-    // Обработка admonitions (!!! note)
-    markdown = markdown.replace(/^!!! (\w+)(?:\s+"(.+)")?/gm, 
-      '<div class="admonition $1"><p class="admonition-title">$2</p>');
-    
-    // Обработка ссылок и изображений
-    markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/g, 
-      '<img alt="$1" src="$2" class="materialboxed">');
-    markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/g, 
-      '<a href="$2" target="_blank">$1</a>');
-    // Базовое преобразование Markdown в HTML (только основные элементы)
-    return markdown
-      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-      .replace(/^\* (.*$)/gm, '<li>$1</li>')
-      .replace(/^\> (.*$)/gm, '<blockquote>$1</blockquote>')
-      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2">')
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-      .replace(/\n/g, '<br>');
+      // Сначала экранируем HTML во всем содержимом
+      const escapeHtml = (unsafe) => {
+          return unsafe
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+      };
+      
+      // Обработка блоков кода с экранированием
+      markdown = markdown.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, 
+          (match, lang, code) => {
+              return `<pre><code class="language-${lang}">${escapeHtml(code)}</code></pre>`;
+          });
+      
+      // Остальные замены остаются без изменений
+      markdown = markdown.replace(/^!!! (\w+)(?:\s+"(.+)")?/gm, 
+          '<div class="admonition $1"><p class="admonition-title">$2</p>');
+      
+      markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/g, 
+          '<img alt="$1" src="$2" class="materialboxed">');
+      
+      // Остальные базовые преобразования Markdown
+      return markdown
+          .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+          .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+          .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+          .replace(/^\* (.*$)/gm, '<li>$1</li>')
+          .replace(/^\> (.*$)/gm, '<blockquote>$1</blockquote>')
+          .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+          .replace(/\n/g, '<br>');
   }
 
   applySyntaxHighlighting() {

@@ -3,16 +3,63 @@
 Table of Contents
 
 ## Introduction
-```python
+```{ .python title="qweqwrewe" linenums="3" hl_lines="2"}
 def example():
     pass
 ```
+
+
+
+
+```{ .javascript hl_lines="1"}
+let 
+var
+const
+```
+
+
+
+
+```{ .css title="css2" linenums="5" hl_lines="12-15 18-20 23"}
+/* Адаптивность */
+@media (max-width: 768px) {
+    .settings-columns {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .language-column {
+        flex: 1;
+        border-right: none;
+        border-bottom: 1px solid var(--modal-border, #eaeaea);
+        padding-right: 0;
+        padding-bottom: 20px;
+    }
+    
+    #code-block-modal .modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .languages-container {
+        max-height: 150px;
+    }
+    
+    .CodeMirror {
+        height: 150px; /*(1)!*/
+    }
+}
+```
+
+    1. :man_raising_hand: I'm a code annotation! I can contain `code`, __formatted text__, images, ... basically anything that can be written in Markdown.
+
+
 Monitoring Proxmox with Grafana will be a good idea to see the actual resource utilization on our Proxmox cluster. Already we have covered in our previous guide about “[How to monitor Linux servers using Prometheus and Grafana](https://www.linuxsysadmins.com/prometheus-with-grafana-for-linux-server/)“. However, in this guide let’s focus on how to monitor the Proxmox virtualization platform with the help of Proxmox and influxDb.
 
 Proxmox supports Graphite and InfluxDB while comparing the advantage of using InfluxDB and graphite, InfluxDB owns the match. Let’s start to setup influx DB by following below guide.
 
 -   [How to Install InfluxDB on Linux](https://www.linuxsysadmins.com/install-influxdb-on-linux-3-easy-steps/)
-
+![Blackhole Assault (USA)-screenshot.png](images/a6204712-4831-492c-a66d-8611f9f1a174.png)
 Right after installing the InfluxDB, start to create the DB user, Database with required privileges.
 
 ### Creating a Monitoring Database

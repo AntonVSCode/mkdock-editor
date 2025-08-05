@@ -85,6 +85,20 @@ document.addEventListener('DOMContentLoaded', async () => {
           Preview.refresh(Editor.getContent());
       }
     });
+    // Добавьте эту строку:
+    if (typeof CodeBlockModal !== 'undefined') {
+        try {
+            await CodeBlockModal.init();
+            console.log('CodeBlockModal initialized successfully'); // Для отладки
+
+            // Добавьте проверку, что кнопка существует в DOM
+            if (!document.getElementById('code-btn')) {
+                console.warn('Кнопка code-btn не найдена в DOM');
+            }
+        } catch (e) {
+            console.error('CodeBlockModal init error:', e);
+        }
+    }
 
     // 8. Первоначальная загрузка файлов и установка приветственного сообщения
     await FileExplorer.loadFiles();

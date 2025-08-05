@@ -434,8 +434,14 @@ const Editor = {
 
   // Добавим метод для преобразования путей при предпросмотре
   transformPathsForPreview: function(content) {
-    // Заменяем относительные пути на абсолютные для предпросмотра
-    return content.replace(/\]\(images\//g, '](/images/');
+      // Экранируем HTML в блоках кода перед предпросмотром
+      const codeBlockRegex = /```[\s\S]*?```/g;
+      content = content.replace(codeBlockRegex, (match) => {
+          return match.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      });
+      
+      // Заменяем относительные пути на абсолютные для предпросмотра
+      return content.replace(/\]\(images\//g, '](/images/');
   },
 
   /**
