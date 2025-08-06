@@ -2,7 +2,11 @@
 
 Table of Contents
 
+test
 ## Introduction
+!!! note 
+    фывфывфывф фывфвфывф 
+
 ```{ .python title="qweqwrewe" linenums="3" hl_lines="2"}
 def example():
     pass
@@ -10,6 +14,13 @@ def example():
 
 
 
+!!! warning 
+    фыаыфвафываыф афыавфывафы
+!!! danger \
+??? note \
+??? example \
+
+#### йцуй
 
 ```{ .javascript hl_lines="1"}
 let 
@@ -66,59 +77,63 @@ Right after installing the InfluxDB, start to create the DB user, Database with 
 
 Creating database for monitoring Proxmox, Replace the user and password value as per standard to your setup.
 
-``` sql
-CREATE USER admin WITH PASSWORD 'Redhat@123' WITH ALL PRIVILEGES
+```{ .sql linenums="1"}
+CREATE USER admin WITH PASSWORD &#039;Redhat@123&#039; WITH ALL PRIVILEGES
 CREATE DATABASE mondb
-CREATE USER monuser WITH PASSWORD 'Redhat@123'
+CREATE USER monuser WITH PASSWORD &#039;Redhat@123&#039;
 GRANT ALL ON mondb TO monuser
 exit
 ```
 
+
 Create, Verify and list the created database
 
-```sql title="bubble_sort.py"
+```{ .sql title="bubble_sort.py" linenums="1"}
 sysadmin@monitor:~$ influx
 Connected to http://localhost:8086 version 1.8.3
 InfluxDB shell version: 1.8.3
-> CREATE USER admin WITH PASSWORD 'Redhat@123' WITH ALL PRIVILEGES
-> CREATE DATABASE mondb
-> CREATE USER monuser WITH PASSWORD 'Redhat@123'
-> GRANT ALL ON mondb TO monuser
-> SHOW GRANTS FOR monuser
+&gt; CREATE USER admin WITH PASSWORD &#039;Redhat@123&#039; WITH ALL PRIVILEGES
+&gt; CREATE DATABASE mondb
+&gt; CREATE USER monuser WITH PASSWORD &#039;Redhat@123&#039;
+&gt; GRANT ALL ON mondb TO monuser
+&gt; SHOW GRANTS FOR monuser
 database privilege
 -------- ---------
 mondb    ALL PRIVILEGES
-> SHOW DATABASES
+&gt; SHOW DATABASES
 name: databases
 name
 ----
 _internal
 mondb
-> 
-> exit
+&gt; 
+&gt; exit
 sysadmin@monitor:~$
 ```
+
 
 ### InfluxDB configuration for Proxmox
 
 Few configurations are required for Proxmox. Edit the main configuration for Influxdb to add the require options
 
-```bash
+```{ .bash linenums="1"}
 sudo vim /etc/influxdb/influxdb.conf
 ```
+
 
 This port should match to Proxmox metric configuration.
 
 DataCenter –> Metric Server –> Add –> InfluxDB
 
-```
+```{ .yaml linenums="1"}
 [[udp]]
    enabled = true
-   bind-address = ":8089"
-   database = "mondb"
+   bind-address = &quot;:8089&quot;
+   database = &quot;mondb&quot;
    batch-size = 5000
-   batch-timeout = "1s"
+   batch-timeout = &quot;1s&quot;
 ```
+
 
 Make sure to use the database we created in earlier steps.
 

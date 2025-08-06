@@ -433,15 +433,46 @@ const Editor = {
   },
 
   // Добавим метод для преобразования путей при предпросмотре
-  transformPathsForPreview: function(content) {
-      // Экранируем HTML в блоках кода перед предпросмотром
-      const codeBlockRegex = /```[\s\S]*?```/g;
-      content = content.replace(codeBlockRegex, (match) => {
-          return match.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      });
+  // transformPathsForPreview: function(content) {
+  //     // Экранируем HTML в блоках кода перед предпросмотром
+  //     const codeBlockRegex = /```[\s\S]*?```/g;
+  //     content = content.replace(codeBlockRegex, (match) => {
+  //         return match.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  //     });
       
-      // Заменяем относительные пути на абсолютные для предпросмотра
-      return content.replace(/\]\(images\//g, '](/images/');
+  //     // Заменяем относительные пути на абсолютные для предпросмотра
+  //     return content.replace(/\]\(images\//g, '](/images/');
+  // },
+  transformPathsForPreview: function(content) {
+    // Экранируем HTML во всем контенте, кроме блоков кода
+    const codeBlockRegex = /```[\s\S]*?```/g;
+    let lastIndex = 0;
+    let result = '';
+    
+    // Обрабатываем каждый блок кода отдельно
+    content.replace(codeBlockRegex, (match, offset) => {
+      // Экранируем текст перед блоком кода
+      result += this.escapeHtml(content.substring(lastIndex, offset));
+      // Добавляем сам блок кода без экранирования
+      result += match;
+      lastIndex = offset + match.length;
+      return match;
+    });
+    
+    // Добавляем оставшийся текст после последнего блока кода
+    result += this.escapeHtml(content.substring(lastIndex));
+    
+    // Заменяем относительные пути на абсолютные для предпросмотра
+    return result.replace(/\]\(images\//g, '](/images/');
+  },
+
+  escapeHtml: function(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   },
 
   /**

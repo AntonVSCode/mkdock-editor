@@ -4,7 +4,8 @@ class MkDocsPreview {
     this.currentContent = '';
     this.isPreviewVisible = true;
     this.highlightJsLoaded = false;
-    this.materialStylesLoaded = false;
+    this.mdiLoaded = false;
+    this.setupEventListeners();
   }
 
   init() {
@@ -19,26 +20,31 @@ class MkDocsPreview {
     try {
       await Promise.all([
         this.loadHighlightJs(),
-        this.loadMaterialStyles()
+        this.loadMdi()
       ]);
     } catch (error) {
       console.error('Failed to load dependencies:', error);
     }
   }
 
-  async loadMaterialStyles() {
-    if (this.materialStylesLoaded) return;
+  async loadMdi() {
+    if (this.mdiLoaded) return;
     
     return new Promise((resolve) => {
+      if (document.querySelector('link[href*="materialdesignicons"]')) {
+        this.mdiLoaded = true;
+        return resolve();
+      }
+
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = 'assets/material-preview.css';
+      link.href = 'https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css';
       link.onload = () => {
-        this.materialStylesLoaded = true;
+        this.mdiLoaded = true;
         resolve();
       };
       link.onerror = () => {
-        console.warn('Failed to load material-preview.css');
+        console.warn('Failed to load MDI CSS');
         resolve();
       };
       document.head.appendChild(link);
@@ -49,80 +55,113 @@ class MkDocsPreview {
     if (this.highlightJsLoaded) return;
 
     return new Promise((resolve) => {
-      // Проверяем, возможно hljs уже загружен
       if (typeof hljs !== 'undefined') {
         this.initHighlightJs();
-        resolve();
-        return;
+        return resolve();
       }
 
-      // Загружаем стили
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'assets/vendor/highlightjs/default.min.css';
-      document.head.appendChild(link);
-
-      // Загружаем скрипт highlight.js
       const script = document.createElement('script');
-      script.src = 'assets/vendor/highlightjs/highlight.min.js';
+      script.src = 'assets/vendor/highlight.min.js';
       script.onload = () => {
-        // Теперь загружаем плагин нумерации строк
         const lineNumbersScript = document.createElement('script');
-        lineNumbersScript.src = 'assets/vendor/highlightjs/highlightjs-line-numbers.min.js';
+        lineNumbersScript.src = 'assets/vendor/highlightjs-line-numbers.min.js';
         lineNumbersScript.onload = () => {
           this.initHighlightJs();
           resolve();
         };
-        lineNumbersScript.onerror = (e) => {
-          console.error('Failed to load line numbers plugin', e);
-          this.initHighlightJs(); // Все равно инициализируем highlight.js
+        lineNumbersScript.onerror = () => {
+          console.warn('Failed to load line numbers plugin');
+          this.initHighlightJs();
           resolve();
         };
         document.head.appendChild(lineNumbersScript);
       };
-      script.onerror = (e) => {
-        console.error('Failed to load highlight.js', e);
-        resolve(); // Продолжаем даже если не удалось загрузить highlight.js
+      script.onerror = () => {
+        console.warn('Failed to load highlight.js');
+        resolve();
       };
       document.head.appendChild(script);
+    });
+  }
+
+  setupEventListeners() {
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('mkdocs-admonition-title')) {
+        const admonition = e.target.closest('.mkdocs-admonition.collapsible');
+        if (admonition) {
+          admonition.classList.toggle('closed');
+        }
+      }
     });
   }
 
   initHighlightJs() {
     if (typeof hljs === 'undefined') return;
     
-    // Инициализируем highlight.js
-    hljs.highlightAll();
-    
-    // Инициализируем нумерацию строк, если плагин загружен
-    if (typeof hljs.lineNumbersBlock === 'function') {
-      document.querySelectorAll('pre code').forEach((block) => {
-        hljs.lineNumbersBlock(block);
-      });
-    }
+    document.querySelectorAll('pre code').forEach((block) => {
+      hljs.highlightElement(block);
+      
+      if (block.dataset.linenos && typeof hljs.lineNumbersBlock === 'function') {
+        hljs.lineNumbersBlock(block, {
+          singleLine: false,
+          startFrom: parseInt(block.dataset.linenostart) || 1
+        });
+      }
+      
+      if (block.dataset.hlLines) {
+        const lines = block.dataset.hlLines.split(',').map(Number);
+        const lineNumbers = block.querySelectorAll('.hljs-ln-numbers .hljs-ln-line');
+        lines.forEach(line => {
+          if (lineNumbers[line - 1]) {
+            lineNumbers[line - 1].parentNode.classList.add('mkdocs-highlighted-line');
+          }
+        });
+      }
+    });
     
     this.highlightJsLoaded = true;
   }
 
+  // refresh(content = null) {
+  //   if (!this.isPreviewVisible) return;
+
+  //   try {
+  //     if (content) this.currentContent = content;
+      
+  //     let html = '';
+  //     if (window.Editor?.cmInstance?.markdownRenderer) {
+  //       const tempElement = document.createElement('div');
+  //       window.Editor.cmInstance.markdownRenderer(tempElement, this.currentContent);
+  //       html = tempElement.innerHTML;
+  //     } else {
+  //       html = this.markdownToHtml(this.currentContent);
+  //     }
+
+  //     this.updatePreview(html);
+  //     this.applySyntaxHighlighting();
+  //   } catch (error) {
+  //     console.error('Preview error:', error);
+  //     this.showError('Failed to render preview');
+  //   }
+  // }
   refresh(content = null) {
     if (!this.isPreviewVisible) return;
 
     try {
       if (content) this.currentContent = content;
       
-      // Получаем HTML либо из CodeMirror, либо из простого преобразования
       let html = '';
       if (window.Editor?.cmInstance?.markdownRenderer) {
         const tempElement = document.createElement('div');
         window.Editor.cmInstance.markdownRenderer(tempElement, this.currentContent);
         html = tempElement.innerHTML;
       } else {
-        // Fallback для простого отображения, если CodeMirror не доступен
-        html = this.simpleMarkdownToHtml(this.currentContent);
+        // Используем transformPathsForPreview для экранирования HTML
+        const processedContent = window.Editor?.transformPathsForPreview?.(this.currentContent) || this.currentContent;
+        html = this.markdownToHtml(processedContent);
       }
+
       this.updatePreview(html);
-      
-      // Применяем подсветку после обновления контента
       this.applySyntaxHighlighting();
     } catch (error) {
       console.error('Preview error:', error);
@@ -130,59 +169,286 @@ class MkDocsPreview {
     }
   }
 
-  simpleMarkdownToHtml(markdown) {
-      // Сначала экранируем HTML во всем содержимом
-      const escapeHtml = (unsafe) => {
-          return unsafe
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#039;");
-      };
-      
-      // Обработка блоков кода с экранированием
-      markdown = markdown.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, 
-          (match, lang, code) => {
-              return `<pre><code class="language-${lang}">${escapeHtml(code)}</code></pre>`;
-          });
-      
-      // Остальные замены остаются без изменений
-      markdown = markdown.replace(/^!!! (\w+)(?:\s+"(.+)")?/gm, 
-          '<div class="admonition $1"><p class="admonition-title">$2</p>');
-      
-      markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/g, 
-          '<img alt="$1" src="$2" class="materialboxed">');
-      
-      // Остальные базовые преобразования Markdown
-      return markdown
-          .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-          .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-          .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-          .replace(/^\* (.*$)/gm, '<li>$1</li>')
-          .replace(/^\> (.*$)/gm, '<blockquote>$1</blockquote>')
-          .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-          .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-          .replace(/\n/g, '<br>');
+// markdownToHtml(markdown) {
+//     // Обработка блоков кода с атрибутами
+//     const codeBlocks = [];
+//     markdown = markdown.replace(/```([a-z]*)\s*{([^}]*)}?\n([\s\S]*?)\n```/g, 
+//       (match, lang, attrs, code) => {
+//         const attributes = this.parseCodeBlockAttributes(attrs);
+//         const id = `codeblock-${codeBlocks.length}`;
+        
+//         codeBlocks.push({
+//             id,
+//             lang,
+//             attributes,
+//             code: this.escapeHtml(code.trim())
+//         });
+//         return `\n@@@${id}@@@\n`;
+//     });
+    
+//     // Обработка обычных блоков кода (без атрибутов)
+//     markdown = markdown.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, 
+//       (match, lang, code) => {
+//         const id = `codeblock-${codeBlocks.length}`;
+//         codeBlocks.push({
+//             id,
+//             lang,
+//             attributes: {},
+//             code: this.escapeHtml(code.trim())
+//         });
+//         return `\n@@@${id}@@@\n`;
+//     });
+
+//     // Обработка изображений
+//     markdown = markdown.replace(
+//       /!\[([^\]]+)\]\(([^)]+)\)/g, 
+//       (match, alt, src) => {
+//         const fixedSrc = src.startsWith('images/') ? `/${src}` : src;
+//         return `<img src="${fixedSrc}" alt="${alt}" class="mkdocs-image">`;
+//       }
+//     );
+
+//     // Обработка заголовков
+//     markdown = markdown.replace(/^# (.*$)/gm, '<h1>$1</h1>')
+//       .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+//       .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+//       .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+//       .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+//       .replace(/^###### (.*$)/gm, '<h6>$1</h6>');
+
+//     // Обработка admonitions
+//     markdown = markdown.replace(
+//       /^!!!\s+(\w+)(?:\s+"([^"]+)")?\n([\s\S]*?)(?=\n!!!|\n```|\n#{1,6}\s|\n$)/gm,
+//       (match, type, title, content) => {
+//         const defaultTitles = {
+//           note: "Note",
+//           warning: "Warning",
+//           danger: "Danger",
+//           tip: "Tip",
+//           success: "Success",
+//           info: "Info"
+//         };
+        
+//         const displayTitle = title || defaultTitles[type] || type;
+//         const icon = this.getAdmonitionIcon(type);
+        
+//         return `
+//           <div class="mkdocs-admonition ${type}">
+//             <div class="mkdocs-admonition-title">
+//               <i class="mkdocs-mdi-icon mdi-${icon}"></i>
+//               <span>${displayTitle}</span>
+//             </div>
+//             <div class="mkdocs-admonition-content">
+//               ${content.trim()}
+//             </div>
+//           </div>
+//         `;
+//       }
+//     );
+
+//     // Восстановление блоков кода
+//     markdown = markdown.replace(/@@@([^@]+)@@@/g, (match, id) => {
+//         const block = codeBlocks.find(b => b.id === id);
+//         if (!block) return '';
+        
+//         let html = '<div class="mkdocs-code-block">';
+        
+//         // Добавляем заголовок если есть
+//         if (block.attributes.title) {
+//           html += `<div class="mkdocs-code-title">${block.attributes.title}</div>`;
+//         }
+        
+//         // Подготовка атрибутов для highlight.js
+//         const lineNumbers = block.attributes.linenums || block.attributes.linenos;
+//         const startFrom = parseInt(block.attributes.linenostart || block.attributes['line-start'] || 1);
+//         const hlLines = block.attributes.hl_lines || block.attributes['highlight-lines'];
+        
+//         html += '<pre><code';
+//         if (block.lang) html += ` class="language-${block.lang}"`;
+//         if (lineNumbers) html += ` data-linenos data-linenostart="${startFrom}"`;
+//         if (hlLines) html += ` data-hl-lines="${hlLines}"`;
+//         html += '>';
+        
+//         html += block.code + '</code></pre></div>';
+//         return html;
+//     });
+
+//     return markdown;
+// }
+markdownToHtml(markdown) {
+    // Нормализуем переносы строк
+    markdown = markdown.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
+    // Обработка блоков кода с атрибутами
+    const codeBlocks = [];
+    markdown = markdown.replace(/```([a-z]*)\s*{([^}]*)}?\n([\s\S]*?)\n```/g, 
+      (match, lang, attrs, code) => {
+        const attributes = this.parseCodeBlockAttributes(attrs);
+        const id = `codeblock-${codeBlocks.length}`;
+        
+        codeBlocks.push({
+            id,
+            lang,
+            attributes,
+            code: this.escapeHtml(code.trim())
+        });
+        return `\n@@@${id}@@@\n`;
+    });
+    
+    // Обработка обычных блоков кода (без атрибутов)
+    markdown = markdown.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, 
+      (match, lang, code) => {
+        const id = `codeblock-${codeBlocks.length}`;
+        codeBlocks.push({
+            id,
+            lang,
+            attributes: {},
+            code: this.escapeHtml(code.trim())
+        });
+        return `\n@@@${id}@@@\n`;
+    });
+
+    // Обработка изображений
+    markdown = markdown.replace(
+      /!\[([^\]]+)\]\(([^)]+)\)/g, 
+      (match, alt, src) => {
+        const fixedSrc = src.startsWith('images/') ? `/${src}` : src;
+        return `<img src="${fixedSrc}" alt="${alt}" class="mkdocs-image">`;
+      }
+    );
+
+    // Обработка заголовков
+    markdown = markdown.replace(/^# (.*$)/gm, '<h1>$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+      .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+      .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+      .replace(/^###### (.*$)/gm, '<h6>$1</h6>');
+
+    // Улучшенная обработка admonitions
+    markdown = markdown.replace(
+      /^!!!\s+(\w+)(?:\s+"([^"]+)")?\n([\s\S]*?)(?=\n!!!|\n```|\n#{1,6}\s|\n$)/gm,
+      (match, type, title, content) => {
+        const defaultTitles = {
+          note: "Note",
+          warning: "Warning",
+          danger: "Danger",
+          tip: "Tip",
+          success: "Success",
+          info: "Info"
+        };
+        
+        const displayTitle = title || defaultTitles[type] || type;
+        const icon = this.getAdmonitionIcon(type);
+        
+        // Обрабатываем переносы строк в содержимом
+        const processedContent = content.trim()
+          .split('\n')
+          .map(line => line.trim() ? `<p>${line}</p>` : '')
+          .join('');
+        
+        return `
+          <div class="mkdocs-admonition ${type}">
+            <div class="mkdocs-admonition-title">
+              <i class="mkdocs-mdi-icon mdi-${icon}"></i>
+              <span>${displayTitle}</span>
+            </div>
+            <div class="mkdocs-admonition-content">
+              ${processedContent}
+            </div>
+          </div>
+        `;
+      }
+    );
+
+    // Обработка переносов строк в обычном тексте
+    markdown = markdown.split('\n').map(line => {
+      if (/^#|^```|^!!!|^<|^@@@/.test(line.trim())) {
+        return line; // Не обрабатываем специальные строки
+      }
+      return line.trim() ? `<p>${line}</p>` : '';
+    }).join('');
+
+    // Восстановление блоков кода
+    markdown = markdown.replace(/@@@([^@]+)@@@/g, (match, id) => {
+        const block = codeBlocks.find(b => b.id === id);
+        if (!block) return '';
+        
+        let html = '<div class="mkdocs-code-block">';
+        
+        if (block.attributes.title) {
+          html += `<div class="mkdocs-code-title">${block.attributes.title}</div>`;
+        }
+        
+        const lineNumbers = block.attributes.linenums || block.attributes.linenos;
+        const startFrom = parseInt(block.attributes.linenostart || block.attributes['line-start'] || 1);
+        const hlLines = block.attributes.hl_lines || block.attributes['highlight-lines'];
+        
+        html += '<pre><code';
+        if (block.lang) html += ` class="language-${block.lang}"`;
+        if (lineNumbers) html += ` data-linenos data-linenostart="${startFrom}"`;
+        if (hlLines) html += ` data-hl-lines="${hlLines}"`;
+        html += '>';
+        
+        html += block.code + '</code></pre></div>';
+        return html;
+    });
+
+    return markdown;
+}
+
+getAdmonitionIcon(type) {
+    const icons = {
+        note: 'information',
+        warning: 'alert',
+        danger: 'alert-octagon',
+        tip: 'lightbulb-on',
+        success: 'check-circle',
+        info: 'information-outline'
+    };
+    return icons[type] || 'information';
+};
+
+escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return unsafe.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+};
+
+  parseCodeBlockAttributes(attrsStr) {
+    const attributes = {};
+    if (!attrsStr) return attributes;
+    
+    const classMatch = attrsStr.match(/\.([a-zA-Z0-9_-]+)/g);
+    if (classMatch) {
+      attributes.class = classMatch.map(c => c.substring(1)).join(' ');
+    }
+    
+    const kvPairs = attrsStr.match(/(\w+)="([^"]*)"/g) || [];
+    kvPairs.forEach(pair => {
+      const [key, value] = pair.split('=').map(s => s.trim().replace(/"/g, ''));
+      attributes[key] = value;
+    });
+    
+    return attributes;
+  }
+
+  escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   applySyntaxHighlighting() {
-    if (typeof hljs !== 'undefined' && this.previewContainer) {
-      // Подсветка блоков кода
-      this.previewContainer.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightElement(block);
-              if (typeof hljs.lineNumbersBlock === 'function') {
-          hljs.lineNumbersBlock(block);
-        }
-      });
-      
-      // Инициализация Materialbox для изображений
-      if (typeof M !== 'undefined' && M.Materialbox) {
-        const images = this.previewContainer.querySelectorAll('.materialboxed');
-        M.Materialbox.init(images);
-      }
+    if (this.highlightJsLoaded) {
+      this.initHighlightJs();
     }
   }
 
@@ -190,7 +456,7 @@ class MkDocsPreview {
     if (!this.previewContainer) return;
     
     this.previewContainer.innerHTML = `
-      <div class="markdown-body material-theme">
+      <div class="mkdocs-preview-container">
         ${html || 'Preview will appear here'}
       </div>
     `;
@@ -200,8 +466,8 @@ class MkDocsPreview {
     if (!this.previewContainer) return;
     
     this.previewContainer.innerHTML = `
-      <div class="preview-error material-theme">
-        <i class="mdi mdi-alert-circle"></i>
+      <div class="mkdocs-preview-error">
+        <i class="mkdocs-mdi-icon mdi-alert-circle"></i>
         <span>${message}</span>
       </div>
     `;
@@ -209,3 +475,8 @@ class MkDocsPreview {
 }
 
 const Preview = new MkDocsPreview();
+document.addEventListener('DOMContentLoaded', () => Preview.init());
+
+
+
+

@@ -25,12 +25,7 @@ var MaterialShortcuts = (function() {
     
     // Вкладки
     tabs: `=== "Вкладка 1"\n\n    Содержимое 1\n\n=== "Вкладка 2"\n\n    Содержимое 2\n`,
-    
-    // Блоки кода
-    // code: "```python\n# Ваш код здесь\n```\n",
-    // codejs: "```javascript\n// Ваш код здесь\n```\n",
-    // codehtml: "```html\n<!-- Ваш код здесь -->\n```\n",
-    // codecss: "```css\n/* Ваш код здесь */\n```\n",        
+          
     // Заголовки
     h1: "# ",
     h2: "## ",
@@ -247,12 +242,6 @@ var MaterialShortcuts = (function() {
         
         // Tabs
         'tabs-btn': 'tabs',
-        
-        // Code blocks
-        // 'code-btn': 'code',
-        // 'codejs-btn': 'codejs',
-        // 'codehtml-btn': 'codehtml',
-        // 'codecss-btn': 'codecss',
 
         // Headings
         'h1-btn': 'h1',
@@ -320,9 +309,6 @@ var MaterialShortcuts = (function() {
         'Ctrl-Alt-T': () => this.insertTemplate('tabs'),
         'Ctrl-Alt-F': () => this.insertTemplate('foldable'),
         'Ctrl-Alt-C': () => this.insertTemplate('code'),
-        // 'Ctrl-Alt-J': () => this.insertTemplate('codejs'),
-        // 'Ctrl-Alt-H': () => this.insertTemplate('codehtml'),
-        // 'Ctrl-Alt-M': () => this.insertTemplate('codecss'),
         'Ctrl-Alt-1': () => _insertHeading(cm, _templates.h1),
         'Ctrl-Alt-2': () => _insertHeading(cm, _templates.h2),
         'Ctrl-Alt-3': () => _insertHeading(cm, _templates.h3),

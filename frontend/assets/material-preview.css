@@ -1,88 +1,389 @@
-/* Admonitions */
-.admonition {
-  padding: 0.8rem;
-  margin: 1rem 0;
+/* material-preview.css - Conflict-Free Version */
+/* Основные стили контейнера */
+.mkdocs-preview-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  padding: 1rem;
+}
+
+/* Светлая тема по умолчанию */
+.mkdocs-preview-container {
+  color: #333;
+  background-color: #fff;
+}
+
+/* Темная тема */
+.mkdocs-preview-container.material-theme {
+  font-family: 'Roboto', sans-serif;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #121212;
+}
+
+/* Иконки */
+.mkdocs-mdi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.4em;
+  vertical-align: middle;
+}
+
+/* Admonitions - общие стили */
+.mkdocs-admonition {
+  position: relative;
+  margin: 1.5625em 0;
+  padding: 0 1.2rem;
+  border-left: .4rem solid #448aff;
+  border-radius: 0.2rem;
+  overflow: hidden;
+  background-color: rgba(68, 138, 255, 0.1);
+  font-size: 0.85rem;
   border-left: 4px solid;
+  margin: 1.5rem 0;
   border-radius: 4px;
+  overflow: hidden;
+}
+
+.mkdocs-admonition-title {
+  margin: 0 -1.2rem;
+  padding: 0.8rem 1.2rem 0.8rem 3.2rem;
+  font-weight: 700;
+  position: relative;
+  background-color: rgba(68, 138, 255, 0.1);
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mkdocs-admonition-title:before {
+  position: absolute;
+  left: 1.2rem;
+  font-size: 1.2rem;
+  color: #448aff;
+  font-family: "Material Icons";
+  content: "\e88e"; /* info icon */
+}
+
+.mkdocs-admonition-content {
+  padding: 1rem;
+}
+
+/* Типы admonitions */
+.mkdocs-admonition.note {
+  border-left-color: #448aff;
   background-color: rgba(68, 138, 255, 0.1);
 }
-
-.admonition-title {
-  font-weight: 600;
-  margin: -0.8rem -0.8rem 0.8rem -0.8rem;
-  padding: 0.4rem 0.8rem 0.4rem 2.5rem;
-  position: relative;
+.mkdocs-admonition.note .mkdocs-admonition-title {
+  background-color: rgba(68, 138, 255, 0.1);
+}
+.mkdocs-admonition.note .mkdocs-admonition-title:before {
+  content: "\e88e"; /* info */
+  color: #448aff;
 }
 
-.admonition-title:before {
-  font-family: 'Material Design Icons';
-  position: absolute;
-  left: 0.8rem;
-}
-
-/* Цвета для разных типов admonitions */
-.admonition.note {
-  border-left-color: #448aff;
-}
-.admonition.note .admonition-title:before {
-  content: '\F02C9'; /* mdi-information */
-}
-
-.admonition.warning {
+.mkdocs-admonition.warning {
   border-left-color: #ff9100;
+  background-color: rgba(255, 145, 0, 0.1);
 }
-.admonition.warning .admonition-title:before {
-  content: '\F0026'; /* mdi-alert */
+.mkdocs-admonition.warning .mkdocs-admonition-title {
+  background-color: rgba(255, 145, 0, 0.1);
 }
-
-/* Material Theme */
-.markdown-body.material-theme {
-  font-family: 'Roboto', sans-serif;
-  line-height: 1.6;
-  color: #e0e0e0;
-  background-color: #121212;
-  padding: 1rem;
+.mkdocs-admonition.warning .mkdocs-admonition-title:before {
+  content: "\e002"; /* warning */
+  color: #ff9100;
 }
 
-/* Code blocks */
-.markdown-body.material-theme pre {
-  background-color: #1e1e1e;
-  border-radius: 4px;
-  padding: 1rem;
+.mkdocs-admonition.danger {
+  border-left-color: #ff5252;
+  background-color: rgba(255, 82, 82, 0.1);
+}
+.mkdocs-admonition.danger .mkdocs-admonition-title {
+  background-color: rgba(255, 82, 82, 0.1);
+}
+.mkdocs-admonition.danger .mkdocs-admonition-title:before {
+  content: "\e000"; /* error */
+  color: #ff5252;
+}
+
+.mkdocs-admonition.tip {
+  border-left-color: #00bfa5;
+  background-color: rgba(0, 191, 165, 0.1);
+}
+.mkdocs-admonition.tip .mkdocs-admonition-title {
+  background-color: rgba(0, 191, 165, 0.1);
+}
+.mkdocs-admonition.tip .mkdocs-admonition-title:before {
+  content: "\e80e"; /* lightbulb */
+  color: #00bfa5;
+}
+
+.mkdocs-admonition.success {
+  border-left-color: #00c853;
+  background-color: rgba(0, 200, 83, 0.1);
+}
+.mkdocs-admonition.success .mkdocs-admonition-title:before {
+  content: '\e86c'; /* check circle */
+}
+
+.mkdocs-admonition.info {
+  border-left-color: #00b0ff;
+  background-color: rgba(0, 176, 255, 0.1);
+}
+.mkdocs-admonition.info .mkdocs-admonition-title:before {
+  content: '\e88e'; /* info */
+}
+
+/* Collapsible admonitions */
+.mkdocs-admonition.collapsible {
+  border-left-color: #9e9e9e;
+}
+
+.mkdocs-admonition.collapsible .mkdocs-admonition-title {
+  cursor: pointer;
+  padding-right: 2.5rem;
+}
+
+.mkdocs-admonition.collapsible .mkdocs-admonition-title:after {
+  position: absolute;
+  right: 1.2rem;
+  font-family: "Material Icons";
+  content: "\e313"; /* expand_more */
+  transition: transform .25s;
+}
+
+.mkdocs-admonition.collapsible.closed .mkdocs-admonition-title:after {
+  transform: rotate(-90deg);
+}
+
+.mkdocs-admonition.collapsible.closed > :not(.mkdocs-admonition-title) {
+  display: none;
+}
+
+/* Content after title */
+.mkdocs-admonition > :not(.mkdocs-admonition-title) {
+  margin: 1.2rem 0;
+}
+
+.mkdocs-admonition > :last-child {
+  margin-bottom: 0.8rem;
+}
+
+/* Блоки кода */
+.mkdocs-code-block {
+  background-color: #f6f8fa;
   overflow-x: auto;
+  margin: 1em 0;
+  position: relative;
+  overflow: hidden;
 }
 
-.markdown-body.material-theme code {
+.mkdocs-code-title {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-family: var(--md-code-font-family);
+  font-size: 0.85em;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-code-title {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.mkdocs-code-block pre {
+  margin: 0;
+  overflow: auto;
+}
+
+.mkdocs-code-title {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-family: var(--md-code-font-family);
+  font-size: 0.85em;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mkdocs-code-block code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  display: block;
+  padding: 0;
+  background: none;
+  overflow: visible;
+}
+
+/* Переносы строк и абзацы */
+.mkdocs-preview-container p {
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+}
+
+/* Улучшенные стили для admonitions */
+.mkdocs-admonition {
+  margin: 1.5rem 0;
+  border-left: 4px solid;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mkdocs-admonition-title {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mkdocs-admonition-content {
+  padding: 0 1rem 1rem 1rem;
+}
+
+.mkdocs-admonition-content p {
+  margin: 0.5rem 0;
+}
+
+/* Темная тема для блоков кода */
+/* .mkdocs-preview-container.material-theme .mkdocs-code-block {
+  background-color: #1e1e1e;
+  border-radius: 0.2rem;
+  padding: 1rem;
+} */
+
+.mkdocs-preview-container.material-theme .mkdocs-code-block code {
+  font-family: 'Roboto Mono', monospace;
+  display: block;
+  padding: 0;
+  background: none;
+  overflow: visible;
+}
+
+/* Файлы в блоках кода */
+.mkdocs-code-filename {
+  display: block;
+  padding: 0.5rem 1rem;
+  background-color: #e1e4e8;
+  border-bottom: 1px solid #d1d5da;
+  font-size: 0.85rem;
+  border-radius: 6px 6px 0 0;
+}
+
+/* Темная тема для имен файлов */
+.mkdocs-preview-container.material-theme .mkdocs-code-filename {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Roboto', sans-serif;
+  border-radius: 0.2rem 0.2rem 0 0;
+}
+
+/* Подсветка строк */
+.mkdocs-highlighted-line {
+  background-color: #fffbdd;
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-highlighted-line {
+  background-color: rgba(255, 255, 0, 0.15);
+}
+
+/* Инлайн код */
+.mkdocs-inline-code {
+  background-color: rgba(27, 31, 35, 0.05);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-inline-code {
+  background-color: rgba(97, 97, 97, 0.5);
+  border-radius: 0.2rem;
   font-family: 'Roboto Mono', monospace;
 }
 
-.markdown-body.material-theme .inline-code {
-  background-color: #1e1e1e;
-  padding: 0.2rem 0.4rem;
-  border-radius: 2px;
-}
-
-/* Headers */
-.markdown-body.material-theme h1 {
-  color: #bb86fc;
-  border-bottom: 1px solid #bb86fc;
+/* Заголовки */
+.mkdocs-preview-container h1 {
+  border-bottom: 1px solid #eaecef;
   padding-bottom: 0.3em;
 }
 
-.markdown-body.material-theme h2 {
+.mkdocs-preview-container.material-theme h1 {
+  color: #bb86fc;
+  border-bottom: 1px solid rgba(187, 134, 252, 0.3);
+}
+
+.mkdocs-preview-container.material-theme h2 {
   color: #03dac6;
 }
 
-.markdown-body.material-theme h3 {
+.mkdocs-preview-container.material-theme h3 {
   color: #018786;
 }
 
-/* Links */
-.markdown-body.material-theme a {
-  color: #80d8ff;
+/* Ссылки */
+.mkdocs-preview-container a {
+  color: #0366d6;
   text-decoration: none;
 }
 
-.markdown-body.material-theme a:hover {
+.mkdocs-preview-container a:hover {
   text-decoration: underline;
+}
+
+.mkdocs-preview-container.material-theme a {
+  color: #80d8ff;
+}
+
+/* Таблицы */
+.mkdocs-preview-container table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.mkdocs-preview-container table th,
+.mkdocs-preview-container table td {
+  padding: 0.5em 1em;
+  border: 1px solid #dfe2e5;
+}
+
+.mkdocs-preview-container table th {
+  background-color: #f6f8fa;
+}
+
+.mkdocs-preview-container.material-theme table th,
+.mkdocs-preview-container.material-theme table td {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mkdocs-preview-container.material-theme table th {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Цитаты */
+.mkdocs-preview-container blockquote {
+  border-left: 0.4rem solid #dfe2e5;
+  background-color: #f6f8fa;
+  padding: 0.8rem 1rem;
+  margin: 1em 0;
+  color: #6a737d;
+}
+
+.mkdocs-preview-container.material-theme blockquote {
+  border-left: 0.4rem solid rgba(68, 138, 255, 0.5);
+  background-color: rgba(68, 138, 255, 0.1);
+  color: rgba(255, 255, 255, 0.87);
+}
+
+/* Изображения */
+.mkdocs-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 1rem 0;
 }
