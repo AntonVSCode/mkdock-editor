@@ -6,12 +6,15 @@ tags: [tag, tag2]
 adasdasdasda
 Start editing here...
 
-??? note "Foldable Title"
+??? note 
 
     Your foldable content here
-!!! note "Note Title"
+    
+!!! note 
 
     Your note content here=== "Вкладка 1"
+
+=== "Вкладка 1"
 
     Содержимое 1
 

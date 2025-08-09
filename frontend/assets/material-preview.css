@@ -1,25 +1,177 @@
-/* material-preview.css - Conflict-Free Version */
-/* Основные стили контейнера */
-.mkdocs-preview-container {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.6;
-  padding: 1rem;
+.mkdocs-code-block {
+  position: relative;
+  background: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
 
-/* Светлая тема по умолчанию */
-.mkdocs-preview-container {
-  color: #333;
-  background-color: #fff;
+.mkdocs-code-block + .mkdocs-code-block {
+  margin-top: 1.5em; /* Отступ между блоками кода */
+}
+
+.mkdocs-code-block pre {
+  margin: 0;
+  padding: 0;
+  background: none !important;
+}
+
+.mkdocs-code-block code {
+  display: block;
+  padding: 1em;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+  overflow-x: auto;
+}
+
+/* Стили для нумерации строк */
+.mkdocs-code-block .hljs-ln {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Нумерация строк */
+.mkdocs-code-block .linenums {
+  counter-reset: linenumber;
+}
+
+.mkdocs-code-block .linenums tr {
+  position: relative;
+}
+
+.mkdocs-code-block .linenums td:first-child::before {
+  content: counter(linenumber);
+  counter-increment: linenumber;
+  display: inline-block;
+  width: 2em;
+  margin-right: 0.5em;
+  text-align: right;
+  color: #999;
+  user-select: none;
+}
+
+/* Подсветка строк */
+.mkdocs-code-block .highlight-line {
+  background-color: #fff9c4;
 }
 
 /* Темная тема */
-.mkdocs-preview-container.material-theme {
-  font-family: 'Roboto', sans-serif;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #121212;
+.mkdocs-preview-container.material-theme .mkdocs-code-block {
+  background: #2d2d2d;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-/* Иконки */
+.mkdocs-preview-container.material-theme .mkdocs-code-title {
+  background: #3d3d3d;
+  border-bottom-color: #4d4d4d;
+  color: #ccc;
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-code-block .linenums td:first-child::before {
+  color: #666;
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-code-block .highlight-line {
+  background-color: rgba(255, 235, 59, 0.15);
+}
+
+.mkdocs-code-block .hljs-ln-numbers {
+  text-align: right;
+  color: #999;
+  padding-right: 0.5em;
+  vertical-align: top;
+  min-width: 2em; /* Фиксированная ширина для номеров */
+  user-select: none;
+}
+
+.mkdocs-code-block .hljs-ln-code {
+  padding-left: 0.8em;
+  white-space: pre;
+}
+
+/* Чередование цветов строк с плавным переходом */
+.mkdocs-code-block .hljs-ln tr {
+  transition: background-color 0.2s ease;
+}
+
+.mkdocs-code-block .hljs-ln tr:nth-child(odd) .hljs-ln-code {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.mkdocs-code-block .hljs-ln tr:nth-child(even) .hljs-ln-code {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Подсветка строк */
+.mkdocs-code-block .hljs-ln .mkdocs-highlighted-line .hljs-ln-code {
+  background-color: #fff9c4 !important;
+}
+
+/* Темная тема */
+.mkdocs-preview-container.material-theme .mkdocs-code-block {
+  background-color: #1e1e1e;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-code-block .hljs-ln-numbers {
+  color: #666;
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-code-block .hljs-ln tr:nth-child(odd) .hljs-ln-code {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-code-block .hljs-ln tr:nth-child(even) .hljs-ln-code {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-code-block .hljs-ln .mkdocs-highlighted-line .hljs-ln-code {
+  background-color: rgba(255, 235, 59, 0.15) !important;
+}
+
+/* Заголовки блоков кода */
+.mkdocs-code-title {
+  display: flex;
+  align-items: center;
+  padding: 0.6em 1em;
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.85em;
+  font-weight: 500;
+  background-color: #e9ecef;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.mkdocs-preview-container.material-theme .mkdocs-code-title {
+  background-color: #2d2d2d;
+  border-bottom-color: #3d3d3d;
+  color: #ccc;
+}
+
+/* Компактные стили для строк */
+.mkdocs-code-block .hljs-ln-line {
+  padding: 0.15em 0.5em;
+  line-height: 1.4;
+  height: 1.4em;
+}
+
+/* Стили для ссылок */
+.mkdocs-preview-container a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.mkdocs-preview-container a:hover {
+  text-decoration: underline;
+  color: #2c4fd8;
+}
+
+.mkdocs-preview-container.material-theme a {
+  color: #80d8ff;
+}
+
+/* Стили для иконок MDI */
 .mkdocs-mdi-icon {
   display: inline-flex;
   align-items: center;
@@ -31,359 +183,194 @@
   vertical-align: middle;
 }
 
-/* Admonitions - общие стили */
+/* Стили для текстового форматирования */
+.mkdocs-preview-container strong,
+.mkdocs-preview-container b {
+  font-weight: 600;
+  color: inherit;
+}
+
+.mkdocs-preview-container em,
+.mkdocs-preview-container i {
+  font-style: italic;
+}
+
+/* Стили для инлайн-кода */
+.mkdocs-preview-container code:not([class*="language-"]) {
+  background-color: rgba(27, 31, 35, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9em;
+  color: #e01e5a;
+}
+
+.mkdocs-preview-container.material-theme code:not([class*="language-"]) {
+  background-color: rgba(97, 97, 97, 0.5);
+  color: #ff7b72;
+}
+
+/* Стили для списков */
+.mkdocs-preview-container ul,
+.mkdocs-preview-container ol {
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.mkdocs-preview-container li {
+  margin-bottom: 0.5em;
+  line-height: 1.6;
+}
+
+.mkdocs-preview-container li > p {
+  margin: 0;
+}
+
+.mkdocs-preview-container li > code {
+  font-size: 0.85em;
+}
+
+.mkdocs-preview-container ul {
+  list-style-type: disc;
+}
+
+.mkdocs-preview-container ol {
+  list-style-type: decimal;
+}
+
+.mkdocs-preview-container li {
+  margin-bottom: 0.3em;
+}
+
+/* Стили для admonitions */
 .mkdocs-admonition {
-  position: relative;
-  margin: 1.5625em 0;
-  padding: 0 1.2rem;
-  border-left: .4rem solid #448aff;
-  border-radius: 0.2rem;
-  overflow: hidden;
-  background-color: rgba(68, 138, 255, 0.1);
-  font-size: 0.85rem;
-  border-left: 4px solid;
-  margin: 1.5rem 0;
-  border-radius: 4px;
-  overflow: hidden;
+    margin: 10px 0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 
+                0 1px 5px 0 rgba(0,0,0,0.12), 
+                0 3px 1px -2px rgba(0,0,0,0.2);
+}
+
+/* Вложенные admonitions */
+.mkdocs-admonition .mkdocs-admonition {
+    margin-left: 1.5em;
+    margin-right: 0.5em;
+    box-shadow: none;
+    border-left: 4px solid rgba(0,0,0,0.1);
+}
+
+.mkdocs-admonition:hover {
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }
 
 .mkdocs-admonition-title {
-  margin: 0 -1.2rem;
-  padding: 0.8rem 1.2rem 0.8rem 3.2rem;
-  font-weight: 700;
-  position: relative;
-  background-color: rgba(68, 138, 255, 0.1);
-  padding: 0.75rem 1rem;
-  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  padding: 12px 16px;
+  font-weight: 500;
+  color: white;
+  background-color: #1976d2; /* Синий по умолчанию */
 }
 
-.mkdocs-admonition-title:before {
-  position: absolute;
-  left: 1.2rem;
-  font-size: 1.2rem;
-  color: #448aff;
-  font-family: "Material Icons";
-  content: "\e88e"; /* info icon */
+.mkdocs-admonition-title .mdi {
+  margin-right: 8px;
+  font-size: 1.2em;
 }
 
 .mkdocs-admonition-content {
-  padding: 1rem;
+  padding: 10px;
+  background-color: white;
+  color: rgba(0, 0, 0, 0.87);
 }
 
-/* Типы admonitions */
-.mkdocs-admonition.note {
-  border-left-color: #448aff;
-  background-color: rgba(68, 138, 255, 0.1);
-}
+/* Типы admonitions и их цвета */
 .mkdocs-admonition.note .mkdocs-admonition-title {
-  background-color: rgba(68, 138, 255, 0.1);
-}
-.mkdocs-admonition.note .mkdocs-admonition-title:before {
-  content: "\e88e"; /* info */
-  color: #448aff;
+  background-color: #1976d2; /* Синий */
 }
 
-.mkdocs-admonition.warning {
-  border-left-color: #ff9100;
-  background-color: rgba(255, 145, 0, 0.1);
-}
 .mkdocs-admonition.warning .mkdocs-admonition-title {
-  background-color: rgba(255, 145, 0, 0.1);
-}
-.mkdocs-admonition.warning .mkdocs-admonition-title:before {
-  content: "\e002"; /* warning */
-  color: #ff9100;
+  background-color: #ffa000; /* Оранжевый */
 }
 
-.mkdocs-admonition.danger {
-  border-left-color: #ff5252;
-  background-color: rgba(255, 82, 82, 0.1);
-}
 .mkdocs-admonition.danger .mkdocs-admonition-title {
-  background-color: rgba(255, 82, 82, 0.1);
-}
-.mkdocs-admonition.danger .mkdocs-admonition-title:before {
-  content: "\e000"; /* error */
-  color: #ff5252;
+  background-color: #d32f2f; /* Красный */
 }
 
-.mkdocs-admonition.tip {
-  border-left-color: #00bfa5;
-  background-color: rgba(0, 191, 165, 0.1);
-}
 .mkdocs-admonition.tip .mkdocs-admonition-title {
-  background-color: rgba(0, 191, 165, 0.1);
-}
-.mkdocs-admonition.tip .mkdocs-admonition-title:before {
-  content: "\e80e"; /* lightbulb */
-  color: #00bfa5;
+  background-color: #00bcd4; /* Голубой */
 }
 
-.mkdocs-admonition.success {
-  border-left-color: #00c853;
-  background-color: rgba(0, 200, 83, 0.1);
-}
-.mkdocs-admonition.success .mkdocs-admonition-title:before {
-  content: '\e86c'; /* check circle */
+.mkdocs-admonition.success .mkdocs-admonition-title {
+  background-color: #388e3c; /* Зеленый */
 }
 
-.mkdocs-admonition.info {
-  border-left-color: #00b0ff;
-  background-color: rgba(0, 176, 255, 0.1);
-}
-.mkdocs-admonition.info .mkdocs-admonition-title:before {
-  content: '\e88e'; /* info */
+.mkdocs-admonition.info .mkdocs-admonition-title {
+  background-color: #0288d1; /* Темно-синий */
 }
 
-/* Collapsible admonitions */
-.mkdocs-admonition.collapsible {
-  border-left-color: #9e9e9e;
+.mkdocs-admonition.example .mkdocs-admonition-title {
+  background-color: #7b1fa2; /* Фиолетовый */
+}
+
+/* Стили для сворачиваемых admonitions */
+.mkdocs-admonition.collapsible.closed .mkdocs-admonition-content {
+  display: none;
 }
 
 .mkdocs-admonition.collapsible .mkdocs-admonition-title {
   cursor: pointer;
-  padding-right: 2.5rem;
 }
 
-.mkdocs-admonition.collapsible .mkdocs-admonition-title:after {
-  position: absolute;
-  right: 1.2rem;
-  font-family: "Material Icons";
-  content: "\e313"; /* expand_more */
-  transition: transform .25s;
+.mkdocs-admonition.collapsible .mkdocs-admonition-title::after {
+  content: '\F0140'; /* mdi-chevron-down */
+  font-family: 'Material Design Icons';
+  margin-left: auto;
+  transition: transform 0.2s ease;
 }
 
-.mkdocs-admonition.collapsible.closed .mkdocs-admonition-title:after {
+.mkdocs-admonition.collapsible.closed .mkdocs-admonition-title::after {
   transform: rotate(-90deg);
 }
 
-.mkdocs-admonition.collapsible.closed > :not(.mkdocs-admonition-title) {
-  display: none;
+/* Темная тема для admonitions */
+.mkdocs-preview-container.material-theme .mkdocs-admonition-content {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
 }
 
-/* Content after title */
-.mkdocs-admonition > :not(.mkdocs-admonition-title) {
-  margin: 1.2rem 0;
+.mkdocs-preview-container.material-theme .mkdocs-admonition-title {
+  color: white;
 }
 
-.mkdocs-admonition > :last-child {
-  margin-bottom: 0.8rem;
-}
-
-/* Блоки кода */
-.mkdocs-code-block {
-  background-color: #f6f8fa;
-  overflow-x: auto;
-  margin: 1em 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.mkdocs-code-title {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  font-family: var(--md-code-font-family);
-  font-size: 0.85em;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.mkdocs-preview-container.material-theme .mkdocs-code-title {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-.mkdocs-code-block pre {
-  margin: 0;
-  overflow: auto;
-}
-
-.mkdocs-code-title {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  font-family: var(--md-code-font-family);
-  font-size: 0.85em;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.mkdocs-code-block code {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  display: block;
-  padding: 0;
-  background: none;
-  overflow: visible;
-}
-
-/* Переносы строк и абзацы */
-.mkdocs-preview-container p {
-  margin: 0 0 1rem 0;
-  line-height: 1.6;
-}
-
-/* Улучшенные стили для admonitions */
-.mkdocs-admonition {
-  margin: 1.5rem 0;
-  border-left: 4px solid;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.mkdocs-admonition-title {
-  padding: 0.75rem 1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.mkdocs-admonition-content {
-  padding: 0 1rem 1rem 1rem;
-}
-
+/* Дополнительные стили для содержимого внутри admonitions */
 .mkdocs-admonition-content p {
-  margin: 0.5rem 0;
+  margin: 0 0 8px 0;
 }
 
-/* Темная тема для блоков кода */
-/* .mkdocs-preview-container.material-theme .mkdocs-code-block {
-  background-color: #1e1e1e;
-  border-radius: 0.2rem;
-  padding: 1rem;
-} */
-
-.mkdocs-preview-container.material-theme .mkdocs-code-block code {
-  font-family: 'Roboto Mono', monospace;
-  display: block;
-  padding: 0;
-  background: none;
-  overflow: visible;
+.mkdocs-admonition-content p:last-child {
+  margin-bottom: 0;
 }
 
-/* Файлы в блоках кода */
-.mkdocs-code-filename {
-  display: block;
-  padding: 0.5rem 1rem;
-  background-color: #e1e4e8;
-  border-bottom: 1px solid #d1d5da;
-  font-size: 0.85rem;
-  border-radius: 6px 6px 0 0;
+.mkdocs-admonition-content ul,
+.mkdocs-admonition-content ol {
+  margin: 8px 0;
+  padding-left: 24px;
 }
 
-/* Темная тема для имен файлов */
-.mkdocs-preview-container.material-theme .mkdocs-code-filename {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  font-family: 'Roboto', sans-serif;
-  border-radius: 0.2rem 0.2rem 0 0;
-}
-
-/* Подсветка строк */
-.mkdocs-highlighted-line {
-  background-color: #fffbdd;
-}
-
-.mkdocs-preview-container.material-theme .mkdocs-highlighted-line {
-  background-color: rgba(255, 255, 0, 0.15);
-}
-
-/* Инлайн код */
-.mkdocs-inline-code {
-  background-color: rgba(27, 31, 35, 0.05);
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
+.mkdocs-admonition-content code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+  border-radius: 2px;
   font-size: 0.9em;
 }
 
-.mkdocs-preview-container.material-theme .mkdocs-inline-code {
-  background-color: rgba(97, 97, 97, 0.5);
-  border-radius: 0.2rem;
-  font-family: 'Roboto Mono', monospace;
+.mkdocs-preview-container.material-theme .mkdocs-admonition-content code {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Заголовки */
-.mkdocs-preview-container h1 {
-  border-bottom: 1px solid #eaecef;
-  padding-bottom: 0.3em;
-}
-
-.mkdocs-preview-container.material-theme h1 {
-  color: #bb86fc;
-  border-bottom: 1px solid rgba(187, 134, 252, 0.3);
-}
-
-.mkdocs-preview-container.material-theme h2 {
-  color: #03dac6;
-}
-
-.mkdocs-preview-container.material-theme h3 {
-  color: #018786;
-}
-
-/* Ссылки */
-.mkdocs-preview-container a {
-  color: #0366d6;
-  text-decoration: none;
-}
-
-.mkdocs-preview-container a:hover {
-  text-decoration: underline;
-}
-
-.mkdocs-preview-container.material-theme a {
-  color: #80d8ff;
-}
-
-/* Таблицы */
-.mkdocs-preview-container table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1em 0;
-}
-
-.mkdocs-preview-container table th,
-.mkdocs-preview-container table td {
-  padding: 0.5em 1em;
-  border: 1px solid #dfe2e5;
-}
-
-.mkdocs-preview-container table th {
-  background-color: #f6f8fa;
-}
-
-.mkdocs-preview-container.material-theme table th,
-.mkdocs-preview-container.material-theme table td {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.mkdocs-preview-container.material-theme table th {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* Цитаты */
-.mkdocs-preview-container blockquote {
-  border-left: 0.4rem solid #dfe2e5;
-  background-color: #f6f8fa;
-  padding: 0.8rem 1rem;
-  margin: 1em 0;
-  color: #6a737d;
-}
-
-.mkdocs-preview-container.material-theme blockquote {
-  border-left: 0.4rem solid rgba(68, 138, 255, 0.5);
-  background-color: rgba(68, 138, 255, 0.1);
-  color: rgba(255, 255, 255, 0.87);
-}
-
-/* Изображения */
-.mkdocs-image {
-  max-width: 100%;
-  height: auto;
-  border-radius: 4px;
-  margin: 1rem 0;
+/* Стили для многострочных admonitions */
+.mkdocs-admonition-content br {
+  content: "";
+  display: block;
 }

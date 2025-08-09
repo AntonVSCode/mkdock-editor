@@ -2,33 +2,48 @@
 
 Table of Contents
 
-test
+
 ## Introduction
 !!! note 
-    фывфывфывф фывфвфывф 
+    ![Batman Returns (USA)-screenshot.png](images/5f332450-6f8f-4dcf-b909-bf253c4cbfe7.png)
+    
+!!! warning
+    Как обычно это и бывает, я накопил критическую массу мыслей, и пора их как-то систематизировать, чтобы вы, мои замечательные читатели Хабра, могли что-то извлечь из моего опыта или поделиться своим
+
+!!! danger 
+    Как обычно это и бывает, я накопил критическую массу мыслей, и пора их как-то систематизировать, чтобы вы, мои замечательные читатели Хабра, могли что-то извлечь из моего опыта или поделиться своим
+    Как обычно это и бывает, я накопил критическую массу мыслей, и пора их как-то систематизировать, чтобы вы, мои замечательные читатели Хабра, могли что-то извлечь из моего опыта или поделиться своим
+    
+??? note
+    фыаыфвафываыф афыавфывафы
+    
+??? example
+    фыаыфвафываыф афыавфывафы
+    
+```{ .javascript linenums="1"}
+      markdown = markdown.replace(
+        /!\[([^\]]*)\]\(([^)\s]+)(?:\s+([&quot;&#039;])(.*?)\3)?\)/g, 
+        (match, alt, src, quote, title) =&gt; {
+          const fixedSrc = src.startsWith(&#039;images/&#039;) ? `/${src}` : src;
+          let imgHtml = `&lt;img src=&quot;${fixedSrc}&quot; alt=&quot;${alt || &#039;&#039;}&quot; class=&quot;mkdocs-image&quot;`;
+          if (title) imgHtml += ` title=&quot;${title}&quot;`;
+          imgHtml += &#039;&gt;&#039;;
+          return imgHtml;
+        }
+      );
+```
+
 
 ```{ .python title="qweqwrewe" linenums="3" hl_lines="2"}
 def example():
     pass
 ```
 
-
-
-!!! warning 
-    фыаыфвафываыф афыавфывафы
-!!! danger \
-??? note \
-??? example \
-
-#### йцуй
-
-```{ .javascript hl_lines="1"}
-let 
-var
-const
+```javascript
+let = 2
+var = 5
+const = щшгн
 ```
-
-
 
 
 ```{ .css title="css2" linenums="5" hl_lines="12-15 18-20 23"}
@@ -70,7 +85,10 @@ Monitoring Proxmox with Grafana will be a good idea to see the actual resource u
 Proxmox supports Graphite and InfluxDB while comparing the advantage of using InfluxDB and graphite, InfluxDB owns the match. Let’s start to setup influx DB by following below guide.
 
 -   [How to Install InfluxDB on Linux](https://www.linuxsysadmins.com/install-influxdb-on-linux-3-easy-steps/)
-![Blackhole Assault (USA)-screenshot.png](images/a6204712-4831-492c-a66d-8611f9f1a174.png)
+
+![Cadillacs and Dinosaurs - The Second Cataclysm (USA)-screenshot.png](images/f2c3741a-c77f-4028-8fd2-065381360eb6.png)
+
+
 Right after installing the InfluxDB, start to create the DB user, Database with required privileges.
 
 ### Creating a Monitoring Database
@@ -160,20 +178,21 @@ echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/a
 
 Installing Grafana, update the apt cache and by following install the Grafana.
 
-```bash
+```{ .bash linenums="1"}
 sudo apt-get update
 sudo apt-get install grafana
 ```
 
-```bash
+
+```{ .bash linenums="1"}
 Unpacking grafana (7.3.6) ...
 Setting up fonts-dejavu-core (2.37-1) ...
 Setting up fontconfig-config (2.13.1-2ubuntu3) ...
 Setting up libfontconfig1:amd64 (2.13.1-2ubuntu3) ...
 Setting up grafana (7.3.6) ...
-Adding system user `grafana' (UID 112) ...
-Adding new user `grafana' (UID 112) with group `grafana' ...
-Not creating home directory `/usr/share/grafana'.
+Adding system user `grafana&#039; (UID 112) ...
+Adding new user `grafana&#039; (UID 112) with group `grafana&#039; ...
+Not creating home directory `/usr/share/grafana&#039;.
 
 
 ### NOT starting on installation, please execute the following statements to configure grafana to start automatically using systemd
@@ -187,6 +206,7 @@ Processing triggers for systemd (245.4-4ubuntu3) ...
 Processing triggers for man-db (2.9.1-1) ...
 Processing triggers for libc-bin (2.31-0ubuntu9) ...
 ```
+
 
 ### Configuring Grafana
 
