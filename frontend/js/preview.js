@@ -176,163 +176,318 @@ class MkDocsPreview {
     }
   }
 
+  processFontAwesomeIcons(match, iconName) {
+    // Удаляем префикс fontawesome- если он есть
+    const cleanName = iconName.replace(/^fontawesome-/, '');
+    // Определяем тип (solid/regular/brands)
+    const type = cleanName.split('-')[0];
+    const iconClass = type === 'brands' ? 'fab' : 
+                    type === 'regular' ? 'far' : 'fas';
+    const iconNameOnly = cleanName.replace(/^(regular|solid|brands)-/, '');
+    return `<i class="${iconClass} fa-${iconNameOnly.replace(/-/g, ' ')}"></i>`;
+  }
+
+  processOcticons(match, iconName) {
+    const cleanName = iconName.replace(/^octicons-/, '');
+    const sizeMatch = cleanName.match(/-(\d+)$/);
+    const size = sizeMatch ? sizeMatch[1] : '16';
+    const name = cleanName.replace(/-\d+$/, '');
+    return `<span class="octicon octicon-${name}" style="width: ${size}px; height: ${size}px;"></span>`;
+  }
+
+  processMaterialIcons(match, iconName) {
+    const cleanName = iconName.replace(/^material-/, '');
+    return `<span class="mdi mdi-${cleanName.replace(/-/g, '-')}"></span>`;
+  }
+
+  processSimpleIcons(match, iconName) {
+    const cleanName = iconName.replace(/^simple-/, '');
+    return `<span class="simple-icons simple-icons-${cleanName.replace(/-/g, '-')}"></span>`;
+  }
+
   markdownToHtml(markdown) {
       // Нормализуем переносы строк
       markdown = markdown.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
+      // Обработка изображений
       markdown = markdown.replace(
-        /!\[([^\]]*)\]\(([^)\s]+)(?:\s+(["'])(.*?)\3)?\)/g, 
-        (match, alt, src, quote, title) => {
-          const fixedSrc = src.startsWith('images/') ? `/${src}` : src;
-          let imgHtml = `<img src="${fixedSrc}" alt="${alt || ''}" class="mkdocs-image"`;
-          if (title) imgHtml += ` title="${title}"`;
-          imgHtml += '>';
-          return imgHtml;
-        }
+          /!\[([^\]]*)\]\(([^)\s]+)(?:\s+(["'])(.*?)\3)?\)/g, 
+          (match, alt, src, quote, title) => {
+              const fixedSrc = src.startsWith('images/') ? `/${src}` : src;
+              let imgHtml = `<img src="${fixedSrc}" alt="${alt || ''}" class="mkdocs-image"`;
+              if (title) imgHtml += ` title="${title}"`;
+              imgHtml += '>';
+              return imgHtml;
+          }
       );
       
       // Обработка ссылок
       markdown = markdown.replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g, 
-        (match, text, url) => `<a href="${url}">${text}</a>`
+          /\[([^\]]+)\]\(([^)]+)\)/g, 
+          (match, text, url) => `<a href="${url}">${text}</a>`
       );
-     
-      // Обработка иконок MDI
+
+      // Обработка иконок
       markdown = markdown.replace(
-        /\{:([^}]*)\}/g,
-        (match, attrs) => {
-          const classes = attrs.match(/\.([a-z0-9-]+)/g) || [];
-          const iconClasses = classes
-            .map(c => c.substring(1))
-            .filter(c => c.startsWith('mdi-'));
-          
-          if (iconClasses.length > 0) {
-            if (!iconClasses.includes('mdi')) {
-              iconClasses.unshift('mdi');
-            }
-            return `<span class="${iconClasses.join(' ')}"></span>`;
+          /:([a-z0-9-]+):/g,
+          (match, iconName) => {
+              if (iconName.startsWith('fontawesome-')) {
+                  return this.processFontAwesomeIcons(match, iconName);
+              }
+              else if (iconName.startsWith('octicons-')) {
+                  return this.processOcticons(match, iconName);
+              }
+              else if (iconName.startsWith('material-')) {
+                  return this.processMaterialIcons(match, iconName);
+              }
+              else if (iconName.startsWith('simple-')) {
+                  return this.processSimpleIcons(match, iconName);
+              }
+              return match;
           }
-          return '';
-        }
       );
-      
+
+      // Обработка иконок с атрибутами
+      markdown = markdown.replace(
+          /:([a-z0-9-]+):\{([^}]+)\}/g,
+          (match, iconName, attrs) => {
+              let iconHtml = '';
+              
+              if (iconName.startsWith('fontawesome-')) {
+                  iconHtml = this.processFontAwesomeIcons(match, iconName);
+              } else if (iconName.startsWith('octicons-')) {
+                  iconHtml = this.processOcticons(match, iconName);
+              } else if (iconName.startsWith('material-')) {
+                  iconHtml = this.processMaterialIcons(match, iconName);
+              } else if (iconName.startsWith('simple-')) {
+                  iconHtml = this.processSimpleIcons(match, iconName);
+              } else {
+                  return match;
+              }
+              
+              const classMatches = attrs.match(/\.[a-zA-Z0-9_-]+/g) || [];
+              if (classMatches.length > 0) {
+                  const existingClasses = iconHtml.match(/class="([^"]*)"/);
+                  const newClasses = classMatches.map(c => c.substring(1)).join(' ');
+                  
+                  if (existingClasses) {
+                      iconHtml = iconHtml.replace(
+                          /class="([^"]*)"/, 
+                          `class="$1 ${newClasses}"`
+                      );
+                  } else {
+                      iconHtml = iconHtml.replace('>', ` class="${newClasses}">`);
+                  }
+              }
+              
+              return iconHtml;
+          }
+      );
+
       // Обработка жирного текста
       markdown = markdown.replace(
-        /\*\*([^*]+)\*\*/g,
-        (match, text) => `<strong>${text}</strong>`
+          /\*\*([^*]+)\*\*/g,
+          (match, text) => `<strong>${text}</strong>`
       );
       
       // Обработка курсива
-      markdown = markdown.replace(
-        /\*([^*]+)\*/g,
-        (match, text) => `<em>${text}</em>`
-      );
+      // markdown = markdown.replace(
+      //     /\*([^*]+)\*/g,
+      //     (match, text) => `<em>${text}</em>`
+      // );
       
       // Обработка инлайн-кода
       markdown = markdown.replace(
-        /(^|[^`])`([^`]+)`([^`]|$)/g,
-        (match, prefix, code, suffix) => {
-          return `${prefix}<code>${this.escapeHtml(code)}</code>${suffix}`;
-        }
+          /(^|[^`])`([^`]+)`([^`]|$)/g,
+          (match, prefix, code, suffix) => {
+              return `${prefix}<code>${this.escapeHtml(code)}</code>${suffix}`;
+          }
       );
-      
-      // Обработка списков
-      markdown = markdown.replace(
-        /^(\s*)[*+-] (.+)$/gm,
-        (match, indent, content) => {
-          const level = indent.length / 2;
-          return `${indent}<li>${content}</li>`;
-        }
-      );
-      
-      // Группировка элементов списка
-      markdown = markdown.replace(
-        /(<li>.+<\/li>\n?)+/g,
-        (match) => `<ul>${match}</ul>`
-      );
-      
+
+      // Подготовка временных хранилищ
       const codeBlocks = [];
       const admonitions = [];
-      
+      const listItems = [];
+
       // Обработка блоков кода с атрибутами
       markdown = markdown.replace(/```([a-z]*)\s*\{\s*([^}]*)\s*\}\s*\n([\s\S]*?)\n```/g, 
         (match, lang, attrs, code) => {
-          const attributes = this.parseCodeBlockAttributes(attrs);
-          const id = `codeblock-${codeBlocks.length}`;
-          
-          codeBlocks.push({
-              id,
-              lang: lang || attributes.language || '',
-              attributes,
-              code: this.escapeHtml(code.trim())
-          });
-          return `\n@@@code-${id}@@@\n`;
-      });
+            const id = `codeblock-${codeBlocks.length}`;
+            codeBlocks.push({
+                id,
+                lang: lang || '',
+                attributes: this.parseCodeBlockAttributes(attrs),
+                code: this.escapeHtml(code.trim())
+            });
+            return `\n@@@code-${id}@@@\n`;
+        });
 
       // Обработка обычных блоков кода без атрибутов
       markdown = markdown.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, 
-        (match, lang, code) => {
-          const id = `codeblock-${codeBlocks.length}`;
-          codeBlocks.push({
-              id,
-              lang: lang || '',
-              attributes: {},
-              code: this.escapeHtml(code.trim())
+          (match, lang, code) => {
+              const id = `codeblock-${codeBlocks.length}`;
+              codeBlocks.push({
+                  id,
+                  lang: lang || '',
+                  attributes: {},
+                  code: this.escapeHtml(code.trim())
+              });
+              return `\n@@@code-${id}@@@\n`;
           });
-          return `\n@@@code-${id}@@@\n`;
-      });
 
       // Обработка admonitions (!!! и ???)
       markdown = markdown.replace(/^([!?]{3})\s+(\w+)(?:\s*)\n([\s\S]*?)(?=^\s*$|\n[!?]{3}\s|\n```|\n#{1,6}\s|$)/gm,
         (match, marker, type, content) => {
             const id = `admonition-${admonitions.length}`;
-            const isCollapsible = marker === '???';
-            
-            // Тип блока (warning/danger/note) становится заголовком
-            const displayTitle = this.getDefaultAdmonitionTitle(type);
-            
-            // Улучшенная обработка содержимого
-            let processedContent = this.processAdmonitionContent(content.trim());
-            
             admonitions.push({
                 id,
                 type,
-                title: displayTitle,
-                content: processedContent,
-                collapsible: isCollapsible
+                title: this.getDefaultAdmonitionTitle(type),
+                content: this.processAdmonitionContent(content.trim()),
+                collapsible: marker === '???'
             });
-            
             return `\n@@@admonition-${id}@@@\n`;
         });
 
+    // Обработка списков с улучшенной логикой
+    console.log("Original markdown:", markdown);
+    markdown = markdown.replace(/^(\s*)([-*+]|\d+\.)\s([^\n]*)((?:\n[^\S\n]+[^\n]*)*)/gm,
+      (match, indent, marker, content, continuation) => {
+          const id = `listitem-${listItems.length}`;
+          let fullContent = content;
+          
+          // Обработка продолжения элемента списка
+          if (continuation) {
+              fullContent += continuation.replace(/\n[^\S\n]+/g, ' ');
+          }
+          
+          // Обработка чекбоксов
+          if (/^\[[ x]\]/.test(fullContent)) {
+              fullContent = fullContent.replace(/^\[([ x])\]\s*(.*)/, 
+                  (m, state, text) => `<input type="checkbox" disabled${state === 'x' ? ' checked' : ''}> ${text}`);
+          }
+          
+          listItems.push({
+              id,
+              content: this.processInlineMarkdown(fullContent),
+              indent: indent.length,
+              ordered: /^\d+\.$/.test(marker)
+          });
+          
+          return `\n@@@listitem-${id}@@@\n`;
+    });
+    console.log("After list processing:", markdown);
 
-      // Обработка изображений
-      // markdown = markdown.replace(
-      //   /!\[([^\]]+)\]\(([^)]+)\)/g, 
-      //   (match, alt, src) => {
-      //     const fixedSrc = src.startsWith('images/') ? `/${src}` : src;
-      //     return `<img src="${fixedSrc}" alt="${alt}" class="mkdocs-image">`;
-      //   }
-      // );
-
-      // Обработка заголовков
-      markdown = markdown.replace(/^# (.*$)/gm, '<h1>$1</h1>')
+    // Обработка заголовков
+    markdown = markdown.replace(/^# (.*$)/gm, '<h1>$1</h1>')
         .replace(/^## (.*$)/gm, '<h2>$1</h2>')
         .replace(/^### (.*$)/gm, '<h3>$1</h3>')
         .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
         .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
         .replace(/^###### (.*$)/gm, '<h6>$1</h6>');
 
-      // Обработка горизонтальных линий (добавьте эту строку)
-      markdown = markdown.replace(/^---\s*$/gm, '<hr>');
+    // Обработка горизонтальных линий
+    markdown = markdown.replace(/^---\s*$/gm, '<hr>');
 
-      // Обработка переносов строк в обычном тексте
-      markdown = markdown.split('\n').map(line => {
-          if (/^#|^```|^[!?]{3}|^<|^@@@/.test(line.trim())) {
-              return line; // Не обрабатываем специальные строки
-          }
-          return line.trim() ? `<p>${line}</p>` : ''; // <br>
-      }).join('\n');
+    // Обработка параграфов
+    markdown = markdown.replace(/^([^\n]+)(\n[^\n]+)/gm, (match, p1, p2) => {
+        return `<p>${this.processInlineMarkdown(p1 + p2)}</p>`;
+    });
+
+    // Обработка блоков цитат
+    markdown = markdown.replace(/^> (.*$)/gm, (match, content) => {
+        return `<blockquote>${this.processInlineMarkdown(content)}</blockquote>`;
+    });
+
+    // Обработка таблиц
+    markdown = markdown.replace(/^\|(.+?)\|\n\|(.+?)\|\n((?:\|(.+?)\|\n)?)/gm, (match, header, align, rows) => {
+        let tableHtml = '<table>';
+        tableHtml += `<thead><tr><th>${header.split('|').map(cell => cell.trim()).join('</th><th>')}</th></tr></thead>`;
+        tableHtml += `<tbody>${rows.split('\n').map(row => {
+            return `<tr><td>${row.split('|').map(cell => cell.trim()).join('</td><td>')}</td></tr>`;
+        }).join('')}</tbody>`;
+        tableHtml += '</table>';
+        return tableHtml;
+    });
+
+      // Разделение на строки для обработки
+    const lines = markdown.split('\n');
+    let output = [];
+    let currentParagraph = [];
+    let listStack = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmedLine = line.trim();
+        
+        // Обработка элементов списка
+        if (trimmedLine.startsWith('@@@listitem-')) {
+            const itemId = trimmedLine.replace(/@@@listitem-|@@@/g, '');
+            const item = listItems.find(i => i.id === itemId);
+            if (!item) continue;
+            
+            // Закрываем текущий параграф перед списком
+            if (currentParagraph.length > 0) {
+                output.push(`<p>${currentParagraph.join(' ')}</p>`);
+                currentParagraph = [];
+            }
+            
+            // Обработка вложенности
+            while (listStack.length > 0 && listStack[listStack.length - 1].indent >= item.indent) {
+                output.push(listStack.pop().ordered ? '</ol>' : '</ul>');
+            }
+            
+            // Если это новый список или изменился тип списка
+            if (listStack.length === 0 || 
+                listStack[listStack.length - 1].indent < item.indent ||
+                listStack[listStack.length - 1].ordered !== item.ordered) {
+                output.push(item.ordered ? '<ol>' : '<ul>');
+                listStack.push({indent: item.indent, ordered: item.ordered});
+            }
+            
+            output.push(`<li>${item.content}</li>`);
+        }
+        // Обработка других специальных элементов
+        else if (trimmedLine.startsWith('@@@') || 
+                trimmedLine.startsWith('<h') || 
+                trimmedLine.startsWith('<hr') ||
+                trimmedLine === '') {
+            // Закрываем все списки перед специальными элементами
+            while (listStack.length > 0) {
+                output.push(listStack.pop().ordered ? '</ol>' : '</ul>');
+            }
+            
+            if (currentParagraph.length > 0) {
+                output.push(`<p>${currentParagraph.join(' ')}</p>`);
+                currentParagraph = [];
+            }
+            
+            if (trimmedLine !== '') {
+                output.push(line);
+            }
+        }
+        // Обработка обычного текста
+        else {
+            // Закрываем списки перед обычным текстом
+            while (listStack.length > 0) {
+                output.push(listStack.pop().ordered ? '</ol>' : '</ul>');
+            }
+            
+            currentParagraph.push(this.processInlineMarkdown(line));
+        }
+    }
+
+    // Добавляем последний параграф, если он есть
+    if (currentParagraph.length > 0) {
+        output.push(`<p>${currentParagraph.join(' ')}</p>`);
+    }
+
+    // Закрываем все оставшиеся списки
+    while (listStack.length > 0) {
+        output.push(listStack.pop().ordered ? '</ol>' : '</ul>');
+    }
+
+    markdown = output.join('\n');
 
       // Восстановление блоков кода
       markdown = markdown.replace(/@@@code-([^@]+)@@@/g, (match, id) => {
@@ -341,7 +496,6 @@ class MkDocsPreview {
           
           let html = '<div class="mkdocs-code-block">';
           
-          // Добавляем заголовок если есть
           if (block.attributes.title) {
               html += `<div class="mkdocs-code-title">${block.attributes.title}</div>`;
           }
@@ -378,7 +532,7 @@ class MkDocsPreview {
           const displayTitle = admonition.title || defaultTitles[admonition.type] || admonition.type;
           const icon = this.getAdmonitionIcon(admonition.type);
           
-          let html = `
+          return `
           <div class="mkdocs-admonition ${admonition.type} ${admonition.collapsible ? 'collapsible' : ''}">
               <div class="mkdocs-admonition-title">
                   <span class="mdi mdi-${icon}"></span>
@@ -387,16 +541,12 @@ class MkDocsPreview {
               <div class="mkdocs-admonition-content">
                   ${admonition.content}
               </div>
-          </div>
-          `;
-          
-          return html;
+          </div>`;
       });
 
       return markdown;
   }
 
-  // Метод для обработки содержимого admonition
   processAdmonitionContent(content) {
       const lines = content.split('\n');
       const minIndent = this.getMinIndent(lines.filter(line => line.trim()));
@@ -433,14 +583,32 @@ class MkDocsPreview {
 
   // Обработка inline markdown
   processInlineMarkdown(line) {
-      if (line.trim() === '') return;
-      
-      line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                .replace(/`([^`]+)`/g, '<code>$1</code>')
-                .replace(/\{:([^}]*)\}/g, this.processMdiIcons);
-      
-      return line;
+    if (line.trim() === '') return line;
+    
+    line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+              //.replace(/\*([^*]+)\*/g, '<em>$1</em>')
+              .replace(/`([^`]+)`/g, '<code>$1</code>')
+              // Обработка {: .mdi .mdi-icon :}
+              .replace(/\{:([^:]+):\}/g, (match, attrs) => {
+                const classes = (attrs.match(/\.[a-z0-9-]+/g) || [])
+                  .map(c => c.substring(1))
+                  .filter(c => c.startsWith('mdi-'));
+                
+                if (classes.length) {
+                  if (!classes.includes('mdi')) classes.unshift('mdi');
+                  return `<span class="${classes.join(' ')}"></span>`;
+                }
+                return '';
+              })
+              // Обработка :fontawesome-icon:
+              .replace(/:([a-z0-9-]+):/g, (match, iconName) => {
+                if (iconName.startsWith('fontawesome-')) {
+                  return this.processFontAwesomeIcons(match, iconName);
+                }
+                return match;
+              });
+    
+    return line;
   }
 
   // Получение минимального отступа для группы строк
@@ -577,6 +745,8 @@ class MkDocsPreview {
 
 const Preview = new MkDocsPreview();
 document.addEventListener('DOMContentLoaded', () => Preview.init());
+
+
 
 
 

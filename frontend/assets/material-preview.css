@@ -242,6 +242,10 @@
   margin-bottom: 0.3em;
 }
 
+.mkdocs-preview-container input[type="checkbox"] {
+    margin-right: 0.5em;
+}
+
 /* Стили для admonitions */
 .mkdocs-admonition {
     margin: 10px 0;
