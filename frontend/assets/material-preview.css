@@ -246,6 +246,47 @@
     margin-right: 0.5em;
 }
 
+/* Стили для нумерованных списков */
+.mkdocs-preview-container ol {
+  counter-reset: mkdocs-list-counter;
+  list-style-type: none;
+  padding-left: 1.5em;
+}
+
+.mkdocs-preview-container ol li {
+  position: relative;
+  counter-increment: mkdocs-list-counter;
+}
+
+.mkdocs-preview-container ol li .mkdocs-list-counter {
+  position: absolute;
+  left: -1.5em;
+  width: 1.5em;
+  text-align: right;
+}
+
+/* Стили для вложенных списков */
+.mkdocs-preview-container ul ul,
+.mkdocs-preview-container ol ol,
+.mkdocs-preview-container ul ol,
+.mkdocs-preview-container ol ul {
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+  padding-left: 1.5em;
+}
+
+.mkdocs-preview-container ul {
+  list-style-type: disc;
+}
+
+.mkdocs-preview-container ul ul {
+  list-style-type: circle;
+}
+
+.mkdocs-preview-container ul ul ul {
+  list-style-type: square;
+}
+
 /* Стили для admonitions */
 .mkdocs-admonition {
     margin: 10px 0;

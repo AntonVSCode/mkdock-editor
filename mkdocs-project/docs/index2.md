@@ -7,6 +7,29 @@ Table of Contents
 !!! note 
     ![Batman Returns (USA)-screenshot.png](images/5f332450-6f8f-4dcf-b909-bf253c4cbfe7.png)
     
+# 
+###### sfaasfadsfa
+## asasda
+
+??? note
+    Ваш текст здесь
+
+!!! warning 
+	gsdfsgfsdgsfdhgsdfhfd gasdgasdgasdfgads asdasgasdgas
+
+
+!!! danger 
+	asdfasdfsadfasdfas lkasvm avascasdf adsfasf asdf asdf asdf
+	```{ .javascript linenums="1"}
+	     // Закрытие меню при клике вне его
+	//   document.addEventListener(&#039;click&#039;, () =&gt; {
+	//     document.querySelectorAll(&#039;.dropdown-content&#039;).forEach(content =&gt; {
+	//       content.style.display = &#039;none&#039;;
+	//     });
+	//   });
+	// }
+	```
+    
 !!! warning
     Как обычно это и бывает, я накопил критическую массу мыслей, и пора их как-то систематизировать, чтобы вы, мои замечательные читатели Хабра, могли что-то извлечь из моего опыта или поделиться своим
 

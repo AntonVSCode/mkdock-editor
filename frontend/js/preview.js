@@ -350,7 +350,6 @@ class MkDocsPreview {
         });
 
     // Обработка списков с улучшенной логикой
-    console.log("Original markdown:", markdown);
     markdown = markdown.replace(/^(\s*)([-*+]|\d+\.)\s([^\n]*)((?:\n[^\S\n]+[^\n]*)*)/gm,
       (match, indent, marker, content, continuation) => {
           const id = `listitem-${listItems.length}`;
@@ -358,8 +357,11 @@ class MkDocsPreview {
           
           // Обработка продолжения элемента списка
           if (continuation) {
-              fullContent += continuation.replace(/\n[^\S\n]+/g, ' ');
+              fullContent += continuation.replace(/\n[^\S\n]+/g, ' ').trim();
           }
+          
+          // Обработка специальных маркеров
+          fullContent = fullContent.replace(/::marker\s*"([^"]*)"/, '$1');
           
           // Обработка чекбоксов
           if (/^\[[ x]\]/.test(fullContent)) {
@@ -369,14 +371,14 @@ class MkDocsPreview {
           
           listItems.push({
               id,
-              content: this.processInlineMarkdown(fullContent),
+              content: this.processInlineMarkdown(fullContent.trim()),
               indent: indent.length,
-              ordered: /^\d+\.$/.test(marker)
+              ordered: /^\d+\.$/.test(marker),
+              marker: marker
           });
-          
           return `\n@@@listitem-${id}@@@\n`;
-    });
-    console.log("After list processing:", markdown);
+      });
+    //console.log("After list processing:", markdown);
 
     // Обработка заголовков
     markdown = markdown.replace(/^# (.*$)/gm, '<h1>$1</h1>')
@@ -413,8 +415,15 @@ class MkDocsPreview {
       // Разделение на строки для обработки
     const lines = markdown.split('\n');
     let output = [];
+    let listStack = []; // Стек для отслеживания вложенности списков
     let currentParagraph = [];
-    let listStack = [];
+
+    const closeListsToLevel = (targetIndent) => {
+        while (listStack.length > 0 && listStack[listStack.length - 1].indent >= targetIndent) {
+            const list = listStack.pop();
+            output.push('</li></' + (list.ordered ? 'ol' : 'ul') + '>');
+        }
+    };
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -424,28 +433,56 @@ class MkDocsPreview {
         if (trimmedLine.startsWith('@@@listitem-')) {
             const itemId = trimmedLine.replace(/@@@listitem-|@@@/g, '');
             const item = listItems.find(i => i.id === itemId);
-            if (!item) continue;
             
-            // Закрываем текущий параграф перед списком
+            if (!item) continue;
+       
+          // console.log("Processing list item:", { // Исправленный отладочный вывод
+          //     id: item.id,
+          //     indent: item.indent,
+          //     ordered: item.ordered,
+          //     content: item.content
+          // });
+
             if (currentParagraph.length > 0) {
                 output.push(`<p>${currentParagraph.join(' ')}</p>`);
                 currentParagraph = [];
             }
             
-            // Обработка вложенности
-            while (listStack.length > 0 && listStack[listStack.length - 1].indent >= item.indent) {
-                output.push(listStack.pop().ordered ? '</ol>' : '</ul>');
-            }
+            // Нормализуем отступ
+            const itemIndent = Math.floor(item.indent / 2);
+            
+            // Закрываем все списки с большим или равным отступом
+            closeListsToLevel(itemIndent);
             
             // Если это новый список или изменился тип списка
             if (listStack.length === 0 || 
-                listStack[listStack.length - 1].indent < item.indent ||
+                listStack[listStack.length - 1].indent < itemIndent ||
                 listStack[listStack.length - 1].ordered !== item.ordered) {
-                output.push(item.ordered ? '<ol>' : '<ul>');
-                listStack.push({indent: item.indent, ordered: item.ordered});
+                
+                // Если это вложенный список, закрываем предыдущий li
+                if (listStack.length > 0 && listStack[listStack.length - 1].indent < itemIndent) {
+                    output.push('</li>');
+                }
+                
+                // Открываем новый список
+                output.push('<' + (item.ordered ? 'ol' : 'ul') + '><li>');
+                listStack.push({
+                    indent: itemIndent,
+                    ordered: item.ordered,
+                    counter: 1
+                });
+            } else {
+                // Закрываем предыдущий li и открываем новый
+                output.push('</li><li>');
+                if (item.ordered) listStack[listStack.length - 1].counter++;
             }
-            
-            output.push(`<li>${item.content}</li>`);
+
+            // Добавляем содержимое элемента
+            let content = item.content;
+            if (item.ordered) {
+                content = `<span class="mkdocs-list-counter">${listStack[listStack.length - 1].counter}.</span> ${content}`;
+            }
+            output.push(content);
         }
         // Обработка других специальных элементов
         else if (trimmedLine.startsWith('@@@') || 
@@ -453,9 +490,7 @@ class MkDocsPreview {
                 trimmedLine.startsWith('<hr') ||
                 trimmedLine === '') {
             // Закрываем все списки перед специальными элементами
-            while (listStack.length > 0) {
-                output.push(listStack.pop().ordered ? '</ol>' : '</ul>');
-            }
+            closeListsToLevel(0);
             
             if (currentParagraph.length > 0) {
                 output.push(`<p>${currentParagraph.join(' ')}</p>`);
@@ -466,25 +501,20 @@ class MkDocsPreview {
                 output.push(line);
             }
         }
-        // Обработка обычного текста
         else {
-            // Закрываем списки перед обычным текстом
-            while (listStack.length > 0) {
-                output.push(listStack.pop().ordered ? '</ol>' : '</ul>');
-            }
+            // Закрываем все списки перед обычным текстом
+            closeListsToLevel(0);
             
             currentParagraph.push(this.processInlineMarkdown(line));
         }
     }
 
+    // Закрываем все оставшиеся списки
+    closeListsToLevel(0);
+
     // Добавляем последний параграф, если он есть
     if (currentParagraph.length > 0) {
         output.push(`<p>${currentParagraph.join(' ')}</p>`);
-    }
-
-    // Закрываем все оставшиеся списки
-    while (listStack.length > 0) {
-        output.push(listStack.pop().ordered ? '</ol>' : '</ul>');
     }
 
     markdown = output.join('\n');

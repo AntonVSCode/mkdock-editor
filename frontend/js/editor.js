@@ -8,46 +8,52 @@ const Editor = {
   currentFileElement: null,    // Элемент с именем текущего файла
   previewTimeout: null,        // Таймер для обновления превью
   saveTimeout: null,           // Таймер для автосохранения
-  //typo: null,
-  //typoEn: null,
-  //spellcheckTimeout: null,
-
+  initialized: false,          // Добавляем флаг инициализации
   /**
    * Инициализация редактора
    * на основе сохраненных настроек
    */
   init: function() {
-    try {
-      // Проверяем загружен ли CodeMirror
-      if (!window.CodeMirror) {
-        console.warn('CodeMirror не загружен, используется простой редактор');
-        return this.initWithMarked();
-      }
-
-      // Загружаем настройки из localStorage
-      const settings = this.loadSettings();
-      const container = document.getElementById('markdown-editor-container');
-      
-      if (!container) {
-        throw new Error('Контейнер редактора не найден');
-      }
-
-      // Инициализируем соответствующий парсер
-      container.innerHTML = '<textarea id="markdown-editor"></textarea>';
-      
-      if (settings.markdownParser === 'marked') {
-        this.initWithMarked();
-      } else {
-         this.initWithCodeMirror();
-      }
-
+    if (this.initialized) {
+      console.warn('Editor уже инициализирован, пропускаем повторную инициализацию');
       return this;
-    } catch (error) {
-      console.error('Ошибка инициализации редактора:', error);
-      // Fallback на простой редактор
+    }
+
+    try {
+      console.group('[DEBUG] Initializing Editor');
+
+    // Проверяем загружен ли CodeMirror
+    if (!window.CodeMirror) {
+      console.warn('CodeMirror не загружен, используется простой редактор');
       return this.initWithMarked();
     }
-  },
+
+    // Загружаем настройки из localStorage
+    const settings = this.loadSettings();
+    const container = document.getElementById('markdown-editor-container');
+    
+    if (!container) {
+      throw new Error('Контейнер редактора не найден');
+    }
+
+    // Инициализируем соответствующий парсер
+    container.innerHTML = '<textarea id="markdown-editor"></textarea>';
+    
+    if (settings.markdownParser === 'marked') {
+      this.initWithMarked();
+    } else {
+      this.initWithCodeMirror();
+    }
+
+    this.initialized = true;
+    console.groupEnd();
+    return this;
+  } catch (error) {
+    console.error('Ошибка инициализации редактора:', error);
+    // Fallback на простой редактор
+    return this.initWithMarked();
+  }
+},
 
   /**
    * Загрузка настроек редактора из localStorage
@@ -66,6 +72,8 @@ const Editor = {
    */
   initWithCodeMirror: function() {
     try {
+      console.group('[DEBUG] Initializing CodeMirror');
+
       const container = document.getElementById('markdown-editor-container');
       const textarea = document.getElementById('markdown-editor');
       
@@ -73,6 +81,9 @@ const Editor = {
       if (!container || !textarea) {
         throw new Error('Элементы редактора не найдены');
       }
+
+      console.log('CodeMirror version:', CodeMirror.version);
+      console.log('Available modes:', Object.keys(CodeMirror.modes));
 
       // Удаляем предыдущий экземпляр CodeMirror, если есть
       const previousEditor = container.querySelector('.CodeMirror');
@@ -101,20 +112,78 @@ const Editor = {
         tabSize: 2,                    // Размер табуляции
       });
 
+      // this.cmInstance.on('keyHandlers', {
+      //   "Shift-8": (cm) => {
+      //     const cursor = cm.getCursor();
+      //     const line = cm.getLine(cursor.line);
+      //     const prevChars = line.slice(Math.max(0, cursor.ch - 3), cursor.ch);
+      //     if (prevChars === '***') {
+      //       cm.replaceRange('**', { line: cursor.line, ch: cursor.ch - 3 }, cursor);
+      //       return true;
+      //     }
+      //     return false;
+      //   }
+      // });
+
+      // Добавляем обработчик для клавиши Enter
+      this.cmInstance.on("keydown", (cm, event) => {
+        if (event.key === "Enter") {
+          const doc = cm.getDoc();
+          const cursor = doc.getCursor();
+          const line = doc.getLine(cursor.line);
+          
+          // Проверяем, находимся ли мы внутри блока с отступом (admonition, code block и т.д.)
+          const isInIndentedBlock = line.startsWith('    ');
+          const isEmptyLine = line.trim() === '';
+          const prevLine = cursor.line > 0 ? doc.getLine(cursor.line - 1) : '';
+          const nextLine = cursor.line < doc.lineCount() - 1 ? doc.getLine(cursor.line + 1) : '';
+          
+          // Если текущая строка пустая и предыдущая строка с отступом, и следующая строка без отступа
+          if (isEmptyLine && prevLine.startsWith('    ') && (!nextLine || !nextLine.startsWith('    '))) {
+            // Выходим из блока - оставляем курсор в начале строки
+            doc.replaceRange('\n', cursor);
+            event.preventDefault();
+            return;
+          }
+          
+          if (isInIndentedBlock || (prevLine.startsWith('    ') && !isEmptyLine)) {
+            // Внутри блока с отступом - сохраняем отступ
+            setTimeout(() => {
+              const newCursor = doc.getCursor();
+              const newLine = doc.getLine(newCursor.line);
+              
+              if (newLine.trim() === '' && prevLine.startsWith('    ')) {
+                // Если новая строка пустая - добавляем 4 пробела
+                doc.replaceRange('    ', newCursor);
+                doc.setCursor({
+                  line: newCursor.line,
+                  ch: 4
+                });
+              } else if (newLine.startsWith('    ')) {
+                // Если строка уже с отступом - просто ставим курсор после отступа
+                doc.setCursor({
+                  line: newCursor.line,
+                  ch: Math.min(newCursor.ch, 4)
+                });
+              }
+            }, 10);
+          }
+        }
+      });
+
       // Настройка событий
       this.setupCodeMirrorEvents();
       
       // Инициализация MaterialShortcuts (если он загружен)
       if (typeof MaterialShortcuts !== 'undefined') {
-        this.materialShortcuts = MaterialShortcuts.init(this);
-        // Инициализация обработчиков кнопок Material
+        MaterialShortcuts.editor = this; // Просто сохраняем ссылку
       } else {
         console.warn('MaterialShortcuts не загружен, некоторые функции недоступны');
       }
 
       // Инициализируем остальные компоненты
       this.initFileHeader();
-     
+      console.groupEnd();
     } catch (error) {
       console.error('Ошибка инициализации CodeMirror:', error);
       // Если CodeMirror не загрузился - используем marked.js как fallback
@@ -433,16 +502,6 @@ const Editor = {
   },
 
   // Добавим метод для преобразования путей при предпросмотре
-  // transformPathsForPreview: function(content) {
-  //     // Экранируем HTML в блоках кода перед предпросмотром
-  //     const codeBlockRegex = /```[\s\S]*?```/g;
-  //     content = content.replace(codeBlockRegex, (match) => {
-  //         return match.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  //     });
-      
-  //     // Заменяем относительные пути на абсолютные для предпросмотра
-  //     return content.replace(/\]\(images\//g, '](/images/');
-  // },
   transformPathsForPreview: function(content) {
     // Экранируем HTML во всем контенте, кроме блоков кода
     const codeBlockRegex = /```[\s\S]*?```/g;
@@ -479,26 +538,140 @@ const Editor = {
    * Вставка текста в текущую позицию курсора
    * @param {string} text - Текст для вставки
    */
-  insertAtCursor: function(text) {
+  // insertAtCursor: function(text) {
+  //   this.insertMultilineContent(text, false); // false = не позиционировать курсор после 4 пробелов
+  // },
+
+  insertAtCursor: function(text, positionAfterIndent = false) {
     if (this.cmInstance) {
-      // Для CodeMirror
       const doc = this.cmInstance.getDoc();
       const cursor = doc.getCursor();
+      const lines = text.split('\n');
+      
       doc.replaceRange(text, cursor);
+      
+      if (positionAfterIndent) {
+        const contentLine = lines.findIndex(line => line.startsWith('    '));
+        if (contentLine > -1) {
+          doc.setCursor({
+            line: cursor.line + contentLine,
+            ch: 4
+          });
+        }
+      }
       this.cmInstance.focus();
     } else if (this.editor) {
-      // Для обычного textarea
+      const startPos = this.editor.selectionStart;
+      const endPos = this.editor.selectionEnd;
+      this.editor.value = this.editor.value.substring(0, startPos) + 
+                        text + 
+                        this.editor.value.substring(endPos);
+      this.editor.focus();
+    }
+  },
+
+// Новый метод для вставки многострочного контента с правильным позиционированием
+// insertMultilineContent: function(content, positionCursorAfterIndent = true) {
+//   if (this.cmInstance) {
+//     const doc = this.cmInstance.getDoc();
+//     const cursor = doc.getCursor();
+//     const currentLine = doc.getLine(cursor.line);
+//     const lines = content.split('\n');
+    
+//     //console.log('[DEBUG] Current line:', JSON.stringify(currentLine));
+//     //console.log('[DEBUG] Content lines:', lines);
+
+//     // Если текущая строка не пуста, добавляем перенос
+//     const insertText = currentLine.trim() !== '' ? '\n' + content : content;
+//     doc.replaceRange(insertText, cursor);
+
+//     // Находим строку с контентом (4 пробела + текст)
+//     let contentLineIndex = -1;
+//     if (positionCursorAfterIndent) {
+//       contentLineIndex = lines.findIndex(line => 
+//         line.startsWith('    ') && line.trim().length > 4
+//       );
+//     }
+
+//     //console.log('[DEBUG] Content line index:', contentLineIndex);
+
+//     // Позиционируем курсор
+//     if (contentLineIndex !== -1) {
+//       const targetLine = cursor.line + contentLineIndex + (currentLine.trim() !== '' ? 1 : 0);
+//       doc.setCursor({ line: targetLine, ch: 4 }); // Курсор после 4 пробелов
+//       //console.log('[DEBUG] Cursor set to line:', targetLine, 'ch: 4');
+//     } else {
+//       const lastLine = cursor.line + lines.length - (currentLine.trim() !== '' ? 0 : 1);
+//       doc.setCursor({ line: lastLine, ch: doc.getLine(lastLine).length });
+//       //console.log('[DEBUG] Cursor set to end of block, line:', lastLine);
+//     }
+    
+//     this.cmInstance.focus();
+//   } else if (this.editor) {
+//     // Реализация для обычного textarea (если CodeMirror не используется)
+//     const startPos = this.editor.selectionStart;
+//     const endPos = this.editor.selectionEnd;
+//     const currentText = this.editor.value;
+//     const isNewLineNeeded = startPos > 0 && !currentText.substring(startPos - 1, startPos).match(/[\r\n]/);
+    
+//     let textToInsert = content.replace(/\\n/g, '\n');
+//     if (isNewLineNeeded) textToInsert = '\n' + textToInsert;
+    
+//     this.editor.value = currentText.substring(0, startPos) + 
+//                        textToInsert + 
+//                        currentText.substring(endPos);
+    
+//     const contentPos = textToInsert.indexOf('    ') + 4;
+//     this.editor.selectionStart = this.editor.selectionEnd = 
+//       contentPos > 3 ? startPos + contentPos : startPos + textToInsert.length;
+//   }
+// },
+  insertMultilineContent: function(content, positionCursorAfterIndent = true) {
+    if (this.cmInstance) {
+      const doc = this.cmInstance.getDoc();
+      const cursor = doc.getCursor();
+      const currentLine = doc.getLine(cursor.line);
+      const lines = content.split('\n');
+      
+      // Если текущая строка не пуста, добавляем перенос
+      const insertText = currentLine.trim() !== '' ? '\n' + content : content;
+      doc.replaceRange(insertText, cursor);
+
+      // Находим строку с контентом (4 пробела + текст)
+      let contentLineIndex = -1;
+      if (positionCursorAfterIndent) {
+        contentLineIndex = lines.findIndex(line => 
+          line.startsWith('    ') && line.trim().length > 4
+        );
+      }
+
+      // Позиционируем курсор
+      if (contentLineIndex !== -1) {
+        const targetLine = cursor.line + contentLineIndex + (currentLine.trim() !== '' ? 1 : 0);
+        doc.setCursor({ line: targetLine, ch: 4 }); // Курсор после 4 пробелов
+      } else {
+        const lastLine = cursor.line + lines.length - (currentLine.trim() !== '' ? 0 : 1);
+        doc.setCursor({ line: lastLine, ch: doc.getLine(lastLine).length });
+      }
+      
+      this.cmInstance.focus();
+    } else if (this.editor) {
+      // Реализация для обычного textarea
       const startPos = this.editor.selectionStart;
       const endPos = this.editor.selectionEnd;
       const currentText = this.editor.value;
+      const isNewLineNeeded = startPos > 0 && !currentText.substring(startPos - 1, startPos).match(/[\r\n]/);
+      
+      let textToInsert = content.replace(/\\n/g, '\n');
+      if (isNewLineNeeded) textToInsert = '\n' + textToInsert;
       
       this.editor.value = currentText.substring(0, startPos) + 
-                         text + 
-                         currentText.substring(endPos);
+                        textToInsert + 
+                        currentText.substring(endPos);
       
-      // Устанавливаем курсор после вставленного текста
-      this.editor.selectionStart = this.editor.selectionEnd = startPos + text.length;
-      this.editor.focus();
+      const contentPos = textToInsert.indexOf('    ') + 4;
+      this.editor.selectionStart = this.editor.selectionEnd = 
+        contentPos > 3 ? startPos + contentPos : startPos + textToInsert.length;
     }
   },
 
@@ -510,40 +683,6 @@ const Editor = {
     };
   }
 };
-
-// Инициализация при загрузке документа
-document.addEventListener('DOMContentLoaded', () => {
-  Editor.init();
-});
-
-// Кастомный режим для MkDocs (обработка admonitions и вкладок)
-CodeMirror.defineMode("mkdocs-markdown", function(config) {
-  const markdown = CodeMirror.getMode(config, "markdown");
-  
-  return {
-    token: function(stream, state) {
-      // Обработка admonitions (!!! note)
-      if (stream.match(/^!!! \w+/)) {
-        return "admonition";
-      }
-      // Обработка сворачиваемых блоков (??? note)
-      if (stream.match(/^\?\?\? \w+/)) {
-        return "admonition";
-      }
-      // Обработка вкладок (=== "Tab")
-      if (stream.match(/^=== /)) {
-        return "tabset";
-      }
-      
-      // Стандартная обработка Markdown
-      return markdown.token(stream, state);
-    },
-    startState: markdown.startState,
-    copyState: markdown.copyState,
-    indent: markdown.indent,
-    blankLine: markdown.blankLine
-  };
-});
 
 // Обработчики для выпадающих меню
 function setupDropdowns() {
@@ -563,23 +702,30 @@ function setupDropdowns() {
       content.style.display = content.style.display === 'block' ? 'none' : 'block';
     });
     
-    // Обработчики для кнопок внутри меню
+    // Обработчик для всех кнопок
     content.querySelectorAll('.dropdown-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
+        content.style.display = 'none';
+        
         const textToInsert = btn.getAttribute('data-insert');
         if (textToInsert) {
-          Editor.insertAtCursor(textToInsert);
+          if (textToInsert.startsWith('#') && 
+              typeof MaterialShortcuts !== 'undefined' && 
+              MaterialShortcuts.editor?.cmInstance) {
+            console.log('Inserting heading via dropdown'); // Логирование
+            MaterialShortcuts._insertHeading(
+              MaterialShortcuts.editor.cmInstance, 
+              textToInsert
+            );
+          }
+          // Для admonitions и других блоков - обычная вставка с обработкой переносов
+          else {
+            const textWithNewlines = textToInsert.replace(/\\n/g, '\n');
+            Editor.insertAtCursor(textWithNewlines);
+          }
         }
-        content.style.display = 'none';
       });
-    });
-  });
-
-  // Закрытие меню при клике вне его
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.dropdown-content').forEach(content => {
-      content.style.display = 'none';
     });
   });
 }
