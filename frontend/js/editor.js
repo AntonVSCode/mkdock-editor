@@ -570,62 +570,6 @@ const Editor = {
     }
   },
 
-// Новый метод для вставки многострочного контента с правильным позиционированием
-// insertMultilineContent: function(content, positionCursorAfterIndent = true) {
-//   if (this.cmInstance) {
-//     const doc = this.cmInstance.getDoc();
-//     const cursor = doc.getCursor();
-//     const currentLine = doc.getLine(cursor.line);
-//     const lines = content.split('\n');
-    
-//     //console.log('[DEBUG] Current line:', JSON.stringify(currentLine));
-//     //console.log('[DEBUG] Content lines:', lines);
-
-//     // Если текущая строка не пуста, добавляем перенос
-//     const insertText = currentLine.trim() !== '' ? '\n' + content : content;
-//     doc.replaceRange(insertText, cursor);
-
-//     // Находим строку с контентом (4 пробела + текст)
-//     let contentLineIndex = -1;
-//     if (positionCursorAfterIndent) {
-//       contentLineIndex = lines.findIndex(line => 
-//         line.startsWith('    ') && line.trim().length > 4
-//       );
-//     }
-
-//     //console.log('[DEBUG] Content line index:', contentLineIndex);
-
-//     // Позиционируем курсор
-//     if (contentLineIndex !== -1) {
-//       const targetLine = cursor.line + contentLineIndex + (currentLine.trim() !== '' ? 1 : 0);
-//       doc.setCursor({ line: targetLine, ch: 4 }); // Курсор после 4 пробелов
-//       //console.log('[DEBUG] Cursor set to line:', targetLine, 'ch: 4');
-//     } else {
-//       const lastLine = cursor.line + lines.length - (currentLine.trim() !== '' ? 0 : 1);
-//       doc.setCursor({ line: lastLine, ch: doc.getLine(lastLine).length });
-//       //console.log('[DEBUG] Cursor set to end of block, line:', lastLine);
-//     }
-    
-//     this.cmInstance.focus();
-//   } else if (this.editor) {
-//     // Реализация для обычного textarea (если CodeMirror не используется)
-//     const startPos = this.editor.selectionStart;
-//     const endPos = this.editor.selectionEnd;
-//     const currentText = this.editor.value;
-//     const isNewLineNeeded = startPos > 0 && !currentText.substring(startPos - 1, startPos).match(/[\r\n]/);
-    
-//     let textToInsert = content.replace(/\\n/g, '\n');
-//     if (isNewLineNeeded) textToInsert = '\n' + textToInsert;
-    
-//     this.editor.value = currentText.substring(0, startPos) + 
-//                        textToInsert + 
-//                        currentText.substring(endPos);
-    
-//     const contentPos = textToInsert.indexOf('    ') + 4;
-//     this.editor.selectionStart = this.editor.selectionEnd = 
-//       contentPos > 3 ? startPos + contentPos : startPos + textToInsert.length;
-//   }
-// },
   insertMultilineContent: function(content, positionCursorAfterIndent = true) {
     if (this.cmInstance) {
       const doc = this.cmInstance.getDoc();
@@ -735,3 +679,6 @@ document.addEventListener('DOMContentLoaded', () => {
   Editor.init();
   setupDropdowns();
 });
+
+// Делаем Editor глобально доступным
+window.Editor = Editor;

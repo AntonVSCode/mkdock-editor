@@ -4,15 +4,6 @@ Table of Contents
 
 
 ## Introduction
-!!! note 
-    ![Batman Returns (USA)-screenshot.png](images/5f332450-6f8f-4dcf-b909-bf253c4cbfe7.png)
-    
-# 
-###### sfaasfadsfa
-## asasda
-
-??? note
-    Ваш текст здесь
 
 !!! warning 
 	gsdfsgfsdgsfdhgsdfhfd gasdgasdgasdfgads asdasgasdgas

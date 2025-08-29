@@ -19,10 +19,13 @@ theme:
   features:
     - navigation.tabs
     - navigation.top
-    - navigation.indexes
-    - navigation.sections
+#    - navigation.sections
+#    - navigation.expand 
+    - navigation.path 
     - navigation.instant
     - navigation.tracking
+    - navigation.footer
+    - navigation.instant.progress
     - search.highlight
     - search.suggest
     - content.tabs
@@ -30,9 +33,6 @@ theme:
     - content.code.copy
     - content.code.select
     - header.autohide
-    - navigation.path
-    - navigation.footer
-    - navigation.instant.progress
 markdown_extensions:
   - attr_list
   - pymdownx.emoji:
@@ -45,6 +45,8 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - codehilite:
       use_pygments: true
       guess_lang: true
@@ -59,10 +61,31 @@ markdown_extensions:
       linenums: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
   - toc:
       permalink: true
       toc_depth: 6
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+nav:
+  - Главная: index.md
+  - Главная 2: index2.md
+  - Инструкция: instruction.md
+
+  - Сети:
+      - Диагностика сети.md
+  
+  # Еще одно выпадающее меню
+  - Скрипты:
+      - bash/newfile2.md
+      - bash:
+        - Bash файл: bash/index.md
+        - bash/newfile53.md
+        - bash/bashTest/newfile53.md
+      - bash 2:
+        - bash/vscode_права.md
 plugins:
   - tags
   - search:
@@ -72,5 +95,6 @@ plugins:
 extra_css:
   - assets/mdi/materialdesignicons.min.css
   - assets/css/font-color.css
+  - assets/css/custom-admonitions.css
 extra:
   images_dir: images

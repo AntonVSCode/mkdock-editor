@@ -1,0 +1,22 @@
+/* Использование CSS-переменных Material theme */
+.md-typeset .admonition,
+.md-typeset details {
+  border-left-width: 6px !important;
+  /* border-radius: 0 4px 4px 0; */
+}
+
+.md-typeset .admonition-info {
+  border-left-color: var(--md-primary-fg-color) !important;
+}
+
+.md-typeset .admonition-warning {
+  border-left-color: var(--md-warning-fg-color) !important;
+}
+
+.md-typeset .admonition-danger {
+  border-left-color: var(--md-error-fg-color) !important;
+}
+
+.md-typeset .admonition-success {
+  border-left-color: var(--md-success-fg-color) !important;
+}

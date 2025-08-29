@@ -25,8 +25,14 @@
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/monokai.min.css">
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/solarized.min.css">
   <link rel="stylesheet" href="assets/vendor/codemirror/theme/ambiance.min.css">
+  <!-- Подключение иконок -->
   <link rel="stylesheet" href="assets/vendor/mdi/materialdesignicons.min.css">
- 
+  <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css"> -->
+  <link rel="stylesheet" href="assets/vendor/octicons/octicons.min.css">
+  <!-- Актуальная ссылка на иконки simple-icons https://cdn.jsdelivr.net/npm/simple-icons-font@v15/font/ -->
+  <link rel="stylesheet" href="assets/vendor/simple/simple-icons.min.css">
+
   <style>
     /* Стили для нижнего меню */
     .explorer-footer {
@@ -189,9 +195,9 @@
           <button id="code-btn" class="toolbar-btn block-btn" title="Code Block (Ctrl+Alt+C)">
             <i class="mdi mdi-code-tags"></i> Code
           </button>
-          <!-- <button id="codejs-btn" class="toolbar-btn block-btn" title="Code Block (Ctrl+Alt+C)">
-            <i class="mdi mdi-code-tags"></i> Code
-          </button> -->
+            <!-- <button class="toolbar-btn format-btn" id="icon-picker-btn" title="Вставить иконку">
+              <i class="mdi mdi-emoticon-outline"></i>
+            </button> -->
         </div>
         <!-- Группа медиа -->
         <div class="toolbar-group">
@@ -212,7 +218,7 @@
         <!-- Выпадающее меню для заголовков -->
         <div class="dropdown toolbar-group">
           <button class="dropbtn format-btn">
-            <i class="mdi mdi-format-header"></i> Заголовки
+            <i class="mdi mdi-format-header-pound"></i>
           </button>
           <div class="dropdown-content">
             <button class="dropdown-btn" data-insert="# ">
@@ -244,6 +250,12 @@
           <button class="toolbar-btn format-btn" data-insert="*" data-wrap="*" title="Italic (Ctrl+I)">
             <i class="mdi mdi-format-italic"></i>
           </button>
+          <button class="toolbar-btn format-btn" data-insert="^^" data-wrap="^^" title="Underline">
+            <i class="mdi mdi-format-underline"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="==" data-wrap="==" title="highlight">
+            <i class="mdi mdi-format-color-fill"></i>
+          </button>
           <button class="toolbar-btn format-btn" data-insert="`" title="Inline Code">
             <i class="mdi mdi-code-brackets"></i>
           </button>
@@ -254,7 +266,11 @@
 
         <!-- Группа ссылок и изображений -->
         <div class="toolbar-group">
-          <button class="toolbar-btn format-btn" data-insert="[link text](url)" title="Insert Link">
+          <button class="toolbar-btn format-btn" data-insert="[Внешняя ссылка :material-arrow-top-right:](url){:target='_blank'}" title="Внешняя ссылка">
+            <!-- <i class="fas fa-external-link"></i> -->
+            <i class="fas fa-external-link-alt"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="[Внутренняя ссылка](url)" title="Внутренняя ссылка">
             <i class="mdi mdi-link"></i>
           </button>
           <button class="toolbar-btn format-btn" data-insert="![alt text](image.png)" title="Insert Image">
@@ -293,6 +309,7 @@
       </div>
     </div>
   </div>
+
   <!-- Сначала загружаем highlight.js -->
   <script src="assets/vendor/highlight.min.js"></script>
   <!-- Затем плагин для нумерации строк -->
@@ -308,12 +325,14 @@
   <script src="assets/vendor/codemirror/html-hint.js"></script>           <!-- Подсказки для HTML -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script> <!-- Для работы с YAML -->
   <!-- Подключение скриптов -->
+  <script src="js/iconData.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/fileExplorer.js"></script>
   <script src="js/preview.js"></script>
   <script src="js/materialShortcuts.js"></script>
   <script src="js/codeBlockModal.js"></script>
   <script src="js/editor.js"></script>
+  <script src="js/iconPicker.js"></script>
   <script src="js/app.js"></script>
   <script src="js/settingsEditor.js"></script>
   <script src="js/modal.js"></script>
