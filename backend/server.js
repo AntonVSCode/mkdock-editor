@@ -1216,4 +1216,119 @@ app.post('/editor/api/mkdocs-config', async (req, res) => {
   }
 });
 
+// ↓↓↓ ДОБАВЛЯЕМ СЮДА КЭШИРОВАНИЕ ↓↓↓
+let favoritesCache = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 5000; // 5 секунд
+
+async function getFavoritesWithCache() {
+  // Проверяем кэш
+  const now = Date.now();
+  if (favoritesCache && now - cacheTimestamp < CACHE_TTL) {
+    return favoritesCache;
+  }
+  
+  await ensureFavoritesFile();
+  const data = await fs.promises.readFile(FAVORITES_FILE, 'utf8');
+  favoritesCache = JSON.parse(data);
+  cacheTimestamp = now;
+  
+  return favoritesCache;
+}
+
+async function saveFavoritesWithCache(favorites) {
+  favoritesCache = favorites;
+  cacheTimestamp = Date.now();
+  await fs.promises.writeFile(FAVORITES_FILE, JSON.stringify(favorites, null, 2));
+}
+// ↑↑↑ КОНЕЦ КЭШИРОВАНИЯ ↑↑↑
+
+// Маршруты для избранных иконок
+app.get('/editor/api/favorites', async (req, res) => {
+  try {
+    const favorites = await getFavoritesWithCache(); // ← Используем кэшированную версию
+    res.json(favorites);
+  } catch (err) {
+    console.error('Error getting favorites:', err);
+    res.status(500).json({ 
+      error: 'Failed to load favorites',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
+app.post('/editor/api/favorites', async (req, res) => {
+  try {
+    const { iconName } = req.body;
+    if (!iconName) {
+      return res.status(400).json({ error: 'Icon name is required' });
+    }
+
+    await addToFavorites(iconName);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error adding favorite:', err);
+    res.status(500).json({ 
+      error: 'Failed to add favorite',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
+app.delete('/editor/api/favorites/:iconName', async (req, res) => {
+  try {
+    const { iconName } = req.params;
+    await removeFromFavorites(iconName);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error removing favorite:', err);
+    res.status(500).json({ 
+      error: 'Failed to remove favorite',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
+// Функции для работы с файлом избранного
+const FAVORITES_FILE = path.join(__dirname, 'data', 'favorites.json');
+
+async function ensureFavoritesFile() {
+  const dir = path.dirname(FAVORITES_FILE);
+  if (!fs.existsSync(dir)) {
+    await fs.promises.mkdir(dir, { recursive: true });
+  }
+  
+  if (!fs.existsSync(FAVORITES_FILE)) {
+    await fs.promises.writeFile(FAVORITES_FILE, JSON.stringify([], null, 2));
+  }
+}
+
+async function getFavorites() {
+  await ensureFavoritesFile();
+  const data = await fs.promises.readFile(FAVORITES_FILE, 'utf8');
+  return JSON.parse(data);
+}
+
+async function saveFavorites(favorites) {
+  await ensureFavoritesFile();
+  await fs.promises.writeFile(FAVORITES_FILE, JSON.stringify(favorites, null, 2));
+}
+
+async function addToFavorites(iconName) {
+  const favorites = await getFavoritesWithCache(); // ← Используем кэшированную версию
+  if (!favorites.includes(iconName)) {
+    favorites.push(iconName);
+    await saveFavoritesWithCache(favorites); // ← Используем кэшированную версию
+  }
+}
+
+async function removeFromFavorites(iconName) {
+  const favorites = await getFavoritesWithCache(); // ← Используем кэшированную версию
+  const index = favorites.indexOf(iconName);
+  if (index > -1) {
+    favorites.splice(index, 1);
+    await saveFavoritesWithCache(favorites); // ← Используем кэшированную версию
+  }
+}
+
 startServer();

@@ -1,3 +1,23 @@
+// Функция для повторных попыток запросов
+async function withRetry(fn, retries = 2) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
+}
+
+// Объявляем глобальную переменную только если она еще не существует
+if (typeof window.IconDataLoaded === 'undefined') {
+  window.IconDataLoaded = false;
+}
+
+// В начале файла добавьте
+//let IconDataLoaded = false;
+
 const IconPicker = {
   modal: null,
   searchInput: null,
@@ -5,16 +25,70 @@ const IconPicker = {
   currentCategory: 'all',
   allIcons: [],
   iconBtn: null,
+  favorites: [],
   
   init: function() {
+    this.loadFavorites();
     this.createModal();
-    this.createButton();
+    //this.createButton(); 
     this.setupEventListeners();
-    this.loadIcons();
+    this.allIcons = []; // Пустой массив для начала
+  },
+
+  async loadFavorites() {
+    try {
+      const response = await withRetry(() => fetch('/editor/api/favorites'));
+      if (response.ok) {
+        this.favorites = await response.json();
+        localStorage.setItem('iconPickerFavorites', JSON.stringify(this.favorites));
+      }
+    } catch (e) {
+      console.error('Error loading favorites:', e);
+      const saved = localStorage.getItem('iconPickerFavorites');
+      if (saved) this.favorites = JSON.parse(saved);
+    }
   },
   
+  async toggleFavorite(iconName) {
+    const isCurrentlyFavorite = this.favorites.includes(iconName);
+    
+    try {
+      if (isCurrentlyFavorite) {
+        await withRetry(() => fetch(`/editor/api/favorites/${encodeURIComponent(iconName)}`, {
+          method: 'DELETE'
+        }));
+        this.favorites = this.favorites.filter(name => name !== iconName);
+      } else {
+        await withRetry(() => fetch('/editor/api/favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ iconName })
+        }));
+        this.favorites.push(iconName);
+      }
+      
+      localStorage.setItem('iconPickerFavorites', JSON.stringify(this.favorites));
+      this.filterIcons();
+      
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      if (isCurrentlyFavorite) {
+        this.favorites = this.favorites.filter(name => name !== iconName);
+      } else {
+        this.favorites.push(iconName);
+      }
+      localStorage.setItem('iconPickerFavorites', JSON.stringify(this.favorites));
+      this.filterIcons();
+    }
+  },
+
+  isFavorite: function(iconName) {
+    return this.favorites.includes(iconName);
+  },
+
   createModal: function() {
-    // Создаем модальное окно
     const modal = document.createElement('div');
     modal.id = 'icon-modal';
     modal.className = 'icon-modal';
@@ -24,7 +98,12 @@ const IconPicker = {
       <div class="icon-modal-content">
         <div class="icon-modal-header">
           <h3>Выбор иконки</h3>
-          <span class="icon-close">&times;</span>
+          <div class="header-actions">
+            <button id="toggle-favorites-view" class="favorites-toggle" title="Показать избранные">
+              ⭐
+            </button>
+            <span class="icon-close">&times;</span>
+          </div>
         </div>
         <div class="icon-modal-body">
           <div class="icon-search-container">
@@ -43,7 +122,6 @@ const IconPicker = {
           <div class="icon-subcategories" id="icon-subcategories" style="display: none;">
             <select id="subcategory-filter" class="subcategory-filter">
               <option value="all">Все подкатегории</option>
-              <!-- Подкатегории будут добавляться динамически -->
             </select>
           </div>
           <div id="icon-grid" class="icon-grid"></div>
@@ -57,52 +135,48 @@ const IconPicker = {
     this.iconGrid = document.getElementById('icon-grid');
     this.subcategoryFilter = document.getElementById('subcategory-filter');
     this.subcategoriesContainer = document.getElementById('icon-subcategories');
-  },
-
-    createButton: function() {
-    // Создаем кнопку для открытия модального окна
-    this.iconBtn = document.createElement('button');
-    this.iconBtn.id = 'icon-picker-btn';
-    this.iconBtn.className = 'toolbar-btn format-btn';
-    this.iconBtn.innerHTML = '<i class="mdi mdi-emoticon-outline"></i>';
-    this.iconBtn.title = 'Вставить иконку';
-    
-    // Добавляем кнопку в тулбар (последнюю группу)
-    const toolbarGroups = document.querySelectorAll('.markdown-toolbar .toolbar-group');
-    if (toolbarGroups.length > 0) {
-      const lastGroup = toolbarGroups[toolbarGroups.length - 1];
-      lastGroup.appendChild(this.iconBtn);
-    } else {
-      // Если групп нет, создаем новую
-      const toolbar = document.querySelector('.markdown-toolbar');
-      if (toolbar) {
-        const group = document.createElement('div');
-        group.className = 'toolbar-group';
-        group.appendChild(this.iconBtn);
-        toolbar.appendChild(group);
-      }
-    }
+    this.favoritesToggle = document.getElementById('toggle-favorites-view');
   },
   
   setupEventListeners: function() {   
-    this.iconBtn.onclick = () => this.openModal();
-    // Закрытие модального окна
-    this.modal.querySelector('.icon-close').onclick = () => this.closeModal();
-    this.modal.onclick = (e) => {
-      if (e.target === this.modal) this.closeModal();
-    };
-    
-    // Поиск иконок
-    this.searchInput.addEventListener('input', () => this.filterIcons());
-    document.getElementById('clear-icon-search').onclick = () => {
-      this.searchInput.value = '';
-      this.filterIcons();
-    };
+    this.iconBtn = document.getElementById('icon-picker-btn');
+  
+    if (this.iconBtn) {
+      this.iconBtn.onclick = () => this.openModal();
+    } else {
+      console.warn('Icon picker button not found in HTML');
+    }
 
-    // Подкатегории
-    this.subcategoryFilter.addEventListener('change', () => this.filterIcons());
+    if (this.modal) {
+      this.modal.querySelector('.icon-close').onclick = () => this.closeModal();
+      this.modal.onclick = (e) => {
+        if (e.target === this.modal) this.closeModal();
+      };
+    }
     
-    // Категории
+    if (this.searchInput) {
+      this.searchInput.addEventListener('input', () => this.filterIcons());
+    }
+    
+    const clearSearchBtn = document.getElementById('clear-icon-search');
+    if (clearSearchBtn) {
+      clearSearchBtn.onclick = () => {
+        this.searchInput.value = '';
+        this.filterIcons();
+      };
+    }
+
+    if (this.subcategoryFilter) {
+      this.subcategoryFilter.addEventListener('change', () => this.filterIcons());
+    }
+    
+    // Переключение режима избранного
+    if (this.favoritesToggle) {
+      this.favoritesToggle.addEventListener('click', () => {
+        this.toggleFavoritesView();
+      });
+    }
+    
     document.querySelectorAll('.icon-category-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.icon-category-btn').forEach(b => b.classList.remove('active'));
@@ -113,68 +187,99 @@ const IconPicker = {
       });
     });
     
-    // Закрытие по ESC
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.modal.style.display === 'block') {
+      if (e.key === 'Escape' && this.modal && this.modal.style.display === 'block') {
         this.closeModal();
       }
     });
   },
+
+  toggleFavoritesView: function() {
+    const isFavoritesView = this.favoritesToggle.classList.contains('active');
+    
+    if (isFavoritesView) {
+      // Возвращаемся к обычному виду
+      this.favoritesToggle.classList.remove('active');
+      this.favoritesToggle.title = 'Показать избранные';
+      this.currentCategory = 'all';
+      document.querySelector('.icon-category-btn[data-category="all"]').classList.add('active');
+    } else {
+      // Переключаемся на избранное
+      this.favoritesToggle.classList.add('active');
+      this.favoritesToggle.title = 'Показать все иконки';
+      this.currentCategory = 'favorites';
+      document.querySelectorAll('.icon-category-btn').forEach(b => b.classList.remove('active'));
+    }
+    
+    this.filterIcons();
+  },
   
   openModal: function() {
-    console.log('Opening icon modal');
+    //console.log('Opening icon modal');
+    if (!this.modal) return;
+    
     this.modal.style.display = 'block';
     this.searchInput.value = '';
     this.subcategoryFilter.value = 'all';
-    this.updateSubcategories();
-    this.searchInput.focus();
-    this.filterIcons();
+    this.favoritesToggle.classList.remove('active');
+    this.favoritesToggle.title = 'Показать избранные';
     
+    // Загружаем иконки только при открытии модального окна
+    if (this.allIcons.length === 0) {
+      this.loadIcons();
+    } else {
+      this.updateSubcategories();
+      this.filterIcons();
+    }
+    
+    if (this.searchInput) {
+      this.searchInput.focus();
+    }
     document.body.style.overflow = 'hidden';
   },
   
   closeModal: function() {
-    console.log('Closing icon modal'); // Добавим лог для отладки
-    this.modal.style.display = 'none';
+    //console.log('Closing icon modal');
+    if (this.modal) {
+      this.modal.style.display = 'none';
+    }
     document.body.style.overflow = '';
   },
   
-  // loadIcons: function() {
-
-
-  //   // FontAwesome с категориями (пример)
-  //   const fontAwesomeIcons = [
-
-  //   ];
-
-  //   // Octicons и Simple Icons тоже добавляем с подкатегориями
-  //   const octicons = [
-
-  //   ];
-
-  //   const simpleIcons = [
-  //     { name: 'si si-github', category: 'simple', subcategory: 'Социальные сети и бренды' },
-  //     { name: 'si si-google', category: 'simple', subcategory: 'Социальные сети и бренды' },
-  //     // ...
-  //   ];
-
-  //   this.allIcons = [
-  //     ...materialIcons,
-  //     ...fontAwesomeIcons,
-  //     ...octicons,
-  //     ...simpleIcons
-  //   ];
-    
-  //   this.renderIcons(this.allIcons);
-  // },
   loadIcons: function() {
-    // Загружаем иконки из отдельного файла
-    this.allIcons = IconData.getAllIcons();
-    this.renderIcons(this.allIcons);
+    if (!this.iconGrid) return;
+    
+    this.iconGrid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #6c757d;">
+        <i class="mdi mdi-loading mdi-spin" style="font-size: 48px; margin-bottom: 10px;"></i>
+        <p>Загрузка иконок...</p>
+      </div>
+    `;
+    
+    if (!window.IconDataLoaded && typeof IconData === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'js/iconData.js';
+      script.onload = () => {
+        window.IconDataLoaded = true;
+        this.allIcons = IconData.getAllIcons();
+        this.updateSubcategories();
+        this.filterIcons();
+      };
+      document.head.appendChild(script);
+    } else if (typeof IconData !== 'undefined') {
+      setTimeout(() => {
+        this.allIcons = IconData.getAllIcons();
+        this.updateSubcategories();
+        this.filterIcons();
+      }, 300);
+    }
   },
   
   renderIcons: function(icons) {
+    if (!this.iconGrid) return;
+    
     this.iconGrid.innerHTML = '';
+    const searchTerm = this.searchInput ? this.searchInput.value.toLowerCase() : '';
     
     if (icons.length === 0) {
       this.iconGrid.innerHTML = `
@@ -192,50 +297,77 @@ const IconPicker = {
       iconItem.dataset.icon = icon.name;
       iconItem.dataset.category = icon.category;
       
-      // ФИКС: Правильное формирование классов для всех типов иконок
       let iconClass = icon.name;
       if (icon.category === 'material') {
         iconClass = `mdi ${icon.name}`;
       } else if (icon.category === 'fontawesome') {
-        // FontAwesome уже имеют правильный формат "fas fa-icon"
         iconClass = icon.name;
       } else if (icon.category === 'octicons') {
-        // Octicons уже имеют правильный формат "octicon octicon-icon"  
         iconClass = icon.name;
       } else if (icon.category === 'simple') {
-        // Simple Icons уже имеют правильный формат "si si-icon"
         iconClass = icon.name;
       }
       
+      const cleanIconName = icon.name.split(' ').pop().replace(/^(mdi-|fa-|si-|octicon-)/, '');
+      
+      let displayName = cleanIconName;
+      if (searchTerm) {
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        displayName = cleanIconName.replace(regex, '<mark>$1</mark>');
+      }
+      
+      // Убираем кнопку избранного из каждой иконки
       iconItem.innerHTML = `
         <div class="icon-modal-preview">
           <i class="${iconClass}"></i>
         </div>
-        <div class="icon-name">${icon.name.split(' ').pop().replace(/^(mdi-|fa-|si-|octicon-)/, '')}</div>
+        <div class="icon-name">${displayName}</div>
       `;
       
-      iconItem.addEventListener('click', () => this.insertIcon(icon.name));
+      // Добавляем обработчик правой кнопки мыши для избранного
+      iconItem.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        this.toggleFavorite(icon.name);
+        
+        // Визуальная обратная связь
+        iconItem.classList.add('favorite-highlight');
+        setTimeout(() => {
+          iconItem.classList.remove('favorite-highlight');
+        }, 500);
+      });
+      
+      // Подсказка при наведении
+      iconItem.title = 'Левый клик - вставить\nПравый клик - добавить в избранное';
+      
+      iconItem.addEventListener('click', (e) => {
+        if (e.button === 0) { // Только левая кнопка мыши
+          this.insertIcon(icon.name);
+        }
+      });
+      
       this.iconGrid.appendChild(iconItem);
     });
   },
   
   filterIcons: function() {
-    const searchTerm = this.searchInput.value.toLowerCase();
-    const selectedSubcategory = this.subcategoryFilter.value;
+    const searchTerm = this.searchInput ? this.searchInput.value.toLowerCase() : '';
+    const selectedSubcategory = this.subcategoryFilter ? this.subcategoryFilter.value : 'all';
     
     let filteredIcons = this.allIcons;
     
-    // Фильтр по основной категории
-    if (this.currentCategory !== 'all') {
+    if (this.currentCategory === 'favorites' || (this.favoritesToggle && this.favoritesToggle.classList.contains('active'))) {
+      filteredIcons = filteredIcons.filter(icon => this.favorites.includes(icon.name));
+      if (this.subcategoriesContainer) {
+        this.subcategoriesContainer.style.display = 'none';
+      }
+    } else if (this.currentCategory !== 'all') {
       filteredIcons = filteredIcons.filter(icon => icon.category === this.currentCategory);
     }
     
-    // Фильтр по подкатегории
-    if (selectedSubcategory !== 'all') {
+    if (selectedSubcategory !== 'all' && this.currentCategory !== 'favorites') {
       filteredIcons = filteredIcons.filter(icon => icon.subcategory === selectedSubcategory);
     }
     
-    // Фильтр по поиску
     if (searchTerm) {
       filteredIcons = filteredIcons.filter(icon => 
         icon.name.toLowerCase().includes(searchTerm) ||
@@ -248,21 +380,21 @@ const IconPicker = {
   },
 
   updateSubcategories: function() {
+    if (!this.subcategoriesContainer || !this.subcategoryFilter) return;
+    
     const subcategories = new Set();
     
-    if (this.currentCategory === 'all') {
+    if (this.currentCategory === 'all' || this.currentCategory === 'favorites') {
       this.subcategoriesContainer.style.display = 'none';
       return;
     }
     
-    // Собираем все подкатегории для выбранной категории
     this.allIcons.forEach(icon => {
       if (icon.category === this.currentCategory && icon.subcategory) {
         subcategories.add(icon.subcategory);
       }
     });
     
-    // Обновляем выпадающий список
     this.subcategoryFilter.innerHTML = '<option value="all">Все подкатегории</option>';
     subcategories.forEach(subcategory => {
       const option = document.createElement('option');
@@ -277,7 +409,6 @@ const IconPicker = {
   insertIcon: function(iconClass) {
     let iconSyntax = '';
     
-    // Определяем синтаксис в зависимости от типа иконки
     if (iconClass.startsWith('mdi-')) {
       iconSyntax = `:material-${iconClass.replace('mdi-', '')}:`;
     } else if (iconClass.startsWith('fas ')) {
@@ -293,19 +424,15 @@ const IconPicker = {
       iconSyntax = `:${iconClass}:`;
     }
     
-    // Вставляем в редактор используя метод insertAtCursor
     try {
-      // Проверяем разные возможные пути до редактора
       if (window.Editor && window.Editor.insertAtCursor) {
         window.Editor.insertAtCursor(iconSyntax);
       } else if (window.Editor?.cmInstance) {
-        // Прямая вставка в CodeMirror
         const doc = window.Editor.cmInstance.getDoc();
         const cursor = doc.getCursor();
         doc.replaceRange(iconSyntax, cursor);
         window.Editor.cmInstance.focus();
       } else if (window.Editor?.editor) {
-        // Вставка в обычный textarea
         const editor = window.Editor.editor;
         const startPos = editor.selectionStart;
         const endPos = editor.selectionEnd;
@@ -329,4 +456,3 @@ const IconPicker = {
 document.addEventListener('DOMContentLoaded', () => {
   IconPicker.init();
 });
-

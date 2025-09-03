@@ -1,13 +1,17 @@
+:material-arrow-bottom-right-bold-box-outline:
 # Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps
 
-Table of Contents
 
+asasda 
+Table of Contents
+zzxczxc zcscsac axxasd adaasd c cascadax  qadwawdada
 
 ## Introduction
 
 !!! warning 
 	gsdfsgfsdgsfdhgsdfhfd gasdgasdgasdfgads asdasgasdgas
 
+zczxcsfa s asd asdasd asdv  asdvasvasda asdfasddfa asdfasdfas fsdf dfsd sdfsdf sfdfsdfs sdf sdf sdfsdfds sdfsewe werwer sdfsdf sdfsf :material-arrow-bottom-left-thin: asdasdasd :material-android: asdasdasd 
 
 !!! danger 
 	asdfasdfsadfasdfas lkasvm avascasdf adsfasf asdf asdf asdf
@@ -27,7 +31,15 @@ Table of Contents
 !!! danger 
     Как обычно это и бывает, я накопил критическую массу мыслей, и пора их как-то систематизировать, чтобы вы, мои замечательные читатели Хабра, могли что-то извлечь из моего опыта или поделиться своим
     Как обычно это и бывает, я накопил критическую массу мыслей, и пора их как-то систематизировать, чтобы вы, мои замечательные читатели Хабра, могли что-то извлечь из моего опыта или поделиться своим
-    
+
+
+!!! note
+    ***adsasdasfasd*** asasda  asFas SAFasf ASasfSAF s A :fas fa-wpexplorer: asdasdfa safasdfsd asdffasawe dsasdf asdfasfd All images will be added to the lightbox effect automatically, except images in an anchor tag and emoji images from pymdown-extensions.
+You may customize the plugin by passing options in mkdocs.yml: :simple-google:
+
+:fontawesome-solid-user-tie:
+:fab fa-wpexplorer:
+
 ??? note
     фыаыфвафываыф афыавфывафы
     
@@ -35,16 +47,16 @@ Table of Contents
     фыаыфвафываыф афыавфывафы
     
 ```{ .javascript linenums="1"}
-      markdown = markdown.replace(
-        /!\[([^\]]*)\]\(([^)\s]+)(?:\s+([&quot;&#039;])(.*?)\3)?\)/g, 
-        (match, alt, src, quote, title) =&gt; {
-          const fixedSrc = src.startsWith(&#039;images/&#039;) ? `/${src}` : src;
-          let imgHtml = `&lt;img src=&quot;${fixedSrc}&quot; alt=&quot;${alt || &#039;&#039;}&quot; class=&quot;mkdocs-image&quot;`;
-          if (title) imgHtml += ` title=&quot;${title}&quot;`;
-          imgHtml += &#039;&gt;&#039;;
-          return imgHtml;
-        }
-      );
+    markdown = markdown.replace(
+      /!\[([^\]]*)\]\(([^)\s]+)(?:\s+([&quot;&#039;])(.*?)\3)?\)/g, 
+      (match, alt, src, quote, title) =&gt; {
+        const fixedSrc = src.startsWith(&#039;images/&#039;) ? `/${src}` : src;
+        let imgHtml = `&lt;img src=&quot;${fixedSrc}&quot; alt=&quot;${alt || &#039;&#039;}&quot; class=&quot;mkdocs-image&quot;`;
+        if (title) imgHtml += ` title=&quot;${title}&quot;`;
+        imgHtml += &#039;&gt;&#039;;
+        return imgHtml;
+      }
+    );
 ```
 
 

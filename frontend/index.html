@@ -244,11 +244,14 @@
 
         <!-- Группа форматирования текста -->
         <div class="toolbar-group">
-          <button class="toolbar-btn format-btn" data-insert="**" data-wrap="**" title="Bold (Ctrl+B)">
+          <button class="toolbar-btn format-btn" data-insert="**" data-wrap="**" title="Жирный">
             <i class="mdi mdi-format-bold"></i>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="*" data-wrap="*" title="Italic (Ctrl+I)">
+          <button class="toolbar-btn format-btn" data-insert="*" data-wrap="*" title="Курсив">
             <i class="mdi mdi-format-italic"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="***" data-wrap="***" title="Жирный курсив">
+            <i class="mdi mdi-format-bold"></i><i class="mdi mdi-format-italic"></i>
           </button>
           <button class="toolbar-btn format-btn" data-insert="^^" data-wrap="^^" title="Underline">
             <i class="mdi mdi-format-underline"></i>
@@ -275,6 +278,9 @@
           </button>
           <button class="toolbar-btn format-btn" data-insert="![alt text](image.png)" title="Insert Image">
             <i class="mdi mdi-image"></i>
+          </button>
+          <button id="icon-picker-btn" class="toolbar-btn format-btn" title="Вставить иконку">
+            <i class="mdi mdi-emoticon-outline"></i>
           </button>
         </div>
 

@@ -4,18 +4,43 @@ tags:
   - JavaScript
   - CSS
 ---
-
-:material-access-point:
-:material-arrow-right:
-:fontawesome-solid-user:
-:octicons-star-16:
+:material-github:
 :simple-github:
+:fontawesome-solid-satellite:
+:fontawesome-solid-code:
 
-:fontawesome-solid-plus:
-:octicons-star-16:
+:material-roman-numeral-10::material-roman-numeral-1::material-roman-numeral-8:
+
+:material-numeric-9-plus-box-multiple-outline:{.font-size}
+
+:material-flower-tulip-outline:{.font-size}
+
+:material-arrow-right: <kbn>ctrl<kbn>
 
 
+__жирный__
+<kbd>CTRL</kbd> + <kbd>P</kbd>  <kbd>ur</kbd>
+> Оформление цитатой
+последовательных строк
+внутри одного параграфа
 
+> # Заголовок
+> Первый параграф
+>
+> Второй параграф
+>
+> > Вложенная цитата
+> > > Цитата третьего уровня
+>
+> Продолжение основной цитаты
+
+[Skillbox Media](https://skillbox.ru/media/ "Всплывающая подсказка") с подсказкой
+
+
+![Изображение][1]
+
+
+[1]: https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Markdown-mark.svg/1920px-Markdown-mark.svg.png "Логотип Markdown"
     
 - ==This was marked (highlight)==
 - ^^This was inserted (underline)^^
@@ -23,7 +48,7 @@ tags:
 
 ^^Текст^^ ==просто== ~~текст~~
 
-- Первый элемент
+- ***Первый элемент***
 - Второй элемент
   - Вложенный элемент
   - Еще один вложенный
