@@ -112,19 +112,6 @@ const Editor = {
         tabSize: 2,                    // Размер табуляции
       });
 
-      // this.cmInstance.on('keyHandlers', {
-      //   "Shift-8": (cm) => {
-      //     const cursor = cm.getCursor();
-      //     const line = cm.getLine(cursor.line);
-      //     const prevChars = line.slice(Math.max(0, cursor.ch - 3), cursor.ch);
-      //     if (prevChars === '***') {
-      //       cm.replaceRange('**', { line: cursor.line, ch: cursor.ch - 3 }, cursor);
-      //       return true;
-      //     }
-      //     return false;
-      //   }
-      // });
-
       // Добавляем обработчик для клавиши Enter
       this.cmInstance.on("keydown", (cm, event) => {
         if (event.key === "Enter") {
@@ -170,6 +157,11 @@ const Editor = {
           }
         }
       });
+
+      // Инициализируем множественные курсоры
+      if (this.cmInstance) {
+          MultiCursor.init(this.cmInstance);
+      }
 
       // Настройка событий
       this.setupCodeMirrorEvents();
@@ -674,11 +666,123 @@ function setupDropdowns() {
   });
 }
 
+const MultiCursor = {
+    init: function(cm) {
+        this.cm = cm;
+        this.setupMultiCursorKeys();
+    },
+
+    setupMultiCursorKeys: function() {
+        this.cm.setOption('extraKeys', {
+            // Ctrl+Alt+СтрелкаВверх - добавить курсор выше
+            'Ctrl-Alt-Up': function(cm) {
+                const selections = cm.listSelections();
+                const newSelections = [];
+                
+                selections.forEach(selection => {
+                    const head = selection.head;
+                    
+                    newSelections.push(selection);
+                    
+                    if (head.line > 0) {
+                        const newPos = {
+                            line: head.line - 1,
+                            ch: head.ch
+                        };
+                        newSelections.push({
+                            anchor: newPos,
+                            head: newPos
+                        });
+                    }
+                });
+                
+                cm.setSelections(newSelections);
+                return true;
+            },
+
+            // Ctrl+Alt+СтрелкаВниз - добавить курсор ниже
+            'Ctrl-Alt-Down': function(cm) {
+                const selections = cm.listSelections();
+                const newSelections = [];
+                
+                selections.forEach(selection => {
+                    const head = selection.head;
+                    
+                    newSelections.push(selection);
+                    
+                    if (head.line < cm.lastLine()) {
+                        const newPos = {
+                            line: head.line + 1,
+                            ch: head.ch
+                        };
+                        newSelections.push({
+                            anchor: newPos,
+                            head: newPos
+                        });
+                    }
+                });
+                
+                cm.setSelections(newSelections);
+                return true;
+            },
+
+            // Ctrl+Alt+L - добавить курсоры в конец строк выделения
+            'Ctrl-Alt-L': function(cm) {
+                console.log('Multi-cursor: Ctrl+Alt+L pressed');
+                
+                const selections = cm.listSelections();
+                
+                if (selections.length === 0) {
+                    // Если нет выделения - просто перемещаем курсор в конец текущей строки
+                    const cursor = cm.getCursor();
+                    const lineLength = cm.getLine(cursor.line).length;
+                    cm.setCursor({line: cursor.line, ch: lineLength});
+                    return true;
+                }
+                
+                const newSelections = [];
+                
+                selections.forEach(selection => {
+                    const from = selection.anchor;
+                    const to = selection.head;
+                    
+                    // Определяем границы выделения
+                    const startLine = Math.min(from.line, to.line);
+                    const endLine = Math.max(from.line, to.line);
+                    
+                    // Добавляем курсоры в конец каждой строки выделения
+                    for (let line = startLine; line <= endLine; line++) {
+                        const lineLength = cm.getLine(line).length;
+                        newSelections.push({
+                            anchor: {line: line, ch: lineLength},
+                            head: {line: line, ch: lineLength}
+                        });
+                    }
+                });
+                
+                cm.setSelections(newSelections);
+                return true;
+            },
+
+            // Esc - очистить все курсоры кроме первого
+            'Esc': function(cm) {
+                const selections = cm.listSelections();
+                if (selections.length > 1) {
+                    cm.setSelections([selections[0]]);
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+};
+
 // Инициализация при загрузке документа
 document.addEventListener('DOMContentLoaded', () => {
   Editor.init();
   setupDropdowns();
 });
+
 
 // Делаем Editor глобально доступным
 window.Editor = Editor;

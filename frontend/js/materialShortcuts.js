@@ -232,22 +232,6 @@ var MaterialShortcuts = (function() {
 
     // Настройка обработчиков кнопок
   setupButtons: function() {
-      // Удаляем старые обработчики
-      // console.log('[DEBUG] Setting up buttons, current mode:', 
-      //   this.editor?.cmInstance?.getOption('mode'));
-      //   document.querySelectorAll('.markdown-toolbar button[data-insert]').forEach(btn => {
-      //   btn.onclick = null;
-      // });
-      // const iconBtn = document.getElementById('icon-picker-btn');
-      // if (iconBtn) {
-      //   iconBtn.onclick = (e) => {
-      //     e.preventDefault();
-      //     if (typeof IconPicker !== 'undefined') {
-      //       IconPicker.openModal();
-      //     }
-      //   };
-      // }
-
     const handleInsertClick = (e) => {
     e.preventDefault();
     const btn = e.target.closest('[data-insert]');

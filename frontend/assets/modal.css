@@ -440,3 +440,346 @@
     font-size: 11px;
   }
 }
+
+/* Стили для раздела помощи */
+.help-table {
+  margin: 15px 0;
+}
+
+.help-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.help-table th, .help-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.help-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.help-table kbd {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.markdown-reference {
+  margin: 20px 0;
+}
+
+.ref-item {
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.ref-item:last-child {
+  border-bottom: none;
+}
+
+.ref-item h5 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.code-example {
+  background-color: #263238;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 10px 0;
+  border: 1px solid #37474f;
+}
+
+.code-editor {
+  padding: 12px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #e0e0e0;
+}
+
+.code-line {
+  margin-bottom: 2px;
+  white-space: pre;
+}
+
+/* Стили подсветки синтаксиса как в CodeMirror */
+.cm-header-1 { color: #82aaff; font-weight: bold; font-size: 1.2em; }
+.cm-header-2 { color: #82aaff; font-weight: bold; font-size: 1.1em; }
+.cm-header-3 { color: #82aaff; font-weight: bold; }
+.cm-header-4 { color: #82aaff; font-weight: bold; opacity: 0.9; }
+.cm-header-5 { color: #82aaff; font-weight: bold; opacity: 0.8; }
+.cm-header-6 { color: #82aaff; font-weight: bold; opacity: 0.7; }
+
+.cm-strong { color: #ffcb6b; font-weight: bold; }
+.cm-em { color: #f78c6c; font-style: italic; }
+.cm-strikethrough { color: #c792ea; text-decoration: line-through; }
+.cm-highlight { color: #ffeb95; background-color: rgba(255, 235, 149, 0.2); }
+.cm-inline-code { color: #89ddff; background-color: rgba(137, 221, 255, 0.1); padding: 1px 3px; border-radius: 2px; }
+
+.cm-list { color: #f07178; }
+.cm-number { color: #f78c6c; }
+
+.cm-link { color: #c792ea; }
+.cm-link:hover { text-decoration: underline; }
+
+.cm-comment { color: #546e7a; }
+.cm-keyword { color: #c792ea; font-weight: bold; }
+.cm-def { color: #82aaff; }
+.cm-builtin { color: #ffcb6b; }
+.cm-string { color: #c3e88d; }
+
+.cm-quote { color: #89ddff; font-style: italic; }
+
+.cm-table { color: #f07178; }
+
+.cm-admonition { color: #82aaff; font-weight: bold; }
+.cm-warning { color: #ffcb6b; }
+
+.cm-foldable { color: #c792ea; font-weight: bold; }
+
+.cm-tab { color: #f07178; font-weight: bold; }
+
+.cm-icon { color: #ffcb6b; }
+
+.help-text {
+  margin: 15px 0;
+  line-height: 1.5;
+}
+
+.help-text code {
+  background-color: #f8f9fa;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  color: #e83e8c;
+}
+
+/* Стили для кнопок в подсказках */
+.help-text kbd {
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: inherit;
+  font-size: 14px;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+  margin: 0 4px;
+  display: inline-block;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Стили для kbd с иконкой */
+kbd.mdi-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+  margin: 0 4px;
+}
+
+kbd.mdi-kbd i {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Стили для блоков примечаний (Admonitions) */
+.admonition-example {
+  margin: 15px 0;
+}
+
+.admonition-example .admonition {
+  background-color: var(--md-admonition-bg-color);
+  border: .075rem solid;
+  border-radius: .2rem;
+  box-shadow: var(--md-shadow-z1);
+  margin: 1em 0;
+  padding: 0 .6rem;
+  transition: box-shadow 125ms;
+}
+
+.admonition-example .admonition.note {
+  border-color: #448aff;
+}
+
+.admonition-example .admonition.warning {
+  border-color: #ff9100;
+}
+
+.admonition-example .admonition.tip {
+  border-color: #00bfa5;
+}
+
+.admonition-example .admonition.success {
+  border-color: #00c853;
+}
+
+.admonition-example .admonition-title {
+  font-weight: 600;
+  margin: 0 -.6rem;
+  padding: .4rem .6rem .4rem 2rem;
+  position: relative;
+  display: flex; /* Добавляем flex для выравнивания */
+  align-items: center; /* Выравниваем по вертикали */
+}
+
+.admonition-example .admonition-title i {
+  margin-right: 0.5em; /* Отступ между иконкой и текстом */
+  /* margin-left: -1.5em; */
+  margin-left: -1em; /* Смещаем иконку влево (компенсируем padding заголовка) */
+  font-size: 1.1em; /* Размер иконки */
+  width: 1em; /* Фиксированная ширина */
+  text-align: center; /* Выравнивание иконки по центру */
+}
+
+.admonition-example .admonition.note .admonition-title {
+  background-color: rgba(68, 138, 255, 0.1);
+  width: 100%;
+}
+
+.admonition-title i{
+  color: #448aff;
+}
+
+.admonition-title span{
+  color: #448aff;
+}
+
+.admonition-example .admonition.warning .admonition-title {
+  background-color: rgba(255, 145, 0, 0.1);
+  width: 100%;
+}
+
+.admonition-example .admonition.tip .admonition-title {
+  background-color: rgba(0, 191, 165, 0.1);
+  width: 100%;
+}
+
+.admonition-example .admonition.success .admonition-title {
+  background-color: rgba(0, 200, 83, 0.1);
+  width: 100%;
+}
+
+.admonition-example details summary {
+  cursor: pointer;
+  display: block;
+}
+
+.admonition-example details summary::-webkit-details-marker {
+  display: none;
+}
+
+.admonition-example details summary::after {
+  content: '►';
+  display: inline-block;
+  margin-right: 5px;
+  transition: transform 0.3s;
+}
+
+.admonition-example details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+/* Дополнительные стили для всех типов блоков помощи */
+.admonition-example .admonition.abstract {
+  border-color: #6c63ff;
+}
+.admonition-example .admonition.abstract .admonition-title {
+  background-color: rgba(108, 99, 255, 0.1);
+  color: #6c63ff;
+}
+
+.admonition-example .admonition.info {
+  border-color: #17a2b8;
+}
+.admonition-example .admonition.info .admonition-title {
+  background-color: rgba(23, 162, 184, 0.1);
+  color: #17a2b8;
+}
+
+.admonition-example .admonition.question {
+  border-color: #9c27b0;
+}
+.admonition-example .admonition.question .admonition-title {
+  background-color: rgba(156, 39, 176, 0.1);
+  color: #9c27b0;
+}
+
+.admonition-example .admonition.failure {
+  border-color: #e53935;
+}
+.admonition-example .admonition.failure .admonition-title {
+  background-color: rgba(229, 57, 53, 0.1);
+  color: #e53935;
+}
+
+.admonition-example .admonition.danger {
+  border-color: #d32f2f;
+}
+.admonition-example .admonition.danger .admonition-title {
+  background-color: rgba(211, 47, 47, 0.1);
+  color: #d32f2f;
+}
+
+.admonition-example .admonition.bug {
+  border-color: #8e24aa;
+}
+.admonition-example .admonition.bug .admonition-title {
+  background-color: rgba(142, 36, 170, 0.1);
+  color: #8e24aa;
+}
+
+.admonition-example .admonition.example {
+  border-color: #00acc1;
+}
+.admonition-example .admonition.example .admonition-title {
+  background-color: rgba(0, 172, 193, 0.1);
+  color: #00acc1;
+}
+
+.admonition-example .admonition.quote {
+  border-color: #546e7a;
+}
+.admonition-example .admonition.quote .admonition-title {
+  background-color: rgba(84, 110, 122, 0.1);
+  color: #546e7a;
+}
+
+
+/* Адаптивность для помощи */
+@media (max-width: 768px) {
+  .help-table table {
+    font-size: 0.9em;
+  }
+  
+  .code-editor {
+    font-size: 11px;
+    padding: 8px;
+  }
+  
+  .ref-item {
+    margin-bottom: 20px;
+  }
+  
+  .ref-item h5 {
+    font-size: 0.9rem;
+  }
+}
+

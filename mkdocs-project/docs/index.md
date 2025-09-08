@@ -11,11 +11,11 @@ tags:
 
 :material-roman-numeral-10::material-roman-numeral-1::material-roman-numeral-8:
 
-:material-numeric-9-plus-box-multiple-outline:{.font-size}
-
-:material-flower-tulip-outline:{.font-size}
-
-:material-arrow-right: <kbn>ctrl<kbn>
+   <kbd>S</kbd>:material-numeric-9-plus-box-multiple-outline:{.font-size}
+   <kbd>S</kbd>
+   <kbd>S</kbd>:material-flower-tulip-outline:{.font-size}
+   <kbd>S</kbd>
+   <kbd>S</kbd>:material-arrow-right: <kbn>ctrl<kbn>
 
 
 __жирный__

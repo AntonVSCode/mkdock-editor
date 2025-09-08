@@ -288,7 +288,7 @@ function SettingsEditor() {
 
     if (modalClose) {
       modalClose.addEventListener('click', function() {
-        self.closeEditor(); // Добавлены скобки для вызова функции
+        self.closeEditor(); 
       });
     }
 
@@ -892,88 +892,6 @@ function SettingsEditor() {
     }
   }
 };
-
-// this.generateYamlWithComments = function(originalContent, newConfig) {
-//   // Разбиваем оригинальный контент на строки
-//   const originalLines = originalContent.split('\n');
-  
-//   // Сначала генерируем новый YAML без комментариев
-//   const newYaml = jsyaml.dump(newConfig, {
-//     indent: 2,
-//     lineWidth: -1,
-//     noRefs: true,
-//     sortKeys: false
-//   });
-//   const newLines = newYaml.split('\n');
-  
-//   // Секции, которые нужно сохранить в оригинальном виде
-//   const preservedSections = [
-//     'markdown_extensions',
-//     'plugins',
-//     'extra',
-//     'features',
-//     'nav'
-//   ];
-  
-//   // Собираем позиции и содержимое секций из оригинального файла
-//   const sectionRanges = {};
-//   let currentSection = null;
-//   let sectionStart = -1;
-  
-//   for (let i = 0; i < originalLines.length; i++) {
-//     const line = originalLines[i];
-//     const sectionMatch = line.match(/^([a-z_]+):/);
-    
-//     if (sectionMatch && preservedSections.includes(sectionMatch[1])) {
-//       // Завершаем предыдущую секцию
-//       if (currentSection && sectionStart !== -1) {
-//         sectionRanges[currentSection] = {
-//           start: sectionStart,
-//           end: i - 1,
-//           lines: originalLines.slice(sectionStart, i)
-//         };
-//       }
-//       // Начинаем новую секцию
-//       currentSection = sectionMatch[1];
-//       sectionStart = i;
-//     }
-//   }
-  
-//   // Сохраняем последнюю секцию
-//   if (currentSection && sectionStart !== -1) {
-//     sectionRanges[currentSection] = {
-//       start: sectionStart,
-//       end: originalLines.length - 1,
-//       lines: originalLines.slice(sectionStart)
-//     };
-//   }
-  
-//   // Строим итоговый контент
-//   let finalLines = [];
-//   let inPreservedSection = false;
-  
-//   for (let i = 0; i < newLines.length; i++) {
-//     const line = newLines[i];
-//     const sectionMatch = line.match(/^([a-z_]+):/);
-    
-//     if (sectionMatch && preservedSections.includes(sectionMatch[1])) {
-//       // Нашли секцию, которую нужно сохранить из оригинала
-//       const sectionName = sectionMatch[1];
-//       if (sectionRanges[sectionName]) {
-//         // Добавляем оригинальное содержимое секции
-//         finalLines.push(...sectionRanges[sectionName].lines);
-//         // Пропускаем соответствующие строки в новом конфиге
-//         i = this.skipSection(newLines, i);
-//       } else {
-//         finalLines.push(line);
-//       }
-//     } else {
-//       finalLines.push(line);
-//     }
-//   }
-  
-//   return finalLines.join('\n');
-// };
 
 // Вспомогательная функция для пропуска секции в новом конфиге
 this.skipSection = function(lines, startIndex) {
