@@ -208,7 +208,6 @@ button, .btn {
   background-color: var(--secondary-color);
   border-bottom: 1px solid var(--border-color);
   display: flex;
-  gap: 6px;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -346,10 +345,280 @@ button, .btn {
   opacity: 1;
 }
 
+/* ==================== */
+/* КРАСИВЫЕ СТИЛИ ДЛЯ ТУЛБАРОВ РЕДАКТОРА */
+/* ==================== */
+
+.editor-toolbar .toolbar-btn,
+.markdown-toolbar .toolbar-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 8px 10px;
+  min-width: auto;
+  font-size: 14px;
+  gap: 6px;
+  border-radius: 3px;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ИКОНКИ В КНОПКАХ */
+.editor-toolbar .toolbar-btn i,
+.markdown-toolbar .toolbar-btn i {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* ЕДИНЫЙ РАЗМЕР ДЛЯ ВСЕХ ИКОНОК */
+.editor-toolbar .toolbar-btn .fas,
+.markdown-toolbar .toolbar-btn .fas,
+.editor-toolbar .toolbar-btn .mdi,
+.markdown-toolbar .toolbar-btn .mdi {
+  font-size: 18px;
+}
+
+/* КНОПКИ ФОРМАТИРОВАНИЯ ТЕКСТА */
+.editor-toolbar .format-btn,
+.markdown-toolbar .format-btn {
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.editor-toolbar .format-btn:hover,
+.markdown-toolbar .format-btn:hover {
+  background: #f8f9fa;
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.editor-toolbar .format-btn:hover i,
+.markdown-toolbar .format-btn:hover i {
+  color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+/* КНОПКИ БЛОКОВ */
+.editor-toolbar .block-btn,
+.markdown-toolbar .block-btn {
+  background: rgba(44, 95, 168, 0.1);
+  border: 1px solid rgba(44, 95, 168, 0.2);
+  color: #2c5fa8;
+}
+
+.editor-toolbar .block-btn:hover,
+.markdown-toolbar .block-btn:hover {
+  background: rgba(44, 95, 168, 0.2);
+  border-color: #2c5fa8;
+  transform: translateY(-1px);
+}
+
+.editor-toolbar .block-btn:hover i,
+.markdown-toolbar .block-btn:hover i {
+  color: #2c5fa8;
+  transform: scale(1.1);
+}
+
+/* КНОПКИ МЕДИА */
+.editor-toolbar .media-btn,
+.markdown-toolbar .media-btn {
+  background: rgba(168, 44, 44, 0.1);
+  border: 1px solid rgba(168, 44, 44, 0.2);
+  color: #a82c2c;
+}
+
+.editor-toolbar .media-btn:hover,
+.markdown-toolbar .media-btn:hover {
+  background: rgba(168, 44, 44, 0.2);
+  border-color: #a82c2c;
+  transform: translateY(-1px);
+}
+
+.editor-toolbar .media-btn:hover i,
+.markdown-toolbar .media-btn:hover i {
+  color: #a82c2c;
+  transform: scale(1.1);
+}
+
+/* КНОПКА СОХРАНЕНИЯ - ОСОБЫЙ СТИЛЬ */
 #save-btn {
-  color: #4CAF50; /* Зеленый цвет иконки */
+  background: rgba(76, 175, 80, 0.1) !important;
+  border: 1px solid rgba(76, 175, 80, 0.3) !important;
+  color: #4CAF50 !important;
 }
 
 #save-btn:hover {
-  background-color: rgba(76, 175, 80, 0.1); /* Светло-зеленый фон при наведении */
+  background: rgba(76, 175, 80, 0.2) !important;
+  border-color: #4CAF50 !important;
+  transform: translateY(-1px);
+}
+
+#save-btn i {
+  color: #4CAF50 !important;
+}
+
+#save-btn:hover i {
+  transform: scale(1.1);
+}
+
+/* КНОПКИ С ДВУМЯ ИКОНКАМИ */
+.toolbar-btn .mdi-format-bold + .mdi-format-italic {
+  margin-left: -6px;
+  font-size: 16px;
+}
+
+/* ВЫПАДАЮЩИЕ КНОПКИ ЗАГОЛОВКОВ */
+.dropdown .dropbtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+}
+
+.dropdown .dropbtn .mdi-menu-down {
+  font-size: 16px;
+  margin-left: -2px;
+}
+
+/* УЛУЧШЕННЫЕ ВЫПАДАЮЩИЕ МЕНЮ */
+.dropdown-content {
+  min-width: 160px;
+  padding: 8px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.dropdown-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-btn:hover {
+  background: #f8f9fa;
+}
+
+.dropdown-btn i {
+  font-size: 18px;
+  width: 18px;
+  color: var(--text-light);
+}
+
+/* АДАПТИВНОСТЬ */
+@media (max-width: 1024px) {
+  .editor-toolbar,
+  .markdown-toolbar {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  
+  .toolbar-group {
+    padding: 0 6px;
+    gap: 3px;
+  }
+  
+  .editor-toolbar .toolbar-btn,
+  .markdown-toolbar .toolbar-btn {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+  
+  .editor-toolbar .toolbar-btn i,
+  .markdown-toolbar .toolbar-btn i {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .editor-toolbar .toolbar-btn span,
+  .markdown-toolbar .toolbar-btn span {
+    display: none;
+  }
+  
+  .editor-toolbar .toolbar-btn,
+  .markdown-toolbar .toolbar-btn {
+    padding: 8px;
+    min-width: 36px;
+    justify-content: center;
+  }
+  
+  .dropdown .dropbtn span {
+    display: none;
+  }
+  
+  .toolbar-group {
+    padding: 0 4px;
+    gap: 2px;
+  }
+}
+
+/* АНИМАЦИИ */
+.editor-toolbar .toolbar-btn,
+.markdown-toolbar .toolbar-btn,
+.dropdown-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.editor-toolbar .toolbar-btn i,
+.markdown-toolbar .toolbar-btn i {
+  transition: all 0.2s ease;
+}
+
+/* УЛУЧШЕННЫЕ ПОДСКАЗКИ */
+.toolbar-btn {
+  position: relative;
+}
+
+.toolbar-btn::after {
+  content: attr(title);
+  position: absolute;
+  top: -35px; /* Изменил с bottom на top */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.toolbar-btn:hover::after {
+  opacity: 1;
+}
+
+/* Стрелка для подсказки */
+.toolbar-btn::before {
+  content: '';
+  position: absolute;
+  top: -10px; /* Позиция стрелки */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1001;
+}
+
+.toolbar-btn:hover::before {
+  opacity: 1;
 }

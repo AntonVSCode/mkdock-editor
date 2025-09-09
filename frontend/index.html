@@ -214,8 +214,8 @@
       <div class="markdown-toolbar">
         <!-- Выпадающее меню для заголовков -->
         <div class="dropdown toolbar-group">
-          <button class="dropbtn format-btn">
-            <i class="mdi mdi-format-header-pound"></i>
+          <button class="dropbtn format-btn"  title="Заголовки">
+            <i class="mdi mdi-format-header-pound"></i><i class="mdi mdi-menu-down"></i>
           </button>
           <div class="dropdown-content">
             <button class="dropdown-btn" data-insert="# ">
@@ -250,13 +250,13 @@
           <button class="toolbar-btn format-btn" data-insert="***" data-wrap="***" title="Жирный курсив">
             <i class="mdi mdi-format-bold"></i><i class="mdi mdi-format-italic"></i>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="^^" data-wrap="^^" title="Underline">
+          <button class="toolbar-btn format-btn" data-insert="^^" data-wrap="^^" title="Подчеркнутый текст">
             <i class="mdi mdi-format-underline"></i>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="==" data-wrap="==" title="highlight">
+          <button class="toolbar-btn format-btn" data-insert="==" data-wrap="==" title="Выделенный текст">
             <i class="mdi mdi-format-color-fill"></i>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="`" title="Inline Code">
+          <button class="toolbar-btn format-btn" data-insert="`" title="Встроенный код">
             <i class="mdi mdi-code-brackets"></i>
           </button>
           <button class="toolbar-btn format-btn" data-insert="~~" data-wrap="~~" title="Зачеркнутый текст">
@@ -267,13 +267,12 @@
         <!-- Группа ссылок и изображений -->
         <div class="toolbar-group">
           <button class="toolbar-btn format-btn" data-insert="[Внешняя ссылка :material-arrow-top-right:](url){:target='_blank'}" title="Внешняя ссылка">
-            <!-- <i class="fas fa-external-link"></i> -->
             <i class="fas fa-external-link-alt"></i>
           </button>
           <button class="toolbar-btn format-btn" data-insert="[Внутренняя ссылка](url)" title="Внутренняя ссылка">
             <i class="mdi mdi-link"></i>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="![alt text](image.png)" title="Insert Image">
+          <button class="toolbar-btn format-btn" data-insert="![alt text](image.png)" title="Вставить изображение">
             <i class="mdi mdi-image"></i>
           </button>
           <button id="icon-picker-btn" class="toolbar-btn format-btn" title="Вставить иконку">
