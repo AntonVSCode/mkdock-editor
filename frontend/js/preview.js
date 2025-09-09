@@ -220,12 +220,6 @@ class MkDocsPreview {
               return imgHtml;
           }
       );
-      
-      // Обработка ссылок
-      markdown = markdown.replace(
-          /\[([^\]]+)\]\(([^)]+)\)/g, 
-          (match, text, url) => `<a href="${url}">${text}</a>`
-      );
 
       // Обработка иконок
       markdown = markdown.replace(
@@ -283,18 +277,36 @@ class MkDocsPreview {
               return iconHtml;
           }
       );
+      
+      // Обработка ссылок
+      // markdown = markdown.replace(
+      //     /\[([^\]]+)\]\(([^)]+)\)/g, 
+      //     (match, text, url) => `<a href="${url}">${text}</a>`
+      // );
+      // Обработка ссылок (обычных и с атрибутами)
+      markdown = markdown.replace(
+          /\[([^\]]+)\]\(([^)]+)\)(?:\{([^}]+)\})?/g, 
+          (match, text, url, attrs) => {
+              let linkHtml = `<a href="${url}"`;
+              
+              // Обработка атрибутов
+              if (attrs) {
+                  const attributes = this.parseLinkAttributes(attrs);
+                  Object.keys(attributes).forEach(key => {
+                      linkHtml += ` ${key}="${attributes[key]}"`;
+                  });
+              }
+              
+              linkHtml += `>${text}</a>`;
+              return linkHtml;
+          }
+      );
 
       // Обработка жирного текста
       markdown = markdown.replace(
           /\*\*([^*]+)\*\*/g,
           (match, text) => `<strong>${text}</strong>`
       );
-      
-      // Обработка курсива
-      // markdown = markdown.replace(
-      //     /\*([^*]+)\*/g,
-      //     (match, text) => `<em>${text}</em>`
-      // );
       
       // Обработка инлайн-кода
       markdown = markdown.replace(
@@ -349,175 +361,102 @@ class MkDocsPreview {
             return `\n@@@admonition-${id}@@@\n`;
         });
 
-    // Обработка списков с улучшенной логикой
-    markdown = markdown.replace(/^(\s*)([-*+]|\d+\.)\s([^\n]*)((?:\n[^\S\n]+[^\n]*)*)/gm,
-      (match, indent, marker, content, continuation) => {
-          const id = `listitem-${listItems.length}`;
-          let fullContent = content;
-          
-          // Обработка продолжения элемента списка
-          if (continuation) {
-              fullContent += continuation.replace(/\n[^\S\n]+/g, ' ').trim();
-          }
-          
-          // Обработка специальных маркеров
-          fullContent = fullContent.replace(/::marker\s*"([^"]*)"/, '$1');
-          
-          // Обработка чекбоксов
-          if (/^\[[ x]\]/.test(fullContent)) {
-              fullContent = fullContent.replace(/^\[([ x])\]\s*(.*)/, 
-                  (m, state, text) => `<input type="checkbox" disabled${state === 'x' ? ' checked' : ''}> ${text}`);
-          }
-          
-          listItems.push({
-              id,
-              content: this.processInlineMarkdown(fullContent.trim()),
-              indent: indent.length,
-              ordered: /^\d+\.$/.test(marker),
-              marker: marker
-          });
-          return `\n@@@listitem-${id}@@@\n`;
-      });
-    //console.log("After list processing:", markdown);
+      // Обработка заголовков
+      markdown = markdown.replace(/^# (.*$)/gm, '<h1>$1</h1>')
+          .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+          .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+          .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+          .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+          .replace(/^###### (.*$)/gm, '<h6>$1</h6>');
 
-    // Обработка заголовков
-    markdown = markdown.replace(/^# (.*$)/gm, '<h1>$1</h1>')
-        .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-        .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-        .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
-        .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
-        .replace(/^###### (.*$)/gm, '<h6>$1</h6>');
+      // Обработка горизонтальных линий
+      markdown = markdown.replace(/^---\s*$/gm, '<hr>');
 
-    // Обработка горизонтальных линий
-    markdown = markdown.replace(/^---\s*$/gm, '<hr>');
-
-    // Обработка параграфов
-    markdown = markdown.replace(/^([^\n]+)(\n[^\n]+)/gm, (match, p1, p2) => {
-        return `<p>${this.processInlineMarkdown(p1 + p2)}</p>`;
-    });
-
-    // Обработка блоков цитат
-    markdown = markdown.replace(/^> (.*$)/gm, (match, content) => {
-        return `<blockquote>${this.processInlineMarkdown(content)}</blockquote>`;
-    });
-
-    // Обработка таблиц
-    markdown = markdown.replace(/^\|(.+?)\|\n\|(.+?)\|\n((?:\|(.+?)\|\n)?)/gm, (match, header, align, rows) => {
-        let tableHtml = '<table>';
-        tableHtml += `<thead><tr><th>${header.split('|').map(cell => cell.trim()).join('</th><th>')}</th></tr></thead>`;
-        tableHtml += `<tbody>${rows.split('\n').map(row => {
-            return `<tr><td>${row.split('|').map(cell => cell.trim()).join('</td><td>')}</td></tr>`;
-        }).join('')}</tbody>`;
-        tableHtml += '</table>';
-        return tableHtml;
-    });
-
+      // ОБРАБОТКА СПИСКОВ - НОВЫЙ КОД
       // Разделение на строки для обработки
-    const lines = markdown.split('\n');
-    let output = [];
-    let listStack = []; // Стек для отслеживания вложенности списков
-    let currentParagraph = [];
+      const lines = markdown.split('\n');
+      let output = [];
+      let inList = false;
+      let listType = ''; // 'ul' или 'ol'
+      let currentParagraph = [];
 
-    const closeListsToLevel = (targetIndent) => {
-        while (listStack.length > 0 && listStack[listStack.length - 1].indent >= targetIndent) {
-            const list = listStack.pop();
-            output.push('</li></' + (list.ordered ? 'ol' : 'ul') + '>');
-        }
-    };
+      for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const trimmedLine = line.trim();
+          
+          // Проверка на элемент неупорядоченного списка
+          const ulMatch = trimmedLine.match(/^\s*([*\-+])\s+(.*)$/);
+          // Проверка на элемент упорядоченного списка
+          const olMatch = trimmedLine.match(/^\s*(\d+)\.\s+(.*)$/);
+          
+          if (ulMatch || olMatch) {
+              const isOrdered = !!olMatch;
+              const content = isOrdered ? olMatch[2] : ulMatch[2];
+              
+              // Если мы не в списке, начинаем новый список
+              if (!inList) {
+                  output.push(isOrdered ? '<ol>' : '<ul>');
+                  inList = true;
+                  listType = isOrdered ? 'ol' : 'ul';
+              }
+              // Если тип списка изменился, закрываем старый и начинаем новый
+              else if ((isOrdered && listType !== 'ol') || (!isOrdered && listType !== 'ul')) {
+                  output.push(`</${listType}>\n${isOrdered ? '<ol>' : '<ul>'}`);
+                  listType = isOrdered ? 'ol' : 'ul';
+              }
+              
+              // Добавляем элемент списка
+              output.push(`<li>${this.processInlineMarkdown(content)}</li>`);
+              
+              // Закрываем текущий параграф, если он был
+              if (currentParagraph.length > 0) {
+                  output.push(`<p>${currentParagraph.join(' ')}</p>`);
+                  currentParagraph = [];
+              }
+          } 
+          else if (trimmedLine.startsWith('@@@') || 
+                  trimmedLine.startsWith('<h') || 
+                  trimmedLine.startsWith('<hr') ||
+                  trimmedLine === '') {
+              // Закрываем список перед специальными элементами
+              if (inList) {
+                  output.push(`</${listType}>`);
+                  inList = false;
+                  listType = '';
+              }
+              
+              if (currentParagraph.length > 0) {
+                  output.push(`<p>${currentParagraph.join(' ')}</p>`);
+                  currentParagraph = [];
+              }
+              
+              if (trimmedLine !== '') {
+                  output.push(line);
+              }
+          }
+          else {
+              // Закрываем список перед обычным текстом
+              if (inList) {
+                  output.push(`</${listType}>`);
+                  inList = false;
+                  listType = '';
+              }
+              
+              currentParagraph.push(this.processInlineMarkdown(line));
+          }
+      }
 
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const trimmedLine = line.trim();
-        
-        // Обработка элементов списка
-        if (trimmedLine.startsWith('@@@listitem-')) {
-            const itemId = trimmedLine.replace(/@@@listitem-|@@@/g, '');
-            const item = listItems.find(i => i.id === itemId);
-            
-            if (!item) continue;
-       
-          // console.log("Processing list item:", { // Исправленный отладочный вывод
-          //     id: item.id,
-          //     indent: item.indent,
-          //     ordered: item.ordered,
-          //     content: item.content
-          // });
+      // Закрываем список в конце, если он остался открытым
+      if (inList) {
+          output.push(`</${listType}>`);
+      }
 
-            if (currentParagraph.length > 0) {
-                output.push(`<p>${currentParagraph.join(' ')}</p>`);
-                currentParagraph = [];
-            }
-            
-            // Нормализуем отступ
-            const itemIndent = Math.floor(item.indent / 2);
-            
-            // Закрываем все списки с большим или равным отступом
-            closeListsToLevel(itemIndent);
-            
-            // Если это новый список или изменился тип списка
-            if (listStack.length === 0 || 
-                listStack[listStack.length - 1].indent < itemIndent ||
-                listStack[listStack.length - 1].ordered !== item.ordered) {
-                
-                // Если это вложенный список, закрываем предыдущий li
-                if (listStack.length > 0 && listStack[listStack.length - 1].indent < itemIndent) {
-                    output.push('</li>');
-                }
-                
-                // Открываем новый список
-                output.push('<' + (item.ordered ? 'ol' : 'ul') + '><li>');
-                listStack.push({
-                    indent: itemIndent,
-                    ordered: item.ordered,
-                    counter: 1
-                });
-            } else {
-                // Закрываем предыдущий li и открываем новый
-                output.push('</li><li>');
-                if (item.ordered) listStack[listStack.length - 1].counter++;
-            }
+      // Добавляем последний параграф, если он есть
+      if (currentParagraph.length > 0) {
+          output.push(`<p>${currentParagraph.join(' ')}</p>`);
+      }
 
-            // Добавляем содержимое элемента
-            let content = item.content;
-            if (item.ordered) {
-                content = `<span class="mkdocs-list-counter">${listStack[listStack.length - 1].counter}.</span> ${content}`;
-            }
-            output.push(content);
-        }
-        // Обработка других специальных элементов
-        else if (trimmedLine.startsWith('@@@') || 
-                trimmedLine.startsWith('<h') || 
-                trimmedLine.startsWith('<hr') ||
-                trimmedLine === '') {
-            // Закрываем все списки перед специальными элементами
-            closeListsToLevel(0);
-            
-            if (currentParagraph.length > 0) {
-                output.push(`<p>${currentParagraph.join(' ')}</p>`);
-                currentParagraph = [];
-            }
-            
-            if (trimmedLine !== '') {
-                output.push(line);
-            }
-        }
-        else {
-            // Закрываем все списки перед обычным текстом
-            closeListsToLevel(0);
-            
-            currentParagraph.push(this.processInlineMarkdown(line));
-        }
-    }
-
-    // Закрываем все оставшиеся списки
-    closeListsToLevel(0);
-
-    // Добавляем последний параграф, если он есть
-    if (currentParagraph.length > 0) {
-        output.push(`<p>${currentParagraph.join(' ')}</p>`);
-    }
-
-    markdown = output.join('\n');
+      markdown = output.join('\n');
 
       // Восстановление блоков кода
       markdown = markdown.replace(/@@@code-([^@]+)@@@/g, (match, id) => {
@@ -575,6 +514,36 @@ class MkDocsPreview {
       });
 
       return markdown;
+  }
+
+  // Метод для парсинга атрибутов ссылок
+  parseLinkAttributes(attrsStr) {
+      const attributes = {};
+      if (!attrsStr) return attributes;
+      
+      // Обработка классов (.class1 .class2)
+      const classMatches = attrsStr.match(/\.[a-zA-Z0-9_-]+/g) || [];
+      if (classMatches.length > 0) {
+          attributes.class = classMatches.map(c => c.substring(1)).join(' ');
+      }
+      
+      // Обработка параметров (key="value" или key=value)
+      const kvRegex = /([a-zA-Z0-9_-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^'"\s]+))/g;
+      let match;
+      while ((match = kvRegex.exec(attrsStr)) !== null) {
+          const key = match[1];
+          const value = match[2] || match[3] || match[4];
+          attributes[key] = value;
+      }
+      
+      // Обработка отдельных флагов (без значений)
+      const flagRegex = /:([a-zA-Z0-9_-]+)/g;
+      while ((match = flagRegex.exec(attrsStr)) !== null) {
+          const flag = match[1];
+          attributes[flag] = true;
+      }
+      
+      return attributes;
   }
 
   processAdmonitionContent(content) {

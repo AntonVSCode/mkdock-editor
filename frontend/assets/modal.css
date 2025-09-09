@@ -1,4 +1,6 @@
-/* Стили для боковых модальных окон */
+/* ==================== */
+/* БАЗОВЫЕ СТИЛИ МОДАЛКИ */
+/* ==================== */
 .side-modal-buttons {
   position: fixed;
   right: 0;
@@ -57,7 +59,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 20px 18px 20px 15px;
   overflow-y: auto;
 }
 
@@ -131,7 +133,6 @@
   position: relative;
 }
 
-/* Добавить в конец modal.css */
 .favicon-container {
   margin: 20px 0;
   display: flex;
@@ -181,7 +182,9 @@
   font-size: 0.8rem;
 }
 
-/* Стили для модального окна иконок */
+/* ==================== */
+/* СТИЛИ МОДАЛКИ ИКОНОК */
+/* ==================== */
 .icon-modal {
   display: none;
   position: fixed;
@@ -203,7 +206,6 @@
 
 #icon-modal .icon-modal-content {
   max-width: 800px;
-  /* max-height: 80vh; */
   width: 90%;
 }
 
@@ -419,29 +421,14 @@
   background-color: #f5f5f5;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-  #icon-modal .icon-modal-content {
-    width: 95%;
-    margin: 10px;
-  }
-  
-  #icon-modal .icon-grid {
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 8px;
-  }
-  
-  #icon-modal .icon-categories {
-    gap: 6px;
-  }
-  
-  #icon-modal .icon-category-btn {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
+/* ==================== */
+/* СТИЛИ РАЗДЕЛА ПОМОЩИ */
+/* ==================== */
+.side-modal.side-modal-help {
+  width: 60%;
+  max-width: 900px;
 }
 
-/* Стили для раздела помощи */
 .help-table {
   margin: 15px 0;
 }
@@ -450,6 +437,66 @@
   width: 100%;
   border-collapse: collapse;
   margin: 10px 0;
+}
+
+/* Оглавление в разделе помощи */
+.help-container {
+  display: flex;
+  gap: 15px;
+  position: relative;
+}
+
+.help-menu {
+  position: sticky;
+  top: 5px;
+  align-self: flex-start;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  width: 200px;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.help-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.help-menu li {
+  margin-bottom: 6px;
+}
+
+.help-menu a {
+  text-decoration: none;
+  color: #2c3e50;
+  display: block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.help-menu a:hover {
+  background: rgba(68, 138, 255, 0.1);
+  color: #448aff;
+}
+
+.help-menu a.active {
+  background: rgba(68, 138, 255, 0.15);
+  color: #448aff;
+  font-weight: 600;
+}
+
+.help-content {
+  flex: 1;
+  min-width: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 .help-table th, .help-table td {
@@ -636,17 +683,16 @@ kbd.mdi-kbd i {
   margin: 0 -.6rem;
   padding: .4rem .6rem .4rem 2rem;
   position: relative;
-  display: flex; /* Добавляем flex для выравнивания */
-  align-items: center; /* Выравниваем по вертикали */
+  display: flex;
+  align-items: center;
 }
 
 .admonition-example .admonition-title i {
-  margin-right: 0.5em; /* Отступ между иконкой и текстом */
-  /* margin-left: -1.5em; */
-  margin-left: -1em; /* Смещаем иконку влево (компенсируем padding заголовка) */
-  font-size: 1.1em; /* Размер иконки */
-  width: 1em; /* Фиксированная ширина */
-  text-align: center; /* Выравнивание иконки по центру */
+  margin-right: 0.5em;
+  margin-left: -1em;
+  font-size: 1.1em;
+  width: 1em;
+  text-align: center;
 }
 
 .admonition-example .admonition.note .admonition-title {
@@ -762,9 +808,29 @@ kbd.mdi-kbd i {
   color: #546e7a;
 }
 
-
-/* Адаптивность для помощи */
+/* ==================== */
+/* АДАПТИВНОСТЬ */
+/* ==================== */
 @media (max-width: 768px) {
+  #icon-modal .icon-modal-content {
+    width: 95%;
+    margin: 10px;
+  }
+  
+  #icon-modal .icon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+  }
+  
+  #icon-modal .icon-categories {
+    gap: 6px;
+  }
+  
+  #icon-modal .icon-category-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
   .help-table table {
     font-size: 0.9em;
   }
@@ -783,3 +849,25 @@ kbd.mdi-kbd i {
   }
 }
 
+@media (max-width: 1200px) {
+  .side-modal.side-modal-help {
+    width: 70%;
+  }
+}
+
+@media (max-width: 768px) {
+  .side-modal.side-modal-help {
+    width: 85%;
+  }
+}
+
+@media (max-width: 480px) {
+  .side-modal.side-modal-help {
+    width: 95%;
+    right: -100%;
+  }
+  
+  .side-modal.side-modal-help.show {
+    right: 0;
+  }
+}

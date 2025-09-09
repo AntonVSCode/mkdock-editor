@@ -146,7 +146,11 @@ const SideModals = {
       // Создаем модальное окно
       const modal = this.createModal(modalTitle, modalContent);
 
-        // Если это кнопка превью - не открываем модальное окно
+      if (button.id === 'help-modal-btn') {
+        setTimeout(buildHelpMenu, 50); // даём время на вставку HTML
+      }
+
+      // Если это кнопка превью - не открываем модальное окно
       if (button.id === 'toggle-preview') {
           this.togglePreviewVisibility();
           return;
@@ -312,9 +316,15 @@ const SideModals = {
     if (this.currentModal) {
       this.removeModal();
     }
-    
+  
     const modal = document.createElement('div');
     modal.className = 'side-modal';
+
+    // В методе createModal добавьте:
+    if (title === 'Помощь') {
+        modal.classList.add('side-modal-help');
+    }
+
     modal.innerHTML = `
       <div class="side-modal-content">
         <div class="side-modal-header">
@@ -531,331 +541,345 @@ const SideModals = {
   getHelpContent: function() {
     return `
       <div class="help-section">
-        <h4>Горячие клавиши</h4>
-        <div class="help-table">
-          <table>
-            <tr><th><strong>Комбинация</strong></th><th>Действие</th></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td><td>Сохранить файл</td></tr>
-            <tr><td><kbd>F5</kbd></td><td>Обновить превью</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Space</kbd></td><td>Автодополнение</td></tr>
-            
-            <tr><th><strong>Блоки и шаблоны</strong></th><th>Действие</th></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>W</kbd></td><td>Вставить Warning</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>A</kbd></td><td>Вставить Abstract</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd></td><td>Вставить Tabs</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>F</kbd></td><td>Вставить Foldable</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>C</kbd></td><td>Вставить Code block</td></tr>
-            
-            <tr><th><strong>Заголовки</strong></th><th>Действие</th></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>1</kbd></td><td>Заголовок H1</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>2</kbd></td><td>Заголовок H2</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>3</kbd></td><td>Заголовок H3</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>4</kbd></td><td>Заголовок H4</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>5</kbd></td><td>Заголовок H5</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>6</kbd></td><td>Заголовок H6</td></tr>
-          </table>
-        </div>
-        <h4>Форматирование в CodeMirror</h4>
-        <div class="help-table">
-          <table>
-            <tr><th>Комбинация</th><th>Действие</th></tr>
-            <tr><td><kbd>Alt</kbd> + <kbd>ЛКМ</kbd></td><td>Добавить курсор</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>↑</kbd></td><td>Добавить курсор выше</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>↓</kbd></td><td>Добавить курсор ниже</td></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L</kbd></td><td>Курсоры в конец строк выделения</td></tr>
-            <tr><td><kbd>Alt</kbd> + перетаскивание</td><td>Вертикальное выделение</td></tr>
-            <tr><td><kbd>Esc</kbd></td><td>Очистить все курсоры</td></tr>
-          </table>
-          <table>
-            <tr><th>Комбинация</th><th>Действие</th></tr>
-            <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Удалить строку где находится курсор</td></tr>
-          </table>
-        </div>
+        <div class="help-container">
 
-        <div class="help-text">
-          <p><strong>Советы:</strong></p>
-          <ul>
-            <li>Удерживайте <kbd>Ctrl</kbd> и кликайте ЛКМ для добавления курсоров</li>
-            <li><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L</kbd> - курсоры в конец строк выделения</li>
-            <li>Для вертикального выделения удерживайте <kbd>Alt</kbd> и строго вертикально перетаскивайте мышью</li>
-            <li>Множественные курсоры работают со всеми операциями редактирования</li>
-          </ul>
-        </div>
+          <!-- Плавающее меню -->
 
-        <h4>Синтаксис Markdown</h4>
-        <div class="markdown-reference">
+          <nav class="help-menu">
+            <ul id="help-toc"></ul>
+          </nav>
+
+          <!-- Основной контент Help -->
+          <div class="help-content">
           
-          <div class="ref-item">
-            <h5>Заголовки</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-header cm-header-1"># Заголовок первого уровня</span></div>
-                <div class="code-line"><span class="cm-header cm-header-2">## Заголовок второго уровня</span></div>
-                <div class="code-line"><span class="cm-header cm-header-3">### Заголовок третьего уровня</span></div>
-                <div class="code-line"><span class="cm-header cm-header-4">#### Заголовок четвёртого уровня</span></div>
-                <div class="code-line"><span class="cm-header cm-header-5">##### Заголовок пятого уровня</span></div>
-                <div class="code-line"><span class="cm-header cm-header-6">###### Заголовок шестого уровня</span></div>
-              </div>
-            </div>
+          <h4>Горячие клавиши</h4>
+          <div class="help-table">
+            <table>
+              <tr><th><strong>Комбинация</strong></th><th>Действие</th></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td><td>Сохранить файл</td></tr>
+              <tr><td><kbd>F5</kbd></td><td>Обновить превью</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Space</kbd></td><td>Автодополнение</td></tr>
+              
+              <tr><th><strong>Блоки и шаблоны</strong></th><th>Действие</th></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>W</kbd></td><td>Вставить Warning</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>A</kbd></td><td>Вставить Abstract</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd></td><td>Вставить Tabs</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>F</kbd></td><td>Вставить Foldable</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>C</kbd></td><td>Вставить Code block</td></tr>
+              
+              <tr><th><strong>Заголовки</strong></th><th>Действие</th></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>1</kbd></td><td>Заголовок H1</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>2</kbd></td><td>Заголовок H2</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>3</kbd></td><td>Заголовок H3</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>4</kbd></td><td>Заголовок H4</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>5</kbd></td><td>Заголовок H5</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>6</kbd></td><td>Заголовок H6</td></tr>
+            </table>
+          </div>
+          <h4>Форматирование в CodeMirror</h4>
+          <div class="help-table">
+            <table>
+              <tr><th>Комбинация</th><th>Действие</th></tr>
+              <tr><td><kbd>Alt</kbd> + <kbd>ЛКМ</kbd></td><td>Добавить курсор</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>↑</kbd></td><td>Добавить курсор выше</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>↓</kbd></td><td>Добавить курсор ниже</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L</kbd></td><td>Курсоры в конец строк выделения</td></tr>
+              <tr><td><kbd>Alt</kbd> + перетаскивание</td><td>Вертикальное выделение</td></tr>
+              <tr><td><kbd>Esc</kbd></td><td>Очистить все курсоры</td></tr>
+            </table>
+            <table>
+              <tr><th>Комбинация</th><th>Действие</th></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Удалить строку где находится курсор</td></tr>
+            </table>
           </div>
 
-          <div class="ref-item">
-            <h5>Форматирование текста</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-strong">**жирный текст**</span></div>
-                <div class="code-line"><span class="cm-em">*курсивный текст*</span></div>
-                <div class="code-line"><span class="cm-strong cm-em">***жирный курсив***</span></div>
-                <div class="code-line"><span class="cm-strikethrough">~~зачеркнутый текст~~</span></div>
-                <div class="code-line"><span class="cm-highlight">==выделенный текст==</span></div>
-                <div class="code-line"><span class="cm-inline-code">\`встроенный код\`</span></div>
-              </div>
-            </div>
+          <div class="help-text">
+            <p><strong>Советы:</strong></p>
+            <ul>
+              <li>Удерживайте <kbd>Ctrl</kbd> и кликайте ЛКМ для добавления курсоров</li>
+              <li><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L</kbd> - курсоры в конец строк выделения</li>
+              <li>Для вертикального выделения удерживайте <kbd>Alt</kbd> и строго вертикально перетаскивайте мышью</li>
+              <li>Множественные курсоры работают со всеми операциями редактирования</li>
+            </ul>
           </div>
 
-          <div class="ref-item">
-            <h5>Списки</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-list">- Неупорядоченный список</span></div>
-                <div class="code-line"><span class="cm-list">  - Вложенный пункт</span></div>
-                <div class="code-line"><span class="cm-list cm-number">1. Упорядоченный список</span></div>
-                <div class="code-line"><span class="cm-list cm-number">2. Второй пункт</span></div>
+          <h4>Синтаксис Markdown</h4>
+          <div class="markdown-reference">
+            
+            <div class="ref-item">
+              <h5>Заголовки</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-header cm-header-1"># Заголовок первого уровня</span></div>
+                  <div class="code-line"><span class="cm-header cm-header-2">## Заголовок второго уровня</span></div>
+                  <div class="code-line"><span class="cm-header cm-header-3">### Заголовок третьего уровня</span></div>
+                  <div class="code-line"><span class="cm-header cm-header-4">#### Заголовок четвёртого уровня</span></div>
+                  <div class="code-line"><span class="cm-header cm-header-5">##### Заголовок пятого уровня</span></div>
+                  <div class="code-line"><span class="cm-header cm-header-6">###### Заголовок шестого уровня</span></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="ref-item">
-            <h5>Ссылки и изображения</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-link">[Текст ссылки](https://example.com)</span></div>
-                <div class="code-line"><span class="cm-link">![Alt текст](image.png)</span></div>
-                <div class="code-line"><span class="cm-link">[Внешняя ссылка :material-arrow-top-right:](url){:target='_blank'}</span></div>
+            <div class="ref-item">
+              <h5>Форматирование текста</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-strong">**жирный текст**</span></div>
+                  <div class="code-line"><span class="cm-em">*курсивный текст*</span></div>
+                  <div class="code-line"><span class="cm-strong cm-em">***жирный курсив***</span></div>
+                  <div class="code-line"><span class="cm-strikethrough">~~зачеркнутый текст~~</span></div>
+                  <div class="code-line"><span class="cm-highlight">==выделенный текст==</span></div>
+                  <div class="code-line"><span class="cm-inline-code">\`встроенный код\`</span></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="ref-item">
-            <h5>Блоки кода</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-comment">\`\`\`python</span></div>
-                <div class="code-line"><span class="cm-keyword">def</span> <span class="cm-def">hello_world</span>():</div>
-                <div class="code-line">    <span class="cm-builtin">print</span>(<span class="cm-string">"Hello World"</span>)</div>
-                <div class="code-line"><span class="cm-comment">\`\`\`</span></div>
+            <div class="ref-item">
+              <h5>Списки</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-list">- Неупорядоченный список</span></div>
+                  <div class="code-line"><span class="cm-list">  - Вложенный пункт</span></div>
+                  <div class="code-line"><span class="cm-list cm-number">1. Упорядоченный список</span></div>
+                  <div class="code-line"><span class="cm-list cm-number">2. Второй пункт</span></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="ref-item">
-            <h5>Цитаты</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-quote">> Цитата первого уровня</span></div>
-                <div class="code-line"><span class="cm-quote">> > Вложенная цитата</span></div>
+            <div class="ref-item">
+              <h5>Ссылки и изображения</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-link">[Текст ссылки](https://example.com)</span></div>
+                  <div class="code-line"><span class="cm-link">![Alt текст](image.png)</span></div>
+                  <div class="code-line"><span class="cm-link">[Внешняя ссылка :material-arrow-top-right:](url){:target='_blank'}</span></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="ref-item">
-            <h5>Таблицы</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-table">| Заголовок 1 | Заголовок 2 |</span></div>
-                <div class="code-line"><span class="cm-table">|-------------|-------------|</span></div>
-                <div class="code-line"><span class="cm-table">| Ячейка 1    | Ячейка 2    |</span></div>
-                <div class="code-line"><span class="cm-table">| Ячейка 3    | Ячейка 4    |</span></div>
+            <div class="ref-item">
+              <h5>Блоки кода</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-comment">\`\`\`python</span></div>
+                  <div class="code-line"><span class="cm-keyword">def</span> <span class="cm-def">hello_world</span>():</div>
+                  <div class="code-line">    <span class="cm-builtin">print</span>(<span class="cm-string">"Hello World"</span>)</div>
+                  <div class="code-line"><span class="cm-comment">\`\`\`</span></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="ref-item">
-          <h4>Блоки для темы Material</h4>
-          <!-- Admonitions - Блоки примечаний -->
-          <div class="ref-item">
-            <h5>Блоки примечаний (Admonitions)</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-admonition">!!! note</span></div>
-                <div class="code-line"><span class="cm-admonition">    Это обычное примечание</span></div>
-                <div class="code-line"><span class="cm-admonition">    С текстом внутри блока</span></div>
+            <div class="ref-item">
+              <h5>Цитаты</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-quote">> Цитата первого уровня</span></div>
+                  <div class="code-line"><span class="cm-quote">> > Вложенная цитата</span></div>
+                </div>
               </div>
             </div>
+
+            <div class="ref-item">
+              <h5>Таблицы</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-table">| Заголовок 1 | Заголовок 2 |</span></div>
+                  <div class="code-line"><span class="cm-table">|-------------|-------------|</span></div>
+                  <div class="code-line"><span class="cm-table">| Ячейка 1    | Ячейка 2    |</span></div>
+                  <div class="code-line"><span class="cm-table">| Ячейка 3    | Ячейка 4    |</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ref-item">
+            <h4>Блоки для темы Material</h4>
+            <!-- Admonitions - Блоки примечаний -->
+            <div class="ref-item">
+              <h5>Блоки примечаний (Admonitions)</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-admonition">!!! note</span></div>
+                  <div class="code-line"><span class="cm-admonition">    Это обычное примечание</span></div>
+                  <div class="code-line"><span class="cm-admonition">    С текстом внутри блока</span></div>
+                </div>
+              </div>
+              <div class="admonition-example">
+                <div class="admonition note">
+                  <p class="admonition-title"><i class="mdi mdi-pencil-circle"></i><br>Note</p>
+                  <p>Это обычное примечание</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="ref-item">
+              <h5>Admonitions с заголовком</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-admonition">!!! note "Заголовок"</span></div>
+                  <div class="code-line"><span class="cm-admonition">    Текст с пользовательским заголовком</span></div>
+                </div>
+              </div>
+              <div class="admonition-example">
+                <div class="admonition note">
+                  <p class="admonition-title"><i class="mdi mdi-pencil-circle"></i><br>Заголовок</p>
+                  <p>Это обычное примечание с пользовательским заголовком</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="ref-item">
+              <h5>Разные типы Admonitions</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-admonition cm-warning">!!! warning</span></div>
+                  <div class="code-line"><span class="cm-admonition cm-warning">    Текст предупреждения</span></div>
+                  <div class="code-line"></div>
+                  <div class="code-line"><span class="cm-admonition">!!! tip</span></div>
+                  <div class="code-line"><span class="cm-admonition">    Полезный совет</span></div>
+                </div>
+              </div>
+              <div class="admonition-example">
+                <div class="admonition warning">
+                  <p class="admonition-title">Warning</p>
+                  <p>Текст предупреждения</p>
+                </div>
+                <div class="admonition tip">
+                  <p class="admonition-title">Tip</p>
+                  <p>Полезный совет</p>
+                </div>
+              </div>
+            </div>
+
+            // Пример блоков
             <div class="admonition-example">
-              <div class="admonition note">
-                <p class="admonition-title"><i class="mdi mdi-pencil-circle"></i><br>Note</p>
-                <p>Это обычное примечание</p>
+    <div class="admonition note">
+      <div class="admonition-title"><i class="mdi mdi-pencil-circle"></i> Note / Примечание</div>
+      <p>Это пример блока с заметкой.</p>
+    </div>
+
+    <div class="admonition abstract">
+      <div class="admonition-title"><i class="mdi mdi-clipboard-text"></i> Abstract / Абстракция</div>
+      <p>Краткое резюме или сводка.</p>
+    </div>
+
+    <div class="admonition info">
+      <div class="admonition-title"><i class="fas fa-circle-info"></i> Info / Информация</div>
+      <p>Справочная информация.</p>
+    </div>
+
+    <div class="admonition tip">
+      <div class="admonition-title"><i class="mdi mdi-fire"></i> Tip / Совет</div>
+      <p>Полезный совет для работы.</p>
+    </div>
+
+    <div class="admonition success">
+      <div class="admonition-title"><i class="fas fa-check-circle"></i> Success / Успех</div>
+      <p>Операция прошла успешно!</p>
+    </div>
+
+    <div class="admonition question">
+      <div class="admonition-title"><i class="fas fa-question-circle"></i> Question / Вопрос</div>
+      <p>А как это работает?</p>
+    </div>
+
+    <div class="admonition warning">
+      <div class="admonition-title"><i class="fas fa-exclamation-triangle"></i> Warning / Предупреждение</div>
+      <p>Будь осторожен!</p>
+    </div>
+
+    <div class="admonition failure">
+      <div class="admonition-title"><i class="fas fa-times-circle"></i> Failure / Сбой</div>
+      <p>Что-то пошло не так.</p>
+    </div>
+
+    <div class="admonition danger">
+      <div class="admonition-title"><i class="mdi mdi-lightning-bolt-outline"></i> Danger / Опасность</div>
+      <p>Опасное действие!</p>
+    </div>
+
+    <div class="admonition bug">
+      <div class="admonition-title"><i class="mdi mdi-shield-bug-outline"></i> Bug / Ошибка</div>
+      <p>Обнаружена ошибка в системе.</p>
+    </div>
+
+    <div class="admonition example">
+      <div class="admonition-title"><i class="mdi mdi-test-tube"></i> Example / Пример</div>
+      <p>Пример использования.</p>
+    </div>
+
+    <div class="admonition quote">
+      <div class="admonition-title"><i class="mdi mdi-format-quote-close"></i> Quote / Цитата</div>
+      <p>«Хороший код читается как хорошая книга»</p>
+    </div>
+  </div>
+
+            // Конец Пример блоков
+
+            <div class="ref-item">
+              <h5>Сворачиваемые блоки (Collapsible)</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-foldable">??? note "Нажмите чтобы развернуть"</span></div>
+                  <div class="code-line"><span class="cm-foldable">    Скрытый контент</span></div>
+                  <div class="code-line"><span class="cm-foldable">    который можно развернуть</span></div>
+                </div>
+              </div>
+              <div class="admonition-example">
+                <details class="admonition note">
+                  <summary>Нажмите чтобы развернуть</summary>
+                  <p>Скрытый контент</p>
+                  <p>который можно развернуть</p>
+                </details>
               </div>
             </div>
+
+            <div class="ref-item">
+              <h5>Развернутые сворачиваемые блоки</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-foldable">???+ success "Изначально развернуто"</span></div>
+                  <div class="code-line"><span class="cm-foldable">    Этот блок изначально виден</span></div>
+                  <div class="code-line"><span class="cm-foldable">    но его можно свернуть</span></div>
+                </div>
+              </div>
+              <div class="admonition-example">
+                <details class="admonition success" open>
+                  <summary>Изначально развернуто</summary>
+                  <p>Этот блок изначально виден</p>
+                  <p>но его можно свернуть</p>
+                </details>
+              </div>
+            </div>
+
+
+            <div class="ref-item">
+              <h5>Вкладки</h5>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-tab">=== "Вкладка 1"</span></div>
+                  <div class="code-line"><span class="cm-tab">    Контент вкладки 1</span></div>
+                  <div class="code-line"></div>
+                  <div class="code-line"><span class="cm-tab">=== "Вкладка 2"</span></div>
+                  <div class="code-line"><span class="cm-tab">    Контент вкладки 2</span></div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          <div class="ref-item">
-            <h5>Admonitions с заголовком</h5>
+          <h4>Иконки Material Design</h4>
+          <div class="help-text">
+            <p>Используйте синтаксис <code class="cm-inline-code">:material-icon-name:</code> для вставки иконок:</p>
             <div class="code-example">
               <div class="code-editor">
-                <div class="code-line"><span class="cm-admonition">!!! note "Заголовок"</span></div>
-                <div class="code-line"><span class="cm-admonition">    Текст с пользовательским заголовком</span></div>
+                <div class="code-line"><span class="cm-icon">:material-alert:</span> <span class="cm-icon">:material-check:</span> <span class="cm-icon">:material-heart:</span></div>
               </div>
             </div>
-            <div class="admonition-example">
-              <div class="admonition note">
-                <p class="admonition-title"><i class="mdi mdi-pencil-circle"></i><br>Заголовок</p>
-                <p>Это обычное примечание с пользовательским заголовком</p>
-              </div>
-            </div>
+            <p>Доступны сотни иконок через кнопку <kbd class="mdi-kbd"><i class="mdi mdi-emoticon-outline"></i></kbd> на панели инструментов.</p>
           </div>
+          </div> <!-- /help-content -->
 
-          <div class="ref-item">
-            <h5>Разные типы Admonitions</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-admonition cm-warning">!!! warning</span></div>
-                <div class="code-line"><span class="cm-admonition cm-warning">    Текст предупреждения</span></div>
-                <div class="code-line"></div>
-                <div class="code-line"><span class="cm-admonition">!!! tip</span></div>
-                <div class="code-line"><span class="cm-admonition">    Полезный совет</span></div>
-              </div>
-            </div>
-            <div class="admonition-example">
-              <div class="admonition warning">
-                <p class="admonition-title">Warning</p>
-                <p>Текст предупреждения</p>
-              </div>
-              <div class="admonition tip">
-                <p class="admonition-title">Tip</p>
-                <p>Полезный совет</p>
-              </div>
-            </div>
-          </div>
-
-          // Пример блоков
-          <div class="admonition-example">
-  <div class="admonition note">
-    <div class="admonition-title"><i class="mdi mdi-pencil-circle"></i> Note / Примечание</div>
-    <p>Это пример блока с заметкой.</p>
-  </div>
-
-  <div class="admonition abstract">
-    <div class="admonition-title"><i class="mdi mdi-clipboard-text"></i> Abstract / Абстракция</div>
-    <p>Краткое резюме или сводка.</p>
-  </div>
-
-  <div class="admonition info">
-    <div class="admonition-title"><i class="fas fa-circle-info"></i> Info / Информация</div>
-    <p>Справочная информация.</p>
-  </div>
-
-  <div class="admonition tip">
-    <div class="admonition-title"><i class="mdi mdi-fire"></i> Tip / Совет</div>
-    <p>Полезный совет для работы.</p>
-  </div>
-
-  <div class="admonition success">
-    <div class="admonition-title"><i class="fas fa-check-circle"></i> Success / Успех</div>
-    <p>Операция прошла успешно!</p>
-  </div>
-
-  <div class="admonition question">
-    <div class="admonition-title"><i class="fas fa-question-circle"></i> Question / Вопрос</div>
-    <p>А как это работает?</p>
-  </div>
-
-  <div class="admonition warning">
-    <div class="admonition-title"><i class="fas fa-exclamation-triangle"></i> Warning / Предупреждение</div>
-    <p>Будь осторожен!</p>
-  </div>
-
-  <div class="admonition failure">
-    <div class="admonition-title"><i class="fas fa-times-circle"></i> Failure / Сбой</div>
-    <p>Что-то пошло не так.</p>
-  </div>
-
-  <div class="admonition danger">
-    <div class="admonition-title"><i class="mdi mdi-lightning-bolt-outline"></i> Danger / Опасность</div>
-    <p>Опасное действие!</p>
-  </div>
-
-  <div class="admonition bug">
-    <div class="admonition-title"><i class="mdi mdi-shield-bug-outline"></i> Bug / Ошибка</div>
-    <p>Обнаружена ошибка в системе.</p>
-  </div>
-
-  <div class="admonition example">
-    <div class="admonition-title"><i class="mdi mdi-test-tube"></i> Example / Пример</div>
-    <p>Пример использования.</p>
-  </div>
-
-  <div class="admonition quote">
-    <div class="admonition-title"><i class="mdi mdi-format-quote-close"></i> Quote / Цитата</div>
-    <p>«Хороший код читается как хорошая книга»</p>
-  </div>
-</div>
-
-          // Конец Пример блоков
-
-          <div class="ref-item">
-            <h5>Сворачиваемые блоки (Collapsible)</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-foldable">??? note "Нажмите чтобы развернуть"</span></div>
-                <div class="code-line"><span class="cm-foldable">    Скрытый контент</span></div>
-                <div class="code-line"><span class="cm-foldable">    который можно развернуть</span></div>
-              </div>
-            </div>
-            <div class="admonition-example">
-              <details class="admonition note">
-                <summary>Нажмите чтобы развернуть</summary>
-                <p>Скрытый контент</p>
-                <p>который можно развернуть</p>
-              </details>
-            </div>
-          </div>
-
-          <div class="ref-item">
-            <h5>Развернутые сворачиваемые блоки</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-foldable">???+ success "Изначально развернуто"</span></div>
-                <div class="code-line"><span class="cm-foldable">    Этот блок изначально виден</span></div>
-                <div class="code-line"><span class="cm-foldable">    но его можно свернуть</span></div>
-              </div>
-            </div>
-            <div class="admonition-example">
-              <details class="admonition success" open>
-                <summary>Изначально развернуто</summary>
-                <p>Этот блок изначально виден</p>
-                <p>но его можно свернуть</p>
-              </details>
-            </div>
-          </div>
-
-
-          <div class="ref-item">
-            <h5>Вкладки</h5>
-            <div class="code-example">
-              <div class="code-editor">
-                <div class="code-line"><span class="cm-tab">=== "Вкладка 1"</span></div>
-                <div class="code-line"><span class="cm-tab">    Контент вкладки 1</span></div>
-                <div class="code-line"></div>
-                <div class="code-line"><span class="cm-tab">=== "Вкладка 2"</span></div>
-                <div class="code-line"><span class="cm-tab">    Контент вкладки 2</span></div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <h4>Иконки Material Design</h4>
-        <div class="help-text">
-          <p>Используйте синтаксис <code class="cm-inline-code">:material-icon-name:</code> для вставки иконок:</p>
-          <div class="code-example">
-            <div class="code-editor">
-              <div class="code-line"><span class="cm-icon">:material-alert:</span> <span class="cm-icon">:material-check:</span> <span class="cm-icon">:material-heart:</span></div>
-            </div>
-          </div>
-          <p>Доступны сотни иконок через кнопку <kbd class="mdi-kbd"><i class="mdi mdi-emoticon-outline"></i></kbd> на панели инструментов.</p>
-        </div>
+        </div> <!-- /help-container -->  
       </div>
     `;
   },
@@ -878,3 +902,60 @@ const SideModals = {
 document.addEventListener('DOMContentLoaded', () => {
   SideModals.init();
 });
+
+
+// Создание оглавления и навигации по разделам в окне помощи
+function buildHelpMenu() {
+  const tocContainer = document.getElementById("help-toc");
+  if (!tocContainer) return;
+
+  tocContainer.innerHTML = "";
+
+  const headings = document.querySelectorAll(".help-content h2, .help-content h3, .help-content h4, .help-content h5");
+
+  headings.forEach((heading, index) => {
+    if (!heading.id) heading.id = "help-section-" + index;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#" + heading.id;
+    a.textContent = heading.textContent;
+    li.appendChild(a);
+
+    if (heading.tagName === "H4") li.style.marginLeft = "10px";
+    if (heading.tagName === "H5") li.style.marginLeft = "20px";
+
+    tocContainer.appendChild(li);
+  });
+
+  const menuLinks = tocContainer.querySelectorAll("a");
+
+  function onScroll() {
+    let scrollPos = window.scrollY + 120;
+    headings.forEach((section) => {
+      const id = section.id;
+      if (id) {
+        const offsetTop = section.offsetTop;
+        const offsetBottom = offsetTop + section.offsetHeight;
+        if (scrollPos >= offsetTop && scrollPos < offsetBottom) {
+          menuLinks.forEach((a) => a.classList.remove("active"));
+          const activeLink = document.querySelector(`.help-menu a[href="#${id}"]`);
+          if (activeLink) activeLink.classList.add("active");
+        }
+      }
+    });
+  }
+
+  window.addEventListener("scroll", onScroll);
+
+  menuLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute("href").substring(1);
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+}
