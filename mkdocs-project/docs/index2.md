@@ -1,4 +1,3 @@
-:material-arrow-bottom-right-bold-box-outline:
 # Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps
 
 - ываываываыв
@@ -16,22 +15,24 @@ zzxczxc zcscsac axxasd adaasd c cascadax  qadwawdada
 
 ## Introduction
 
-!!! warning 
-	gsdfsgfsdgsfdhgsdfhfd gasdgasdgasdfgads asdasgasdgas
+???+ danger
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla et euismod nulla. Curabitur feugiat, tortor non consequat finibus, justo purus auctor massa, nec semper lorem quam in massa.
 
-zczxcsfa s asd asdasd asdv  asdvasvasda asdfasddfa asdfasdfas fsdf dfsd sdfsdf sfdfsdfs sdf sdf sdfsdfds sdfsewe werwer sdfsdf sdfsf :material-arrow-bottom-left-thin: asdasdasd :material-android: asdasdasd 
+!!! note ""
+	gsdfsgfsdgsfdhgsdfhfd gasdgasdgasdfgads asdasgasdgas zczxcsfa s asd asdasd asdv  asdvasvasda asdfasddfa asdfasdfas fsdf dfsd   sdfsdf sfdfsdfs sdf sdf sdfsdfds sdfsewe werwer sdfsdf sdfsf asdasdasd :material-android: asdasdasd 
 
 !!! danger 
 	asdfasdfsadfasdfas lkasvm avascasdf adsfasf asdf asdf asdf
-	```{ .javascript linenums="1"}
-	     // Закрытие меню при клике вне его
-	//   document.addEventListener(&#039;click&#039;, () =&gt; {
-	//     document.querySelectorAll(&#039;.dropdown-content&#039;).forEach(content =&gt; {
-	//       content.style.display = &#039;none&#039;;
-	//     });
-	//   });
-	// }
-	```
+  
+```{ .javascript linenums="1"}
+     // Закрытие меню при клике вне его
+//   document.addEventListener(&#039;click&#039;, () =&gt; {
+//     document.querySelectorAll(&#039;.dropdown-content&#039;).forEach(content =&gt; {
+//       content.style.display = &#039;none&#039;;
+//     });
+//   });
+// }
+```
     
 !!! warning
     Как обычно это и бывает, я накопил критическую массу мыслей, и пора их как-то систематизировать, чтобы вы, мои замечательные читатели Хабра, могли что-то извлечь из моего опыта или поделиться своим

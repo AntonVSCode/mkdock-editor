@@ -256,7 +256,7 @@
           <button class="toolbar-btn format-btn" data-insert="==" data-wrap="==" title="Выделенный текст">
             <i class="mdi mdi-format-color-fill"></i>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="`" title="Встроенный код">
+          <button class="toolbar-btn format-btn" data-insert="`"  data-wrap="`" title="Встроенный код">
             <i class="mdi mdi-code-brackets"></i>
           </button>
           <button class="toolbar-btn format-btn" data-insert="~~" data-wrap="~~" title="Зачеркнутый текст">
@@ -282,11 +282,26 @@
 
         <!-- Группа списков -->
         <div class="toolbar-group">
-          <button class="toolbar-btn format-btn" data-insert="- " title="Bullet List">
+          <button class="toolbar-btn format-btn" data-insert="-" data-list="bullet" title="Маркированный список">
             <i class="mdi mdi-format-list-bulleted"></i>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="1. " title="Numbered List">
+          <button class="toolbar-btn format-btn" data-insert="1." data-list="numbered" title="Нумерованный список">
             <i class="mdi mdi-format-list-numbered"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="- [ ] " data-list="checkbox" title="Чекбокс список">
+            <i class="mdi mdi-checkbox-blank-outline"></i>
+          </button>
+          <button class="toolbar-btn format-btn" data-insert="- [x] " data-list="checkbox_checked" title="Отмеченный чекбокс">
+            <i class="mdi mdi-checkbox-marked"></i>
+          </button>
+        </div>
+        <!-- В разделе групп списков добавьте новую группу для отступов -->
+        <div class="toolbar-group">
+          <button class="toolbar-btn format-btn" id="indent-right" title="Увеличить отступ (Tab)">
+            <i class="mdi mdi-format-indent-increase"></i>
+          </button>
+          <button class="toolbar-btn format-btn" id="indent-left" title="Уменьшить отступ (Shift+Tab)">
+            <i class="mdi mdi-format-indent-decrease"></i>
           </button>
         </div>
       </div>

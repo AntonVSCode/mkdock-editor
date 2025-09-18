@@ -197,7 +197,7 @@ button, .btn {
   background-color: white;
   border-bottom: 1px solid var(--border-color);
   display: flex;
-  gap: 8px;
+  /* gap: 8px; */
   flex-wrap: wrap;
   align-items: center;
 }

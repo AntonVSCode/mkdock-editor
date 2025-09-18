@@ -578,6 +578,7 @@ const SideModals = {
           </div>
           <h4>Форматирование в CodeMirror</h4>
           <div class="help-table">
+            <h5>Мультикурсор</h5>
             <table>
               <tr><th>Комбинация</th><th>Действие</th></tr>
               <tr><td><kbd>Alt</kbd> + <kbd>ЛКМ</kbd></td><td>Добавить курсор</td></tr>
@@ -587,9 +588,16 @@ const SideModals = {
               <tr><td><kbd>Alt</kbd> + перетаскивание</td><td>Вертикальное выделение</td></tr>
               <tr><td><kbd>Esc</kbd></td><td>Очистить все курсоры</td></tr>
             </table>
+            <h5>Действие с курсором</h5>
             <table>
               <tr><th>Комбинация</th><th>Действие</th></tr>
               <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Удалить строку где находится курсор</td></tr>
+            </table>
+            <h5>Отступы</h5>
+            <table>
+              <tr><th>Комбинация</th><th>Действие</th></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>}</kbd></td><td>Выделить строку и сдвинуть в лево</td></tr>
+              <tr><td><kbd>Ctrl</kbd> + <kbd>{</kbd></td><td>Выделить строку и сдвинуть в право</td></tr>
             </table>
           </div>
 
@@ -604,10 +612,22 @@ const SideModals = {
           </div>
 
           <h4>Синтаксис Markdown</h4>
+          <p>Сдандартный синтаксис <a href="https://www.markdownguide.org/basic-syntax/" target="_blank" rel="noopener">Markdown</a> поддерживается полностью. Ниже приведены примеры наиболее часто используемых элементов разметки:</p>
           <div class="markdown-reference">
             
             <div class="ref-item">
               <h5>Заголовки</h5>
+              <div class="help-text">
+                <p>В синтаксисе Markdown есть шесть уровней заголовков: от H1 (самого большого) до H6 (самого маленького).</p>
+                <ul>
+                    <li>Для выделения заголовков используют решётки <code>#</code></li>
+                    <li>Решётки можно ставить как перед заголовком, так и с двух сторон от него</li>
+                    <li>На уровень заголовка влияют только те <code>#</code>, которые находятся перед ним</li>
+                    <li>Количество решёток соответствует уровню заголовка: одна для первого уровня, две для второго и так далее</li>
+                    <li>Между решёткой и текстом ставится пробел</li>
+                </ul>
+                <p>Кнопка для вставки заголовков: <kbd><i class="mdi mdi-format-header-pound"></i><i class="mdi mdi-menu-down"></i></kbd></p>
+              </div>
               <div class="code-example">
                 <div class="code-editor">
                   <div class="code-line"><span class="cm-header cm-header-1"># Заголовок первого уровня</span></div>
@@ -625,6 +645,7 @@ const SideModals = {
               <div class="code-example">
                 <div class="code-editor">
                   <div class="code-line"><span class="cm-strong">**жирный текст**</span></div>
+                  <div class="code-line"><span class="cm-strong">__жирный текст__</span></div>
                   <div class="code-line"><span class="cm-em">*курсивный текст*</span></div>
                   <div class="code-line"><span class="cm-strong cm-em">***жирный курсив***</span></div>
                   <div class="code-line"><span class="cm-strikethrough">~~зачеркнутый текст~~</span></div>

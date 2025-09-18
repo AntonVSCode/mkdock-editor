@@ -530,9 +530,6 @@ const Editor = {
    * Вставка текста в текущую позицию курсора
    * @param {string} text - Текст для вставки
    */
-  // insertAtCursor: function(text) {
-  //   this.insertMultilineContent(text, false); // false = не позиционировать курсор после 4 пробелов
-  // },
 
   insertAtCursor: function(text, positionAfterIndent = false) {
     if (this.cmInstance) {

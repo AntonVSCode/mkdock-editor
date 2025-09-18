@@ -4,41 +4,36 @@ tags:
   - JavaScript
   - CSS
 ---
+!!! note
+    Ваш текст здесь
+    
+??? note
+    Ваш текст здесь
+    
+??? example
+    Ваш текст здесь
+
+![Blackhole Assault (USA)-screenshot.png](images/a6204712-4831-492c-a66d-8611f9f1a174.png)
+
 :material-github:
 :simple-github:
 :fontawesome-solid-satellite:
 :fontawesome-solid-code:
 
-:material-roman-numeral-10::material-roman-numeral-1::material-roman-numeral-8:
+# фывпвпфв
+**текст**
 
-   <kbd>S</kbd>:material-numeric-9-plus-box-multiple-outline:{.font-size}
-   <kbd>S</kbd>
-   <kbd>S</kbd>:material-flower-tulip-outline:{.font-size}
-   <kbd>S</kbd>
-   <kbd>S</kbd>:material-arrow-right: <kbn>ctrl<kbn>
-   
-   ![linux.ico](images/bash/1f8dfc21-8b92-47c8-bc6e-ba492abc5c27.ico)
+*текст*
 
-`ясясячсяч`
+***текст***
 
-```
-asdasda
-```
+^^текст^^
 
-# Заголовок первого уровня
-===
-# Заголовок первого уровня
-=========
-## Заголовок второго уровня
----
-## Заголовок второго уровня
-----------
+==текст==
 
-__жирный__
-<kbd>CTRL</kbd> + <kbd>P</kbd>  <kbd>ur</kbd>
-> Оформление цитатой
-последовательных строк
-внутри одного параграфа
+`код`
+
+~~текст~~
 
 > # Заголовок
 > Первый параграф
@@ -50,6 +45,23 @@ __жирный__
 >
 > Продолжение основной цитаты
 
+
+
+
+   <kbd>S</kbd>:material-numeric-9-plus-box-multiple-outline:{.font-size}
+   <kbd>S</kbd>
+   <kbd>S</kbd>:material-flower-tulip-outline:{.font-size}
+   <kbd>S</kbd>
+   
+   ![linux.ico](images/bash/1f8dfc21-8b92-47c8-bc6e-ba492abc5c27.ico)
+
+<kbd>CTRL</kbd> + <kbd>P</kbd>  <kbd>ur</kbd>
+> Оформление цитатой
+последовательных строк
+внутри одного параграфа
+
+
+
 [Skillbox Media](https://skillbox.ru/media/ "Всплывающая подсказка") с подсказкой
 
 
@@ -58,13 +70,16 @@ __жирный__
 
 [1]: https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Markdown-mark.svg/1920px-Markdown-mark.svg.png "Логотип Markdown"
     
-- ==This was marked (highlight)==
-- ^^This was inserted (underline)^^
-- ~~This was deleted (strikethrough)~~
+==This was marked (highlight)==
+    
+^^This was inserted (underline)^^
+    
+~~This was deleted (strikethrough)~~
+    
+***Первый элемент***
+    
+    
 
-^^Текст^^ ==просто== ~~текст~~
-
-- ***Первый элемент***
 - Второй элемент
   - Вложенный элемент
   - Еще один вложенный
