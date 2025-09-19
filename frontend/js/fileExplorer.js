@@ -89,13 +89,13 @@ const FileExplorer = {
     this.fileTree.appendChild(contentsDiv);
     
     if (!files || files.length === 0) {
-      contentsDiv.innerHTML = '<div class="empty-message">No files found</div>';
+      contentsDiv.innerHTML = '<div class="empty-message">Файлов и папок не обнаружено</div>';
       this.updateFileItems();
       return;
     }
 
     const tree = this.buildDirectoryStructure(files.filter(file => 
-      !file.path.startsWith('images/') // Исключаем папку images
+      !file.path.startsWith('images/') && !file.path.startsWith('assets/') // Исключаем папку images и assets
     ));
     this.renderDirectory(tree, contentsDiv);
     this.updateFileItems();

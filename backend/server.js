@@ -48,9 +48,9 @@ function restoreOriginalName(storedName) {
 }
 
 // Перенаправление с корня на редактор
-app.get('/', (req, res) => {
-  res.redirect('http://mkdocknew.northeurope.cloudapp.azure.com/editor');
-});
+// app.get('/', (req, res) => {
+//   res.redirect('http://mkdocknew.northeurope.cloudapp.azure.com/editor');
+// });
 
 // Статические файлы
 app.use('/assets', express.static(
@@ -466,58 +466,6 @@ app.get('/editor/api/folder-exists', async (req, res) => {
 });
 
 // Удаление изображения из галереи
-// app.delete('/editor/api/images', async (req, res) => {
-//   try {
-//     const { name } = req.query;
-//     if (!name) {
-//       return res.status(400).json({ error: 'Image name is required' });
-//     }
-
-//     // Декодируем имя файла
-//     const decodedName = decodeURIComponent(name);
-    
-//     // Проверяем безопасность пути
-//     if (decodedName.includes('../') || decodedName.includes('..\\')) {
-//       return res.status(400).json({ error: 'Invalid file name' });
-//     }
-
-//     const imagePath = path.join(__dirname, '../mkdocs-project/docs/images', decodedName);
-    
-//     // Проверяем существование файла
-//     if (!fs.existsSync(imagePath)) {
-//       return res.status(404).json({ error: 'Image not found' });
-//     }
-
-//     // Проверяем, что это файл
-//     const stat = await fs.promises.stat(imagePath);
-//     if (!stat.isFile()) {
-//       return res.status(400).json({ error: 'Path is not a file' });
-//     }
-
-//     // Удаляем файл
-//     await fs.promises.unlink(imagePath);
-    
-//     // Удаляем метаданные (если есть)
-//     const metaPath = path.join(__dirname, '../mkdocs-project/docs/images/images_meta/_index.json');
-//     if (fs.existsSync(metaPath)) {
-//       const metaData = JSON.parse(await fs.promises.readFile(metaPath, 'utf8'));
-//       if (metaData[decodedName]) {
-//         delete metaData[decodedName];
-//         await fs.promises.writeFile(metaPath, JSON.stringify(metaData, null, 2));
-//       }
-//     }
-
-//     res.json({ success: true });
-//   } catch (err) {
-//     console.error('Error deleting image:', err);
-//     res.status(500).json({ 
-//       error: err.message,
-//       stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-//     });
-//   }
-// });
-
-// Измените маршрут удаления изображений
 app.delete('/editor/api/images', async (req, res) => {
   try {
     const { name, folder = '' } = req.query;
@@ -891,63 +839,484 @@ app.post('/editor/api/upload-logo', async (req, res) => {
   }
 });
 
-// Маршруты для работы с бэкапами
+// ==================== МАРШРУТЫ ДЛЯ БЭКАПОВ ====================
+
+// Получение списка бэкапов
 app.get('/editor/api/backups', async (req, res) => {
   try {
-    const backups = await SideModals.loadBackups();
-    res.json(backups);
+    const backupsDir = path.join(__dirname, '../backups');
+    
+    if (!fs.existsSync(backupsDir)) {
+      fs.mkdirSync(backupsDir, { recursive: true });
+      return res.json([]);
+    }
+    
+    const files = fs.readdirSync(backupsDir)
+      .filter(file => file.endsWith('.zip'))
+      .map(file => {
+        const stats = fs.statSync(path.join(backupsDir, file));
+        return {
+          name: file,
+          size: stats.size,
+          date: stats.mtime
+        };
+      })
+      .sort((a, b) => b.date - a.date);
+    
+    res.json(files);
   } catch (err) {
     console.error('Error getting backups:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
+// Создание бэкапа (ИСКЛЮЧАЕМ ПАПКУ SITE)
 app.post('/editor/api/backups', async (req, res) => {
+  console.log('=== START BACKUP CREATION ===');
+  
   try {
-    const backupName = await SideModals.createBackup();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupName = `backup-${timestamp}.zip`;
+    const backupPath = path.join(__dirname, '../backups', backupName);
+    
+    const output = fs.createWriteStream(backupPath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    
+    archive.pipe(output);
+    
+    // Исключаем папку site из архива
+    archive.glob('**/*', {
+      cwd: path.join(__dirname, '../mkdocs-project'),
+      ignore: ['site/**', 'site/**/*'] // ← ВАЖНО: исключаем папку site
+    }, { prefix: 'mkdocs-project' });
+    
+    await archive.finalize();
+    
+    console.log('✅ Backup created successfully:', backupName);
+    
     res.json({ success: true, backup: backupName });
   } catch (err) {
-    console.error('Error creating backup:', err);
+    console.error('Backup creation error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get('/editor/api/backups/download', async (req, res) => {
+// Скачивание бэкапа
+app.get('/editor/api/backups/download', (req, res) => {
   try {
     const { name } = req.query;
     if (!name) {
       return res.status(400).json({ error: 'Backup name is required' });
     }
     
-    const filePath = path.join(BACKUP_DIR, name);
+    const filePath = path.join(__dirname, '../backups', name);
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Backup not found' });
     }
     
-    res.download(filePath, name);
+    res.download(filePath);
   } catch (err) {
     console.error('Error downloading backup:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.delete('/editor/api/backups', async (req, res) => {
+// Удаление бэкапа
+app.delete('/editor/api/backups', (req, res) => {
   try {
     const { name } = req.query;
     if (!name) {
       return res.status(400).json({ error: 'Backup name is required' });
     }
     
-    const filePath = path.join(BACKUP_DIR, name);
+    const filePath = path.join(__dirname, '../backups', name);
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Backup not found' });
     }
     
-    await fs.promises.unlink(filePath);
+    fs.unlinkSync(filePath);
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting backup:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Восстановление из бэкапа
+app.post('/editor/api/backups/restore', async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) {
+      return res.status(400).json({ error: 'Backup name is required' });
+    }
+    
+    const backupPath = path.join(BACKUP_DIR, name);
+    if (!fs.existsSync(backupPath)) {
+      return res.status(404).json({ error: 'Backup not found' });
+    }
+
+    console.log('Restoring from backup:', name);
+    const projectDir = path.join(__dirname, '../mkdocs-project');
+    const tempDir = path.join(__dirname, '../temp-restore');
+
+    try {
+      // Создаем временную папку
+      await fs.promises.mkdir(tempDir, { recursive: true });
+      
+      // Распаковываем архив во временную папку
+      await new Promise((resolve, reject) => {
+        exec(`unzip -o "${backupPath}" -d "${tempDir}"`, (error, stdout, stderr) => {
+          if (error) {
+            console.error('Unzip error:', error);
+            console.error('Stderr:', stderr);
+            reject(error);
+          } else {
+            console.log('Backup extracted successfully to temp directory');
+            resolve();
+          }
+        });
+      });
+
+      // Проверяем структуру распакованных файлов
+      const extractedItems = await fs.promises.readdir(tempDir);
+      console.log('Extracted items:', extractedItems);
+
+      // Находим папку mkdocs-project в распакованных файлах
+      let sourceDir = tempDir;
+      if (extractedItems.includes('mkdocs-project')) {
+        sourceDir = path.join(tempDir, 'mkdocs-project');
+      }
+
+      // Копируем все файлы и папки в основной проект
+      const itemsToCopy = await fs.promises.readdir(sourceDir);
+      console.log('Items to copy:', itemsToCopy);
+
+      for (const item of itemsToCopy) {
+        // Пропускаем папку site, если она случайно попала в архив
+        if (item === 'site') continue;
+        
+        const sourcePath = path.join(sourceDir, item);
+        const targetPath = path.join(projectDir, item);
+        
+        try {
+          // Удаляем старый файл/папку если существует (с обработкой ошибок прав)
+          if (fs.existsSync(targetPath)) {
+            // Пробуем изменить права перед удалением
+            try {
+              await fs.promises.chmod(targetPath, 0o755);
+            } catch (chmodError) {
+              console.warn(`Could not change permissions for ${targetPath}:`, chmodError.message);
+            }
+            
+            await fs.promises.rm(targetPath, { recursive: true, force: true });
+          }
+          
+          // Копируем новый
+          await fs.promises.cp(sourcePath, targetPath, { recursive: true });
+          console.log(`Copied: ${item}`);
+          
+        } catch (itemError) {
+          console.error(`Error processing ${item}:`, itemError.message);
+          // Пропускаем проблемный файл и продолжаем
+          continue;
+        }
+      }
+
+      // Очищаем временную папку
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+
+      res.json({ success: true, message: `Бэкап "${name}" восстановлен успешно. Перезагрузите страницу. F5` });
+
+    } catch (err) {
+      // Очищаем временную папку в случае ошибки
+      if (fs.existsSync(tempDir)) {
+        await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      }
+      throw err;
+    }
+
+  } catch (err) {
+    console.error('Error restoring backup:', err);
+    res.status(500).json({ 
+      error: err.message,
+      details: 'Check file permissions. Run: sudo chown -R $USER:$USER /var/www/mkdocs-editor/'
+    });
+  }
+});
+
+// ==================== КОНЕЦ МАРШРУТОВ ДЛЯ БЭКАПОВ ====================
+
+// ==================== МАРШРУТЫ ДЛЯ ЗАГРУЗКИ И ВОССТАНОВЛЕНИЯ БЭКАПОВ ====================
+
+// Загрузка бэкапа на сервер
+app.post('/editor/api/backups/upload', async (req, res) => {
+  try {
+    if (!req.files || !req.files.backup) {
+      return res.status(400).json({ error: 'No backup file uploaded' });
+    }
+
+    const backupFile = req.files.backup;
+    
+    // Проверяем расширение файла
+    if (!backupFile.name.endsWith('.zip')) {
+      return res.status(400).json({ error: 'Only ZIP files are allowed' });
+    }
+
+    // Генерируем имя файла с timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupName = `uploaded-backup-${timestamp}.zip`;
+    const backupPath = path.join(BACKUP_DIR, backupName);
+
+    // Сохраняем файл
+    await backupFile.mv(backupPath);
+
+    console.log('Backup uploaded successfully:', backupName);
+
+    res.json({
+      success: true,
+      backup: {
+        name: backupName,
+        size: backupFile.size,
+        date: new Date().toISOString()
+      }
+    });
+
+  } catch (err) {
+    console.error('Backup upload error:', err);
+    res.status(500).json({ 
+      error: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
+// Восстановление из бэкапа (улучшенная версия с обработкой прав доступа)
+app.post('/editor/api/backups/restore', async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) {
+      return res.status(400).json({ error: 'Backup name is required' });
+    }
+    
+    const backupPath = path.join(BACKUP_DIR, name);
+    if (!fs.existsSync(backupPath)) {
+      return res.status(404).json({ error: 'Backup not found' });
+    }
+
+    console.log('Restoring from backup:', name);
+    const projectDir = path.join(__dirname, '../mkdocs-project');
+    const tempDir = path.join(__dirname, '../temp-restore');
+
+    try {
+      // Создаем временную папку
+      await fs.promises.mkdir(tempDir, { recursive: true });
+      
+      // Распаковываем архив во временную папку
+      await new Promise((resolve, reject) => {
+        exec(`unzip -o "${backupPath}" -d "${tempDir}"`, (error, stdout, stderr) => {
+          if (error) {
+            console.error('Unzip error:', error);
+            console.error('Stderr:', stderr);
+            reject(new Error(`Unzip failed: ${stderr || error.message}`));
+          } else {
+            console.log('Backup extracted successfully to temp directory');
+            resolve();
+          }
+        });
+      });
+
+      // Проверяем структуру распакованных файлов
+      const extractedItems = await fs.promises.readdir(tempDir);
+      console.log('Extracted items:', extractedItems);
+
+      // Находим папку mkdocs-project в распакованных файлах
+      let sourceDir = tempDir;
+      if (extractedItems.includes('mkdocs-project')) {
+        sourceDir = path.join(tempDir, 'mkdocs-project');
+        console.log('Using mkdocs-project directory from archive');
+      } else {
+        console.log('Using root directory of archive');
+      }
+
+      // Копируем все файлы и папки в основной проект
+      const itemsToCopy = await fs.promises.readdir(sourceDir);
+      console.log('Items to copy:', itemsToCopy);
+
+      for (const item of itemsToCopy) {
+        // Пропускаем папку site, если она случайно попала в архив
+        if (item === 'site') {
+          console.log('Skipping site directory');
+          continue;
+        }
+        
+        const sourcePath = path.join(sourceDir, item);
+        const targetPath = path.join(projectDir, item);
+        
+        try {
+          // Удаляем старый файл/папку если существует (с обработкой ошибок прав)
+          if (fs.existsSync(targetPath)) {
+            console.log(`Removing existing: ${item}`);
+            
+            // Пробуем изменить права перед удалением
+            try {
+              await fs.promises.chmod(targetPath, 0o755);
+              console.log(`Changed permissions for: ${item}`);
+            } catch (chmodError) {
+              console.warn(`Could not change permissions for ${item}:`, chmodError.message);
+            }
+            
+            // Рекурсивно удаляем
+            await fs.promises.rm(targetPath, { recursive: true, force: true });
+            console.log(`Removed: ${item}`);
+          }
+          
+          // Копируем новый файл/папку
+          console.log(`Copying: ${item}`);
+          await fs.promises.cp(sourcePath, targetPath, { recursive: true });
+          console.log(`Copied: ${item}`);
+          
+        } catch (itemError) {
+          console.error(`Error processing ${item}:`, itemError.message);
+          // Пропускаем проблемный файл и продолжаем
+          continue;
+        }
+      }
+
+      // Очищаем временную папку
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+      console.log('Temp directory cleaned');
+
+      console.log('Backup успешно восстановлен. Перезагрузите страницу. F5');
+
+      // ОЧИЩАЕМ КЭШ ИЗБРАННОГО ПРИ ВОССТАНОВЛЕНИИ
+      favoritesCache = null;
+      cacheTimestamp = 0;
+
+      res.json({ 
+        success: true, 
+        message: `Бэкап "${name}" восстановлен успешно. Страница перезагрузится через 3 секунды.`,
+        backupName: name, // Добавляем имя архива в ответ
+        reload: true // ← ДОБАВЛЯЕМ ФЛАГ ДЛЯ ПЕРЕЗАГРУЗКИ
+      });
+
+    } catch (err) {
+      // Очищаем временную папку в случае ошибки
+      if (fs.existsSync(tempDir)) {
+        await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      }
+      throw err;
+    }
+
+  } catch (err) {
+    console.error('Error restoring backup:', err);
+    res.status(500).json({ 
+      error: err.message,
+      details: 'Check file permissions. Run: sudo chown -R $USER:$USER /var/www/mkdocs-editor/'
+    });
+  }
+});
+
+// Проверка возможности восстановления (предварительная проверка прав)
+app.get('/editor/api/backups/check-restore', async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) {
+      return res.status(400).json({ error: 'Backup name is required' });
+    }
+    
+    const backupPath = path.join(BACKUP_DIR, name);
+    if (!fs.existsSync(backupPath)) {
+      return res.status(404).json({ error: 'Backup not found' });
+    }
+
+    // Проверяем права на запись в целевую директорию
+    const projectDir = path.join(__dirname, '../mkdocs-project');
+    try {
+      // Пробуем создать тестовый файл
+      const testFile = path.join(projectDir, '.test_write_permission');
+      await fs.promises.writeFile(testFile, 'test');
+      await fs.promises.unlink(testFile);
+      
+      res.json({ 
+        canRestore: true,
+        message: 'Write permissions are OK'
+      });
+    } catch (error) {
+      res.json({ 
+        canRestore: false,
+        message: 'No write permissions. Check file ownership.',
+        error: error.message
+      });
+    }
+
+  } catch (err) {
+    console.error('Error checking restore:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==================== КОНЕЦ МАРШРУТОВ ДЛЯ ЗАГРУЗКИ И ВОССТАНОВЛЕНИЯ ====================
+
+app.get('/editor/api/files', async (req, res) => {
+  try {
+    const rootDir = req.query.root || '';
+    let basePath = path.join(__dirname, '../mkdocs-project/docs');
+    
+    // Если указан root=docs, используем только папку docs
+    // (это уже и так наша базовая папка, но оставляем для ясности)
+    if (rootDir !== 'docs') {
+      basePath = path.join(__dirname, '../mkdocs-project');
+    }
+    
+    console.log('Fetching files from:', basePath);
+    
+    const files = [];
+    async function traverse(dir, relativePath = '') {
+      const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        // Пропускаем скрытые файлы и системные папки
+        if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'backups') {
+          continue;
+        }
+        
+        const fullPath = path.join(dir, entry.name);
+        const relPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+        
+        if (entry.isDirectory()) {
+          files.push({
+            name: entry.name,
+            path: relPath,
+            isDirectory: true
+          });
+          await traverse(fullPath, relPath);
+        } else {
+          // Пропускаем временные файлы и ненужные расширения
+          const ext = path.extname(entry.name).toLowerCase();
+          if (['.tmp', '.log', '.DS_Store'].includes(ext)) {
+            continue;
+          }
+          
+          files.push({
+            name: entry.name,
+            path: relPath,
+            isDirectory: false
+          });
+        }
+      }
+    }
+    
+    await traverse(basePath);
+    console.log(`Sending ${files.length} files`);
+    res.json(files);
+    
+  } catch (err) {
+    console.error('Error in /editor/api/files:', err);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 
@@ -1157,6 +1526,13 @@ app.get('/editor/api/folders', async (req, res) => {
     console.error('Error loading folders:', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// Простой тест для проверки работы API
+app.get('/editor/api/debug', (req, res) => {
+  fs.appendFileSync('/var/www/mkdocs-editor/backup.log', 
+    `Debug API called at ${new Date().toISOString()}\n`);
+  res.json({ message: 'API is working', timestamp: new Date().toISOString() });
 });
 
 // Запуск сервера

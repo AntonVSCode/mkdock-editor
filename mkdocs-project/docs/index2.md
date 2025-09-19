@@ -1,18 +1,5 @@
 # Monitoring Proxmox with InfluxDB and Grafana in 4 Easy steps
 
-- ываываываыв
-- фывфывфвфыв
-- ыафвфыавыфаыва
-
-**фывфыв выфвфыв фввыффв**
-
-
-***asasda*** 
-Table of *Contents*
-zzxczxc zcscsac axxasd adaasd c cascadax  qadwawdada
-
-фыФЫФЫ
-
 ## Introduction
 
 ???+ danger

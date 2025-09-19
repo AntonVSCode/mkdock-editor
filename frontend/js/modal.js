@@ -1,6 +1,7 @@
 const SideModals = {
   currentModal: null,
   modalButtons: [],
+  backupLoader: null,
 
   /**
    * Инициализация боковых модальных окон
@@ -8,6 +9,60 @@ const SideModals = {
   init: function() {
     this.createModalButtons();
     this.setupEventListeners();
+    this.createBackupLoader();
+  },
+
+    /**
+   * Создание лоадера для операций с бэкапами
+   */
+  createBackupLoader: function() {
+    const loader = document.createElement('div');
+    loader.className = 'backup-loader';
+    loader.style.display = 'none';
+    loader.innerHTML = `
+      <div class="backup-loader-spinner"></div>
+      <div class="backup-loader-text">Обработка...</div>
+      <div class="backup-loader-progress">
+        <div class="backup-loader-progress-bar"></div>
+      </div>
+    `;
+    document.body.appendChild(loader);
+    this.backupLoader = loader;
+  },
+
+  /**
+   * Показать лоадер
+   */
+  showLoader: function(text = 'Обработка...', progress = 0) {
+    if (this.backupLoader) {
+      this.backupLoader.style.display = 'flex';
+      this.backupLoader.querySelector('.backup-loader-text').textContent = text;
+      this.backupLoader.querySelector('.backup-loader-progress-bar').style.width = progress + '%';
+    }
+  },
+
+  /**
+   * Скрыть лоадер
+   */
+  hideLoader: function() {
+    if (this.backupLoader) {
+      this.backupLoader.style.display = 'none';
+    }
+  },
+
+  /**
+   * Обновить прогресс лоадера
+   */
+  updateLoaderProgress: function(progress, text = null) {
+    if (this.backupLoader) {
+      const progressBar = this.backupLoader.querySelector('.backup-loader-progress-bar');
+      if (progressBar) {
+        progressBar.style.width = progress + '%';
+      }
+      if (text) {
+        this.backupLoader.querySelector('.backup-loader-text').textContent = text;
+      }
+    }
   },
 
   /**
@@ -259,7 +314,7 @@ const SideModals = {
       removeFaviconBtn.addEventListener('click', async () => {
         try {
           console.log('Attempting to remove favicon...'); // Добавьте это
-          const response = await fetch('/editor/api/favicon', { // Попробуйте без /editor
+          const response = await fetch('/editor/api/favicon', { 
             method: 'DELETE'
           });
           
@@ -284,8 +339,61 @@ const SideModals = {
       this.setupBackupHandlers();
     }
 
+    // Обработчик загрузки бэкапа
+    const uploadBackupBtn = modal.querySelector('#upload-backup-btn');
+    const backupUpload = modal.querySelector('#backup-upload');
+    
+    if (uploadBackupBtn && backupUpload) {
+      uploadBackupBtn.addEventListener('click', () => {
+        backupUpload.click();
+      });
+      
+      backupUpload.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+      try {
+        // ПОКАЗЫВАЕМ ЛОАДЕР ПРИ ЗАГРУЗКЕ
+        this.showLoader('Загрузка бэкапа...', 10);
+        
+        const formData = new FormData();
+        formData.append('backup', file);
+        
+        const response = await fetch('/editor/api/backups/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        // ОБНОВЛЯЕМ ПРОГРЕСС
+        this.updateLoaderProgress(60, 'Сохранение файла...');
+        
+        if (!response.ok) {
+          throw new Error(await response.text() || 'Upload failed');
+        }
+        
+        // ОБНОВЛЯЕМ ПРОГРЕСС
+        this.updateLoaderProgress(100, 'Завершение...');
+        
+        const result = await response.json();
+        
+        // СКРЫВАЕМ ЛОАДЕР ЧЕРЕЗ 1 СЕКУНДУ
+        setTimeout(() => {
+          this.hideLoader();
+          this.renderBackups();
+          showNotification(`Бэкап ${result.backup.name} успешно загружен`, 'success');
+        }, 1000);
+        
+      } catch (err) {
+        // СКРЫВАЕМ ЛОАДЕР ПРИ ОШИБКЕ
+        this.hideLoader();
+        console.error('Backup upload error:', err);
+        showNotification(`Ошибка загрузки бэкапа: ${err.message}`, 'error');
+      }
+    });
+    }
+
     // Обработчик создания бэкапа
-  const createBackupBtn = modal.querySelector('#create-backup-btn');
+    const createBackupBtn = modal.querySelector('#create-backup-btn');
     if (createBackupBtn) {
       createBackupBtn.addEventListener('click', async () => {
         try {
@@ -417,10 +525,16 @@ const SideModals = {
         
         <div class="backup-section">
           <h4>Управление бэкапами</h4>
+          <h5>Загрузить бэкап</h5>
+          <input type="file" id="backup-upload" accept=".zip" style="display: none;">
+          <button id="upload-backup-btn" class="btn-secondary">
+            <i class="mdi mdi-upload"></i> Загрузить бэкап
+          </button>
+          <h5>Создать бэкап</h5>
           <button id="create-backup-btn" class="btn-primary">
             Создать бэкап
           </button>
-          
+          <h5>Список бэкапов</h5>
           <div class="backup-list" id="backup-list">
             <!-- Список бэкапов будет загружен здесь -->
           </div>
@@ -440,6 +554,135 @@ const SideModals = {
       }
   },
 
+    /**
+   * Восстановление из бэкапа
+   */
+  restoreBackup: async function(fileName) {
+    try {
+      const response = await fetch(`/editor/api/backups/restore?name=${encodeURIComponent(fileName)}`, {
+        method: 'POST'
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          throw new Error(errorText || 'Failed to restore backup');
+        }
+        throw new Error(errorData.error || errorData.message || 'Failed to restore backup');
+      }
+      
+      const result = await response.json();
+      return result; // ВОЗВРАЩАЕМ ВЕСЬ ОБЪЕКТ РЕЗУЛЬТАТА
+    } catch (err) {
+      console.error('Backup restoration error:', err);
+      throw new Error(err.message || 'Ошибка при восстановлении бэкапа');
+    }
+  },
+
+  /**
+   * Обработчик восстановления бэкапа
+   */
+  setupBackupHandlers: function() {
+    const backupList = document.getElementById('backup-list');
+    if (!backupList) return;
+
+    backupList.addEventListener('click', async (e) => {
+      const target = e.target.closest('.download-backup') || 
+                    e.target.closest('.delete-backup') ||
+                    e.target.closest('.restore-backup');
+      
+      if (!target) return;
+      
+      const fileName = target.dataset.file;
+      
+      if (target.classList.contains('download-backup')) {
+        this.downloadBackup(fileName);
+      } else if (target.classList.contains('delete-backup')) {
+        try {
+          await this.deleteBackup(fileName);
+          await this.renderBackups();
+          showNotification(`Бэкап ${fileName} удален`, 'success');
+        } catch (err) {
+          showNotification('Ошибка удаления бэкапа', 'error');
+        }
+      } else if (target.classList.contains('restore-backup')) {
+        // Сначала проверяем возможность восстановления
+        try {
+          const checkResponse = await fetch(`/editor/api/backups/check-restore?name=${encodeURIComponent(fileName)}`);
+          const checkResult = await checkResponse.json();
+          
+          if (!checkResult.canRestore) {
+            showNotification(`Ошибка прав доступа: ${checkResult.message}`, 'error');
+            return;
+          }
+          
+          // Подтверждение восстановления
+          if (confirm(`Вы уверены, что хотите восстановить бэкап "${fileName}"? Все текущие данные будут заменены.`)) {
+            // ПОКАЗЫВАЕМ ЛОАДЕР
+            this.showLoader(`Восстановление бэкапа "${fileName}"...`, 10);
+            
+            try {
+              const response = await fetch(`/editor/api/backups/restore?name=${encodeURIComponent(fileName)}`, {
+                method: 'POST'
+              });
+              
+              // ОБНОВЛЯЕМ ПРОГРЕСС
+              this.updateLoaderProgress(50, 'Распаковка архива...');
+              
+              if (!response.ok) {
+                throw new Error('Failed to restore backup');
+              }
+              
+              // ОБНОВЛЯЕМ ПРОГРЕСС
+              this.updateLoaderProgress(80, 'Копирование файлов...');
+              
+              const result = await response.json();
+              
+              // ОБНОВЛЯЕМ ПРОГРЕСС
+              this.updateLoaderProgress(100, 'Завершение...');
+              
+              if (result.success) {
+              // ИСПОЛЬЗУЕМ СООБЩЕНИЕ С ИМЕНЕМ АРХИВА ИЗ СЕРВЕРА
+              showNotification(result.message || `Бэкап "${result.backupName}" успешно восстановлен`, 'success');
+                
+                // СКРЫВАЕМ ЛОАДЕР ЧЕРЕЗ 1 СЕКУНДУ
+                setTimeout(() => {
+                  this.hideLoader();
+                  
+                  // ДОБАВЛЯЕМ ПРОВЕРКУ ФЛАГА RELOAD
+                  if (result.reload) {
+                    // Перезагружаем страницу через 3 секунды
+                    setTimeout(() => {
+                      window.location.reload(true); // Принудительная перезагрузка
+                    }, 3000);
+                  } else {
+                    // Если нет флага reload, просто обновляем данные
+                    setTimeout(() => {
+                      if (window.FileManager) FileManager.loadFiles();
+                      if (window.Navigation) Navigation.loadNavigation();
+                    }, 1000);
+                  }
+                }, 1000);
+              }
+              
+            } catch (err) {
+              // СКРЫВАЕМ ЛОАДЕР ПРИ ОШИБКЕ
+              this.hideLoader();
+              console.error('Backup restoration error:', err);
+              showNotification('Ошибка восстановления бэкапа: ' + err.message, 'error');
+            }
+          }
+        } catch (err) {
+          this.hideLoader();
+          showNotification('Ошибка проверки прав доступа', 'error');
+        }
+      }
+    });
+  },
+  
   renderBackups: async function() {
     const backups = await this.loadBackups();
     const backupList = document.getElementById('backup-list');
@@ -462,10 +705,13 @@ const SideModals = {
             <small>${date} (${size} MB)</small>
           </div>
           <div class="backup-actions">
-            <button class="btn-secondary download-backup" data-file="${backup.name}">
+            <button class="btn-download download-backup" data-file="${backup.name}">
               Скачать
             </button>
-            <button class="btn-danger delete-backup" data-file="${backup.name}">
+            <button class="btn-restore restore-backup" data-file="${backup.name}">
+              Восстановить
+            </button>
+            <button class="btn-del delete-backup" data-file="${backup.name}">
               Удалить
             </button>
           </div>
@@ -476,18 +722,39 @@ const SideModals = {
 
   createBackup: async function() {
     try {
+      // ПОКАЗЫВАЕМ ЛОАДЕР ПРИ СОЗДАНИИ БЭКАПА
+      this.showLoader('Создание бэкапа...', 10);
+      
       const response = await fetch('/editor/api/backups', {
         method: 'POST'
       });
+      
+      // ОБНОВЛЯЕМ ПРОГРЕСС
+      this.updateLoaderProgress(40, 'Архивирование файлов...');
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to create backup');
       }
       
+      // ОБНОВЛЯЕМ ПРОГРЕСС
+      this.updateLoaderProgress(80, 'Сохранение архива...');
+      
       const data = await response.json();
+      
+      // ОБНОВЛЯЕМ ПРОГРЕСС
+      this.updateLoaderProgress(100, 'Завершение...');
+      
+      // СКРЫВАЕМ ЛОАДЕР ЧЕРЕЗ 1 СЕКУНДУ
+      setTimeout(() => {
+        this.hideLoader();
+        this.renderBackups();
+      }, 1000);
+      
       return data.backup;
     } catch (err) {
+      // СКРЫВАЕМ ЛОАДЕР ПРИ ОШИБКЕ
+      this.hideLoader();
       console.error('Backup creation error:', err);
       throw err;
     }
@@ -495,12 +762,27 @@ const SideModals = {
 
   deleteBackup: async function(fileName) {
     try {
+      // ПОКАЗЫВАЕМ ЛОАДЕР ПРИ УДАЛЕНИИ
+      this.showLoader('Удаление бэкапа...', 50);
+      
       const response = await fetch(`/editor/api/backups?name=${encodeURIComponent(fileName)}`, {
         method: 'DELETE'
       });
+      
+      // ОБНОВЛЯЕМ ПРОГРЕСС
+      this.updateLoaderProgress(100, 'Завершение...');
+      
       if (!response.ok) throw new Error('Failed to delete backup');
+      
+      // СКРЫВАЕМ ЛОАДЕР ЧЕРЕЗ 0.5 СЕКУНДЫ
+      setTimeout(() => {
+        this.hideLoader();
+      }, 500);
+      
       return true;
     } catch (err) {
+      // СКРЫВАЕМ ЛОАДЕР ПРИ ОШИБКЕ
+      this.hideLoader();
       console.error('Error deleting backup:', err);
       throw err;
     }
@@ -508,31 +790,6 @@ const SideModals = {
 
   downloadBackup: function(fileName) {
     window.location.href = `/editor/api/backups/download?name=${encodeURIComponent(fileName)}`;
-  },
-
-  // Обновленный обработчик для бэкапов
-  setupBackupHandlers: function() {
-    const backupList = document.getElementById('backup-list');
-    if (!backupList) return;
-
-    backupList.addEventListener('click', async (e) => {
-      const target = e.target.closest('.download-backup') || e.target.closest('.delete-backup');
-      if (!target) return;
-      
-      const fileName = target.dataset.file;
-      
-      if (target.classList.contains('download-backup')) {
-        this.downloadBackup(fileName);
-      } else if (target.classList.contains('delete-backup')) {
-        try {
-          await this.deleteBackup(fileName);
-          await this.renderBackups();
-          showNotification(`Бэкап ${fileName} удален`, 'success');
-        } catch (err) {
-          showNotification('Ошибка удаления бэкапа', 'error');
-        }
-      }
-    });
   },
 
   /**
@@ -642,12 +899,34 @@ const SideModals = {
 
             <div class="ref-item">
               <h5>Форматирование текста</h5>
+              <div class="help-text">
+                <p>Чтобы изменить начертание текста, нужно выделить его с двух сторон спецсимволами следующим образом: <code><спецсимвол>текст<спецсимвол></code></p>
+                <ul>
+                  <li>Кнопка для вставки жирного текста: <kbd><i class="mdi mdi-format-bold"></i></kbd></li>
+                  <li>Для выделения текста курсивом нужно использовать одну звёздочку <code>*</code> или нижнее подчёркивание <code>_</code>. Кнопка для вставки курсивного текста: <kbd><i class="mdi mdi-format-italic"></i></kbd></li>
+                  <li>Кнопка для вставки жирного курсива текста: <kbd><i class="mdi mdi-format-bold"></i><i class="mdi mdi-format-italic"></i></kbd></li>
+                </ul>
+                <strong>Пример</strong>
+              </div>
               <div class="code-example">
                 <div class="code-editor">
                   <div class="code-line"><span class="cm-strong">**жирный текст**</span></div>
-                  <div class="code-line"><span class="cm-strong">__жирный текст__</span></div>
                   <div class="code-line"><span class="cm-em">*курсивный текст*</span></div>
                   <div class="code-line"><span class="cm-strong cm-em">***жирный курсив***</span></div>
+                </div>
+              </div>
+              <div class="code-example">
+                <div class="code-editor">
+                  <div class="code-line"><span class="cm-strong">__жирный текст__</span></div>
+                  <div class="code-line"><span class="cm-em">_курсивный текст_</span></div>
+                  <div class="code-line"><span class="cm-strong cm-em">___жирный курсив___</span></div>
+                </div>
+              </div>
+              <div class="help-text">
+              
+              </div>
+              <div class="code-example">
+                <div class="code-editor">
                   <div class="code-line"><span class="cm-strikethrough">~~зачеркнутый текст~~</span></div>
                   <div class="code-line"><span class="cm-highlight">==выделенный текст==</span></div>
                   <div class="code-line"><span class="cm-inline-code">\`встроенный код\`</span></div>
