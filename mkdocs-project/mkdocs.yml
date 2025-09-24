@@ -3,6 +3,11 @@ docs_dir: docs
 site_dir: site
 theme:
   name: material
+  icon:
+    tag:
+      CSS: simple/css3
+      HTML5: simple/html5
+      js: simple/javascript
   palette:
     - scheme: default
       primary: indigo
@@ -98,3 +103,7 @@ extra_css:
   - assets/css/custom-admonitions.css
 extra:
   images_dir: images
+  tags:
+    HTML5: HTML5
+    JavaScript: js
+    CSS: css

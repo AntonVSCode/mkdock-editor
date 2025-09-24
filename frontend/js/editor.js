@@ -623,17 +623,17 @@ function setupDropdowns() {
     const btn = dropdown.querySelector('.dropbtn');
     const content = dropdown.querySelector('.dropdown-content');
     
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      // Закрываем все другие открытые меню
-      document.querySelectorAll('.dropdown-content').forEach(otherContent => {
-        if (otherContent !== content) {
-          otherContent.style.display = 'none';
-        }
-      });
-      // Переключаем текущее меню
-      content.style.display = content.style.display === 'block' ? 'none' : 'block';
-    });
+    // btn.addEventListener('click', (e) => {
+    //   e.stopPropagation();
+    //   // Закрываем все другие открытые меню
+    //   document.querySelectorAll('.dropdown-content').forEach(otherContent => {
+    //     if (otherContent !== content) {
+    //       otherContent.style.display = 'none';
+    //     }
+    //   });
+    //   // Переключаем текущее меню
+    //   content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    // });
     
     // Обработчик для всех кнопок
     content.querySelectorAll('.dropdown-btn').forEach(btn => {

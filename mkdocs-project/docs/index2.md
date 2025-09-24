@@ -43,16 +43,16 @@ You may customize the plugin by passing options in mkdocs.yml: :simple-google:
     фыаыфвафываыф афыавфывафы
     
 ```{ .javascript linenums="1"}
-    markdown = markdown.replace(
-      /!\[([^\]]*)\]\(([^)\s]+)(?:\s+([&quot;&#039;])(.*?)\3)?\)/g, 
-      (match, alt, src, quote, title) =&gt; {
-        const fixedSrc = src.startsWith(&#039;images/&#039;) ? `/${src}` : src;
-        let imgHtml = `&lt;img src=&quot;${fixedSrc}&quot; alt=&quot;${alt || &#039;&#039;}&quot; class=&quot;mkdocs-image&quot;`;
-        if (title) imgHtml += ` title=&quot;${title}&quot;`;
-        imgHtml += &#039;&gt;&#039;;
-        return imgHtml;
-      }
-    );
+markdown = markdown.replace(
+  /!\[([^\]]*)\]\(([^)\s]+)(?:\s+([&quot;&#039;])(.*?)\3)?\)/g, 
+  (match, alt, src, quote, title) =&gt; {
+    const fixedSrc = src.startsWith(&#039;images/&#039;) ? `/${src}` : src;
+    let imgHtml = `&lt;img src=&quot;${fixedSrc}&quot; alt=&quot;${alt || &#039;&#039;}&quot; class=&quot;mkdocs-image&quot;`;
+    if (title) imgHtml += ` title=&quot;${title}&quot;`;
+    imgHtml += &#039;&gt;&#039;;
+    return imgHtml;
+  }
+);
 ```
 
 

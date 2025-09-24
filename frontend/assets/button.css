@@ -38,10 +38,8 @@ button, .btn {
 .btn-secondary {
   background: #6c757d;
   color: white;
-  /* margin-right: 10px; */
 }
 
-/* Модальные кнопки */
 .modal-footer .btn-secondary {
   order: 1;
   margin-right: 0;
@@ -70,6 +68,9 @@ button, .btn {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+  white-space: nowrap;
+  padding-bottom: 10px;
 }
 
 .explorer-toolbar button {
@@ -84,6 +85,7 @@ button, .btn {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .explorer-toolbar button:hover {
@@ -94,7 +96,7 @@ button, .btn {
   font-size: 18px;
 }
 
-/* Стили для всплывающих подсказок */
+/* Стили для всплывающих подсказок файлового менеджера */
 .explorer-toolbar button::after {
   content: attr(title);
   position: absolute;
@@ -114,11 +116,6 @@ button, .btn {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.explorer-toolbar button:hover::after {
-  opacity: 1;
-}
-
-/* Стрелка для подсказки */
 .explorer-toolbar button::before {
   content: '';
   position: absolute;
@@ -133,6 +130,7 @@ button, .btn {
   z-index: 10001;
 }
 
+.explorer-toolbar button:hover::after,
 .explorer-toolbar button:hover::before {
   opacity: 1;
 }
@@ -140,7 +138,7 @@ button, .btn {
 /* Стили для кнопки удаления */
 .explorer-toolbar .danger-btn {
   color: var(--delete-icon) !important;
-  /* margin-left: auto; */
+  margin-left: 0;
 }
 
 .explorer-toolbar .danger-btn:hover:not(:disabled) {
@@ -192,25 +190,34 @@ button, .btn {
   display: block;
 }
 
+/* ==================== */
+/* СТИЛИ ТУЛБАРОВ РЕДАКТОРА */
+/* ==================== */
+
 /* Верхний тулбар - сложные элементы */
 .editor-toolbar {
+  position: relative;
+  z-index: 100; /* Уменьшаем z-index */
   padding: 10px 15px;
   background-color: white;
   border-bottom: 1px solid var(--border-color);
   display: flex;
-  /* gap: 8px; */
   flex-wrap: wrap;
   align-items: center;
 }
 
 /* Нижний тулбар - базовые элементы */
 .markdown-toolbar {
+  position: relative;
+  z-index: 50; /* Уменьшаем еще больше */
   padding: 8px 15px;
   background-color: var(--secondary-color);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  overflow-x: auto;
+  padding-bottom: 10px;
 }
 
 /* Группы кнопок */
@@ -226,64 +233,247 @@ button, .btn {
   border-right: none;
 }
 
-/* Кнопки форматирования */
+/* Базовые стили кнопок тулбаров */
+.editor-toolbar .toolbar-btn,
+.markdown-toolbar .toolbar-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 8px 10px;
+  min-width: auto;
+  font-size: 14px;
+  gap: 6px;
+  border-radius: 3px;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Иконки в кнопках */
+.editor-toolbar .toolbar-btn i,
+.markdown-toolbar .toolbar-btn i {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Единый размер для всех иконок */
+.editor-toolbar .toolbar-btn .fas,
+.markdown-toolbar .toolbar-btn .fas,
+.editor-toolbar .toolbar-btn .mdi,
+.markdown-toolbar .toolbar-btn .mdi {
+  font-size: 18px;
+}
+
+/* Подсказки для кнопок тулбаров */
+.editor-toolbar .toolbar-btn::after,
+.markdown-toolbar .toolbar-btn::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100% !important; /* Фиксируем позиционирование */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 9999 !important; /* Выше чем тулбары, но ниже чем выпадающие меню */
+  margin-bottom: 5px;
+}
+
+.editor-toolbar .toolbar-btn::before,
+.markdown-toolbar .toolbar-btn::before {
+  content: '';
+  position: absolute;
+  bottom: 100% !important;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10000 !important;
+  margin-bottom: -5px;
+}
+
+.editor-toolbar .toolbar-btn:hover::after,
+.editor-toolbar .toolbar-btn:hover::before,
+.markdown-toolbar .toolbar-btn:hover::after,
+.markdown-toolbar .toolbar-btn:hover::before {
+  opacity: 1;
+}
+
+/* Скрываем подсказки при открытом выпадающем меню */
+.dropdown:hover .toolbar-btn::after,
+.dropdown:hover .toolbar-btn::before {
+  opacity: 0 !important;
+}
+
+/* ==================== */
+/* ТИПЫ КНОПОК */
+/* ==================== */
+
+/* Кнопки форматирования текста */
 .format-btn {
-  background-color: white;
+  background: white;
   border: 1px solid var(--border-color);
   color: var(--text-color);
 }
 
 .format-btn:hover {
-  background-color: #f0f0f0;
+  background: #f8f9fa;
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.format-btn:hover i {
+  color: var(--primary-color);
+  transform: scale(1.1);
 }
 
 /* Кнопки блоков */
 .block-btn {
-  background-color: #f0f7ff;
-  border: 1px solid #c2d9f0;
+  background: rgba(44, 95, 168, 0.1);
+  border: 1px solid rgba(44, 95, 168, 0.2);
   color: #2c5fa8;
 }
 
 .block-btn:hover {
-  background-color: #d8e9ff;
+  background: rgba(44, 95, 168, 0.2);
+  border-color: #2c5fa8;
+  transform: translateY(-1px);
+}
+
+.block-btn:hover i {
+  color: #2c5fa8;
+  transform: scale(1.1);
 }
 
 /* Кнопки медиа */
 .media-btn {
-  background-color: #fff0f0;
-  border: 1px solid #f0c2c2;
+  background: rgba(168, 44, 44, 0.1);
+  border: 1px solid rgba(168, 44, 44, 0.2);
   color: #a82c2c;
 }
 
 .media-btn:hover {
-  background-color: #ffd8d8;
+  background: rgba(168, 44, 44, 0.2);
+  border-color: #a82c2c;
+  transform: translateY(-1px);
 }
 
-/* Выпадающие меню */
-* {
-  box-sizing: border-box;
+.media-btn:hover i {
+  color: #a82c2c;
+  transform: scale(1.1);
 }
+
+/* Кнопка сохранения - особый стиль */
+#save-btn {
+  background: rgba(76, 175, 80, 0.1) !important;
+  border: 1px solid rgba(76, 175, 80, 0.3) !important;
+  color: #4CAF50 !important;
+}
+
+#save-btn:hover {
+  background: rgba(76, 175, 80, 0.2) !important;
+  border-color: #4CAF50 !important;
+  transform: translateY(-1px);
+}
+
+#save-btn i {
+  color: #4CAF50 !important;
+}
+
+#save-btn:hover i {
+  transform: scale(1.1);
+}
+
+/* Кнопки с двумя иконками */
+.toolbar-btn .mdi-format-bold + .mdi-format-italic {
+  margin-left: -6px;
+  font-size: 16px;
+}
+
+/* ==================== */
+/* ВЫПАДАЮЩИЕ МЕНЮ */
+/* ==================== */
 
 .dropdown {
   position: relative;
-  display: inline-block;
+  z-index: 1;
 }
 
 .dropdown-content {
+  min-width: 160px;
+  padding: 8px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  z-index: 10000 !important; /* ВЫСОКИЙ приоритет для выпадающих меню */
   display: none;
   position: absolute;
-  background-color: white;
-  min-width: 160px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-  border-radius: 4px;
-  z-index: 1000;
-  padding: 8px 0;
+  top: 100% !important; /* Принудительно позиционируем под кнопкой */
+  left: 0 !important;
+  background: white;
+  margin-top: 5px; /* Небольшой отступ от кнопки */
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
+/* Кнопки в выпадающих меню */
+.dropdown-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  border-radius: 0;
+}
+
+.dropdown-btn:hover {
+  background: #f8f9fa;
+}
+
+.dropdown-btn i {
+  font-size: 18px;
+  width: 18px;
+  color: var(--text-light);
+}
+
+/* Кнопки выпадающих меню заголовков */
+.dropdown .dropbtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+}
+
+.dropdown .dropbtn .mdi-menu-down {
+  font-size: 16px;
+  margin-left: -2px;
+}
+
+/* Элементы выпадающих меню */
 .dropdown-item {
   padding: 8px 16px;
   display: flex;
@@ -304,237 +494,20 @@ button, .btn {
   margin: 4px 0;
 }
 
-/* Стили для кнопок в выпадающих меню */
-.dropdown-btn {
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 0;
-}
-
-.dropdown-btn:hover {
-  background-color: #f5f5f5;
-}
-
-/* Иконки в кнопках */
-.toolbar-btn i {
-  font-size: 18px;
-}
-
-/* Подсказки */
-.tooltip {
-  position: relative;
-}
-
-.tooltip-text {
-  visibility: hidden;
-  width: 120px;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  border-radius: 4px;
-  padding: 5px;
-  position: absolute;
-  z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.tooltip:hover .tooltip-text {
-  visibility: visible;
-  opacity: 1;
-}
-
 /* ==================== */
-/* КРАСИВЫЕ СТИЛИ ДЛЯ ТУЛБАРОВ РЕДАКТОРА */
+/* BACKUP КНОПКИ */
 /* ==================== */
 
-.editor-toolbar .toolbar-btn,
-.markdown-toolbar .toolbar-btn {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  padding: 8px 10px;
-  min-width: auto;
-  font-size: 14px;
-  gap: 6px;
-  border-radius: 3px;
-  color: var(--text-color);
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ИКОНКИ В КНОПКАХ */
-.editor-toolbar .toolbar-btn i,
-.markdown-toolbar .toolbar-btn i {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-/* ЕДИНЫЙ РАЗМЕР ДЛЯ ВСЕХ ИКОНОК */
-.editor-toolbar .toolbar-btn .fas,
-.markdown-toolbar .toolbar-btn .fas,
-.editor-toolbar .toolbar-btn .mdi,
-.markdown-toolbar .toolbar-btn .mdi {
-  font-size: 18px;
-}
-
-/* КНОПКИ ФОРМАТИРОВАНИЯ ТЕКСТА */
-.editor-toolbar .format-btn,
-.markdown-toolbar .format-btn {
-  background: white;
-  border: 1px solid var(--border-color);
-  color: var(--text-color);
-}
-
-.editor-toolbar .format-btn:hover,
-.markdown-toolbar .format-btn:hover {
-  background: #f8f9fa;
-  border-color: var(--primary-color);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.editor-toolbar .format-btn:hover i,
-.markdown-toolbar .format-btn:hover i {
-  color: var(--primary-color);
-  transform: scale(1.1);
-}
-
-/* КНОПКИ БЛОКОВ */
-.editor-toolbar .block-btn,
-.markdown-toolbar .block-btn {
-  background: rgba(44, 95, 168, 0.1);
-  border: 1px solid rgba(44, 95, 168, 0.2);
-  color: #2c5fa8;
-}
-
-.editor-toolbar .block-btn:hover,
-.markdown-toolbar .block-btn:hover,
-.btn-download:hover {
-  background: rgba(44, 95, 168, 0.2);
-  border-color: #2c5fa8;
-  transform: translateY(-1px);
-}
-
-.editor-toolbar .block-btn:hover i,
-.markdown-toolbar .block-btn:hover i {
-  color: #2c5fa8;
-  transform: scale(1.1);
-}
-
-/* КНОПКИ МЕДИА */
-.editor-toolbar .media-btn,
-.markdown-toolbar .media-btn {
-  background: rgba(168, 44, 44, 0.1);
-  border: 1px solid rgba(168, 44, 44, 0.2);
-  color: #a82c2c;
-}
-
-.editor-toolbar .media-btn:hover,
-.markdown-toolbar .media-btn:hover,
-.btn-del:hover {
-  background: rgba(168, 44, 44, 0.2);
-  border-color: #a82c2c;
-  transform: translateY(-1px);
-}
-
-.editor-toolbar .media-btn:hover i,
-.markdown-toolbar .media-btn:hover i {
-  color: #a82c2c;
-  transform: scale(1.1);
-}
-
-/* КНОПКА СОХРАНЕНИЯ - ОСОБЫЙ СТИЛЬ */
-#save-btn {
-  background: rgba(76, 175, 80, 0.1) !important;
-  border: 1px solid rgba(76, 175, 80, 0.3) !important;
-  color: #4CAF50 !important;
-}
-
-#save-btn:hover, .btn-restore:hover {
-  background: rgba(76, 175, 80, 0.2) !important;
-  border-color: #4CAF50 !important;
-  transform: translateY(-1px);
-}
-
-#save-btn i {
-  color: #4CAF50 !important;
-}
-
-#save-btn:hover i {
-  transform: scale(1.1);
-}
-
-/* КНОПКИ С ДВУМЯ ИКОНКАМИ */
-.toolbar-btn .mdi-format-bold + .mdi-format-italic {
-  margin-left: -6px;
-  font-size: 16px;
-}
-
-/* ВЫПАДАЮЩИЕ КНОПКИ ЗАГОЛОВКОВ */
-.dropdown .dropbtn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-}
-
-.dropdown .dropbtn .mdi-menu-down {
-  font-size: 16px;
-  margin-left: -2px;
-}
-
-/* УЛУЧШЕННЫЕ ВЫПАДАЮЩИЕ МЕНЮ */
-.dropdown-content {
-  min-width: 160px;
-  padding: 8px 0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
-.dropdown-btn {
-  padding: 10px 16px;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.2s ease;
-}
-
-.dropdown-btn:hover {
-  background: #f8f9fa;
-}
-
-.dropdown-btn i {
-  font-size: 18px;
-  width: 18px;
-  color: var(--text-light);
-}
-
-/* Backup кнопки */
 .btn-download {
-    background: rgba(33, 150, 243, 0.1);
-    border: 1px solid rgba(33, 150, 243, 0.3);
-    color: #2196F3;
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  color: #2196F3;
 }
 
 .btn-restore {
-    background: rgba(76, 175, 80, 0.1);
-    border: 1px solid rgba(76, 175, 80, 0.3);
-    color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #4CAF50;
 }
 
 .btn-del {
@@ -543,7 +516,31 @@ button, .btn {
   color: #a82c2c;
 }
 
+.btn-download:hover,
+.btn-restore:hover,
+.btn-del:hover {
+  transform: translateY(-1px);
+}
+
+/* ==================== */
+/* АНИМАЦИИ */
+/* ==================== */
+
+.editor-toolbar .toolbar-btn,
+.markdown-toolbar .toolbar-btn,
+.dropdown-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.editor-toolbar .toolbar-btn i,
+.markdown-toolbar .toolbar-btn i {
+  transition: all 0.2s ease;
+}
+
+/* ==================== */
 /* АДАПТИВНОСТЬ */
+/* ==================== */
+
 @media (max-width: 1024px) {
   .editor-toolbar,
   .markdown-toolbar {
@@ -591,91 +588,74 @@ button, .btn {
   }
 }
 
-/* АНИМАЦИИ */
-.editor-toolbar .toolbar-btn,
-.markdown-toolbar .toolbar-btn,
-.dropdown-btn {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* ==================== */
+/* УЛУЧШЕННЫЕ ПОДСКАЗКИ (резервные) */
+/* ==================== */
 
-.editor-toolbar .toolbar-btn i,
-.markdown-toolbar .toolbar-btn i {
-  transition: all 0.2s ease;
-}
-
-/* УЛУЧШЕННЫЕ ПОДСКАЗКИ */
-.toolbar-btn {
+.tooltip {
   position: relative;
 }
 
-.toolbar-btn::after {
-  content: attr(title);
-  position: absolute;
-  top: -35px; /* Изменил с bottom на top */
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: white;
-  padding: 6px 10px;
+.tooltip-text {
+  visibility: hidden;
+  width: 120px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
   border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 1000;
-}
-
-.toolbar-btn:hover::after {
-  opacity: 1;
-}
-
-/* Стрелка для подсказки */
-.toolbar-btn::before {
-  content: '';
+  padding: 5px;
   position: absolute;
-  top: -10px; /* Позиция стрелки */
+  z-index: 10000;
+  bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: #333 transparent transparent transparent;
   opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 10001;
+  transition: opacity 0.3s;
 }
 
-.toolbar-btn:hover::before {
+.tooltip:hover .tooltip-text {
+  visibility: visible;
   opacity: 1;
 }
 
-/* === Взято из editor.css === */
-.explorer-toolbar {
-  padding: 10px;
-  background-color: var(--darker-bg);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
+/* ==================== */
+/* ИСПРАВЛЕНИЯ ДЛЯ ВЫПАДАЮЩИХ МЕНЮ */
+/* ==================== */
+
+/* Гарантируем, что выпадающие меню показываются над всем */
+.editor-toolbar .dropdown-content,
+.markdown-toolbar .dropdown-content {
+  z-index: 10000 !important;
+  position: absolute !important;
 }
 
-
-.explorer-toolbar {
-  white-space: nowrap;
-  padding-bottom: 10px;
-}
-  
-.explorer-toolbar button {
-  flex-shrink: 0; 
+/* Исправляем позиционирование для выпадающих меню в нижнем тулбаре */
+.markdown-toolbar .dropdown-content {
+  top: 100%;
+  margin-top: 5px; /* Небольшой отступ от кнопки */
 }
 
-.explorer-toolbar .danger-btn {
-  margin-left: 0; 
+/* Убираем конфликты с подсказками */
+.editor-toolbar .dropdown:hover .toolbar-btn::after,
+.editor-toolbar .dropdown:hover .toolbar-btn::before,
+.markdown-toolbar .dropdown:hover .toolbar-btn::after,
+.markdown-toolbar .dropdown:hover .toolbar-btn::before {
+  opacity: 0; /* Скрываем подсказки при открытом выпадающем меню */
 }
 
-.markdown-toolbar {
-  overflow-x: auto;
-  padding-bottom: 10px;
+/* Улучшаем видимость выпадающих меню */
+.dropdown-content {
+  border: 1px solid #ccc;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+/* Анимация появления */
+.dropdown-content {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
