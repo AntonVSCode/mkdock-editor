@@ -96,45 +96,6 @@ button, .btn {
   font-size: 18px;
 }
 
-/* Стили для всплывающих подсказок файлового менеджера */
-.explorer-toolbar button::after {
-  content: attr(title);
-  position: absolute;
-  bottom: calc(100% + 5px);
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--dark-bg);
-  color: white;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 10000;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.explorer-toolbar button::before {
-  content: '';
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: var(--dark-bg) transparent transparent transparent;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 10001;
-}
-
-.explorer-toolbar button:hover::after,
-.explorer-toolbar button:hover::before {
-  opacity: 1;
-}
-
 /* Стили для кнопки удаления */
 .explorer-toolbar .danger-btn {
   color: var(--delete-icon) !important;
@@ -271,12 +232,14 @@ button, .btn {
   font-size: 18px;
 }
 
-/* Подсказки для кнопок тулбаров */
-.editor-toolbar .toolbar-btn::after,
-.markdown-toolbar .toolbar-btn::after {
-  content: attr(title);
+/* ==================== */
+/* НОВАЯ СИСТЕМА ПОДСКАЗОК */
+/* ==================== */
+
+/* Базовые стили для подсказок */
+.tooltip {
   position: absolute;
-  bottom: 100% !important; /* Фиксируем позиционирование */
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   background: #333;
@@ -288,37 +251,80 @@ button, .btn {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 9999 !important; /* Выше чем тулбары, но ниже чем выпадающие меню */
-  margin-bottom: 5px;
+  z-index: 9999;
+  margin-bottom: 8px;
 }
 
-.editor-toolbar .toolbar-btn::before,
-.markdown-toolbar .toolbar-btn::before {
+.tooltip::after {
   content: '';
   position: absolute;
-  bottom: 100% !important;
+  top: 100%;
   left: 50%;
   transform: translateX(-50%);
   border-width: 5px;
   border-style: solid;
   border-color: #333 transparent transparent transparent;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 10000 !important;
-  margin-bottom: -5px;
 }
 
-.editor-toolbar .toolbar-btn:hover::after,
-.editor-toolbar .toolbar-btn:hover::before,
-.markdown-toolbar .toolbar-btn:hover::after,
-.markdown-toolbar .toolbar-btn:hover::before {
+/* Подсказки для файлового менеджера */
+.explorer-toolbar button {
+  position: relative;
+}
+
+.explorer-toolbar button .tooltip {
+  background: var(--dark-bg);
+  z-index: 10000;
+}
+
+.explorer-toolbar button .tooltip::after {
+  border-color: var(--dark-bg) transparent transparent transparent;
+}
+
+.explorer-toolbar button:hover .tooltip {
   opacity: 1;
 }
 
-/* Скрываем подсказки при открытом выпадающем меню */
-.dropdown:hover .toolbar-btn::after,
-.dropdown:hover .toolbar-btn::before {
+/* Подсказки для редактора */
+.editor-toolbar .toolbar-btn,
+.markdown-toolbar .toolbar-btn {
+  position: relative;
+}
+
+.editor-toolbar .toolbar-btn .tooltip,
+.markdown-toolbar .toolbar-btn .tooltip {
+  z-index: 9999;
+}
+
+.editor-toolbar .toolbar-btn:hover .tooltip,
+.markdown-toolbar .toolbar-btn:hover .tooltip {
+  opacity: 1;
+}
+
+/* Скрываем подсказки при открытых выпадающих меню */
+.dropdown:hover .toolbar-btn .tooltip {
   opacity: 0 !important;
+}
+
+/* Подсказка для кнопки переключения сайдбара */
+.toggle-sidebar-btn {
+  position: relative;
+}
+
+.toggle-sidebar-btn .tooltip {
+  bottom: auto;
+  top: 100%;
+  margin-bottom: 0;
+  margin-top: 8px;
+}
+
+.toggle-sidebar-btn .tooltip::after {
+  top: auto;
+  bottom: 100%;
+  border-color: transparent transparent #333 transparent;
+}
+
+.toggle-sidebar-btn:hover .tooltip {
+  opacity: 1;
 }
 
 /* ==================== */
@@ -589,58 +595,44 @@ button, .btn {
 }
 
 /* ==================== */
-/* УЛУЧШЕННЫЕ ПОДСКАЗКИ (резервные) */
+/* ВЫПАДАЮЩИЕ МЕНЮ - ФИНАЛЬНЫЕ ИСПРАВЛЕНИЯ */
 /* ==================== */
 
-.tooltip {
+.dropdown {
   position: relative;
 }
 
-.tooltip-text {
-  visibility: hidden;
-  width: 120px;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  border-radius: 4px;
-  padding: 5px;
-  position: absolute;
-  z-index: 10000;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.tooltip:hover .tooltip-text {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* ==================== */
-/* ИСПРАВЛЕНИЯ ДЛЯ ВЫПАДАЮЩИХ МЕНЮ */
-/* ==================== */
-
-/* Гарантируем, что выпадающие меню показываются над всем */
-.editor-toolbar .dropdown-content,
-.markdown-toolbar .dropdown-content {
+.dropdown-content {
+  min-width: 160px;
+  padding: 8px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
   z-index: 10000 !important;
-  position: absolute !important;
+  display: none;
+  position: absolute;
+  top: 100% !important;
+  left: 0 !important;
+  background: white;
+  margin-top: 5px;
 }
 
-/* Исправляем позиционирование для выпадающих меню в нижнем тулбаре */
-.markdown-toolbar .dropdown-content {
-  top: 100%;
-  margin-top: 5px; /* Небольшой отступ от кнопки */
+.dropdown:hover .dropdown-content {
+  display: block;
 }
 
-/* Убираем конфликты с подсказками */
-.editor-toolbar .dropdown:hover .toolbar-btn::after,
-.editor-toolbar .dropdown:hover .toolbar-btn::before,
-.markdown-toolbar .dropdown:hover .toolbar-btn::after,
-.markdown-toolbar .dropdown:hover .toolbar-btn::before {
-  opacity: 0; /* Скрываем подсказки при открытом выпадающем меню */
+/* Гарантируем правильное отображение */
+.editor-toolbar,
+.markdown-toolbar {
+  position: relative;
+  z-index: 1;
+  overflow: visible !important;
+}
+
+.toolbar-group {
+  position: relative;
+  z-index: auto;
+  overflow: visible !important;
 }
 
 /* Улучшаем видимость выпадающих меню */

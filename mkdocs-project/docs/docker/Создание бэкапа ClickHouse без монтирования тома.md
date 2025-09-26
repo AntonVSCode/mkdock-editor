@@ -76,9 +76,7 @@ docker run -d \
   altinity/clickhouse-server:latest  # или другой образ с поддержкой clickhouse-backup
 ```
 
----
-
-### 3. **Создайте бэкап через `docker cp` (если данные важны прямо сейчас)**  
+### **Создайте бэкап через `docker cp` (если данные важны прямо сейчас)**  
 Если нужно срочно сохранить данные, скопируйте их вручную:  
 
 ```bash
@@ -86,9 +84,7 @@ docker cp clickhouse_cmmfeed:/var/lib/clickhouse ./clickhouse_backup_temp
 tar -czvf clickhouse_backup_ump_$(date +%Y-%m-%d).tar.gz ./clickhouse_backup_temp
 ```
 
----
-
-### 4. **Альтернатива: Дамп через `clickhouse-client`**  
+### **Альтернатива: Дамп через `clickhouse-client`**  
 Если `clickhouse-client` доступен, экспортируйте данные в SQL:  
 
 ```bash
@@ -103,6 +99,4 @@ docker exec -it clickhouse_cmmfeed clickhouse-client \
     done
 done
 ```
-
----
 

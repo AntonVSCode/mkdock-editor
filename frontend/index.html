@@ -92,27 +92,33 @@
     <!-- Боковая панель -->
     <div class="file-explorer" id="file-explorer">
       <div class="explorer-toolbar">
-        <button id="new-folder" title="Новая папка">
+        <button id="new-folder">
           <i class="mdi mdi-folder-plus"></i>
+          <div class="tooltip">Новая папка</div>
         </button>
-        <button id="new-file" title="Новый файл">
+        <button id="new-file">
           <i class="mdi mdi-file-plus"></i>
+          <div class="tooltip">Новый файл</div>
         </button>
-        <button id="refresh-files" title="Обновить">
+        <button id="refresh-files">
           <i class="mdi mdi-refresh"></i>
+          <div class="tooltip">Обновить</div>
         </button>
-        <button id="delete-folder" title="Удалить папку" class="danger-btn" disabled>
+        <button id="delete-folder" class="danger-btn" disabled>
           <i class="mdi mdi-folder-remove"></i>
+          <div class="tooltip">Удалить папку</div>
         </button>
-        <button id="toggle-sidebar" title="Свернуть/развернуть">
+        <button id="toggle-sidebar">
           <i class="mdi mdi-menu"></i>
+          <div class="tooltip">Свернуть/развернуть</div>
         </button>
       </div>
       <!-- Поиск файлов  -->
       <div class="search-container">
         <input type="text" id="file-search" placeholder="Поиск файлов...">
-        <button id="clear-search" title="Очистить поиск">
+        <button id="clear-search">
           <i class="mdi mdi-close"></i>
+          <div class="tooltip">Очистить поиск</div>
         </button>
       </div>
 
@@ -134,6 +140,7 @@
     <!-- Кнопка для открытия свернутого меню -->
     <button class="toggle-sidebar-btn" id="toggleBtn">
       <i class="mdi mdi-menu"></i>
+      <div class="tooltip">Показать меню</div>
     </button>
     
     <!-- Основная область -->
@@ -155,9 +162,10 @@
         <!-- Выпадающее меню для Admonitions -->
         <div class="toolbar-group">
           <div class="dropdown">
-            <button class="toolbar-btn block-btn dropbtn" title="Вставить Admonition">
+            <button class="toolbar-btn block-btn dropbtn">
               <i class="mdi mdi-alert-box-outline"></i>
               <span>Admonitions</span>
+              <div class="tooltip">Вставить Admonition</div>
             </button>
             <div class="dropdown-content">
               <button class="dropdown-btn" data-insert="!!! note\n    Ваш текст здесь">
@@ -184,9 +192,10 @@
         <!-- Выпадающее меню для Foldable Blocks -->
         <div class="toolbar-group">
           <div class="dropdown">
-            <button class="toolbar-btn block-btn dropbtn" title="Вставить Foldable Block">
+            <button class="toolbar-btn block-btn dropbtn">
               <i class="mdi mdi-chevron-down-box-outline"></i>
               <span>Foldable</span>
+              <div class="tooltip">Вставить Foldable Block</div>
             </button>
             <div class="dropdown-content">
               <button class="dropdown-btn" data-insert="??? note\n    Ваш текст здесь">
@@ -203,42 +212,47 @@
 
         <!-- Кнопки без выпадающего меню -->
         <div class="toolbar-group">
-          <button id="tabs-btn" class="toolbar-btn block-btn" title="Tabs Block (Ctrl+Alt+T)">
+          <button id="tabs-btn" class="toolbar-btn block-btn">
             <i class="mdi mdi-tab"></i>
             <span>Tabs</span>
+            <div class="tooltip">Tabs Block (Ctrl+Alt+T)</div>
           </button>
-          <button id="code-btn" class="toolbar-btn block-btn" title="Code Block (Ctrl+Alt+C)">
+          <button id="code-btn" class="toolbar-btn block-btn">
             <i class="mdi mdi-code-tags"></i>
             <span>Code</span>
+            <div class="tooltip">Code Block (Ctrl+Alt+C)</div>
           </button>
         </div>
 
         <!-- Группа медиа -->
         <div class="toolbar-group">
-          <button id="image-gallery-btn" class="toolbar-btn media-btn" title="Галерея изображений">
+          <button id="image-gallery-btn" class="toolbar-btn media-btn">
             <i class="mdi mdi-image-multiple"></i>
             <span>Галерея</span>
+            <div class="tooltip">Галерея изображений</div>
           </button>
           <input type="file" id="image-upload" accept="image/*" style="display: none;">
         </div>
 
         <!-- Кнопка сохранения -->
         <div class="toolbar-group">
-          <button id="save-btn" class="toolbar-btn" title="Сохранить (Ctrl+S)">
+          <button id="save-btn" class="toolbar-btn">
             <i class="mdi mdi-content-save"></i>
             <span>Сохранить</span>
+            <div class="tooltip">Сохранить (Ctrl+S)</div>
           </button>
         </div>
       </div>
       
       <!-- Нижний тулбар - (markdown-toolbar) - содержит базовые элементы разметки -->
       <div class="markdown-toolbar">
-        <!-- Выпадающее меню для заголовков - ИСПРАВЛЕННАЯ СТРУКТУРА -->
+        <!-- Выпадающее меню для заголовков -->
         <div class="toolbar-group">
           <div class="dropdown">
-            <button class="toolbar-btn format-btn dropbtn" title="Заголовки">
+            <button class="toolbar-btn format-btn dropbtn">
               <i class="mdi mdi-format-header-pound"></i>
               <i class="mdi mdi-menu-down"></i>
+              <div class="tooltip">Заголовки</div>
             </button>
             <div class="dropdown-content">
               <button class="dropdown-btn" data-insert="# ">
@@ -265,67 +279,84 @@
 
         <!-- Группа форматирования текста -->
         <div class="toolbar-group">
-          <button class="toolbar-btn format-btn" data-insert="**" data-wrap="**" title="Жирный">
+          <button class="toolbar-btn format-btn" data-insert="**" data-wrap="**">
             <i class="mdi mdi-format-bold"></i>
+            <div class="tooltip">Жирный</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="*" data-wrap="*" title="Курсив">
+          <button class="toolbar-btn format-btn" data-insert="*" data-wrap="*">
             <i class="mdi mdi-format-italic"></i>
+            <div class="tooltip">Курсив</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="***" data-wrap="***" title="Жирный курсив">
+          <button class="toolbar-btn format-btn" data-insert="***" data-wrap="***">
             <i class="mdi mdi-format-bold"></i><i class="mdi mdi-format-italic"></i>
+            <div class="tooltip">Жирный курсив</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="^^" data-wrap="^^" title="Подчеркнутый текст">
+          <button class="toolbar-btn format-btn" data-insert="^^" data-wrap="^^">
             <i class="mdi mdi-format-underline"></i>
+            <div class="tooltip">Подчеркнутый текст</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="==" data-wrap="==" title="Выделенный текст">
+          <button class="toolbar-btn format-btn" data-insert="==" data-wrap="==">
             <i class="mdi mdi-format-color-fill"></i>
+            <div class="tooltip">Выделенный текст</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="`"  data-wrap="`" title="Встроенный код">
+          <button class="toolbar-btn format-btn" data-insert="`" data-wrap="`">
             <i class="mdi mdi-code-brackets"></i>
+            <div class="tooltip">Встроенный код</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="~~" data-wrap="~~" title="Зачеркнутый текст">
+          <button class="toolbar-btn format-btn" data-insert="~~" data-wrap="~~">
             <i class="mdi mdi-format-strikethrough"></i>
+            <div class="tooltip">Зачеркнутый текст</div>
           </button> 
         </div>
 
         <!-- Группа ссылок и изображений -->
         <div class="toolbar-group">
-          <button class="toolbar-btn format-btn" data-insert="[Внешняя ссылка :material-arrow-top-right:](url){:target='_blank'}" title="Внешняя ссылка">
+          <button class="toolbar-btn format-btn" data-insert="[Внешняя ссылка :material-arrow-top-right:](url){:target='_blank'}">
             <i class="fas fa-external-link-alt"></i>
+            <div class="tooltip">Внешняя ссылка</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="[Внутренняя ссылка](url)" title="Внутренняя ссылка">
+          <button class="toolbar-btn format-btn" data-insert="[Внутренняя ссылка](url)">
             <i class="mdi mdi-link"></i>
+            <div class="tooltip">Внутренняя ссылка</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="![alt text](image.png)" title="Вставить изображение">
+          <button class="toolbar-btn format-btn" data-insert="![alt text](image.png)">
             <i class="mdi mdi-image"></i>
+            <div class="tooltip">Вставить изображение</div>
           </button>
-          <button id="icon-picker-btn" class="toolbar-btn format-btn" title="Вставить иконку">
+          <button id="icon-picker-btn" class="toolbar-btn format-btn">
             <i class="mdi mdi-emoticon-outline"></i>
+            <div class="tooltip">Вставить иконку</div>
           </button>
         </div>
 
         <!-- Группа списков -->
         <div class="toolbar-group">
-          <button class="toolbar-btn format-btn" data-insert="-" data-list="bullet" title="Маркированный список">
+          <button class="toolbar-btn format-btn" data-insert="-" data-list="bullet">
             <i class="mdi mdi-format-list-bulleted"></i>
+            <div class="tooltip">Маркированный список</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="1." data-list="numbered" title="Нумерованный список">
+          <button class="toolbar-btn format-btn" data-insert="1." data-list="numbered">
             <i class="mdi mdi-format-list-numbered"></i>
+            <div class="tooltip">Нумерованный список</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="- [ ] " data-list="checkbox" title="Чекбокс список">
+          <button class="toolbar-btn format-btn" data-insert="- [ ] " data-list="checkbox">
             <i class="mdi mdi-checkbox-blank-outline"></i>
+            <div class="tooltip">Чекбокс список</div>
           </button>
-          <button class="toolbar-btn format-btn" data-insert="- [x] " data-list="checkbox_checked" title="Отмеченный чекбокс">
+          <button class="toolbar-btn format-btn" data-insert="- [x] " data-list="checkbox_checked">
             <i class="mdi mdi-checkbox-marked"></i>
+            <div class="tooltip">Отмеченный чекбокс</div>
           </button>
         </div>
         <!-- В разделе групп списков добавьте новую группу для отступов -->
         <div class="toolbar-group">
-          <button class="toolbar-btn format-btn" id="indent-right" title="Увеличить отступ (Tab)">
+          <button class="toolbar-btn format-btn" id="indent-right">
             <i class="mdi mdi-format-indent-increase"></i>
+            <div class="tooltip">Увеличить отступ (Tab)</div>
           </button>
-          <button class="toolbar-btn format-btn" id="indent-left" title="Уменьшить отступ (Shift+Tab)">
+          <button class="toolbar-btn format-btn" id="indent-left">
             <i class="mdi mdi-format-indent-decrease"></i>
+            <div class="tooltip">Уменьшить отступ (Shift+Tab)</div>
           </button>
         </div>
       </div>
@@ -379,7 +410,6 @@
   <script src="js/modal.js"></script>
   <script src="js/fileSearch.js"></script>
   <script src="js/imageViewer.js"></script>
-  
   
   <script>
     // Обработчики для управления меню
